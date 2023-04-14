@@ -1,7 +1,7 @@
 export class Project {
-  projectInfo:ProjectInfo;
+  info:ProjectInfo;
   constructor(info:ProjectInfo){
-    this.projectInfo = info;
+    this.info = info;
   }
 }
 
