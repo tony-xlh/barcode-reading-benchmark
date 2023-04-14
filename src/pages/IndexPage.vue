@@ -4,8 +4,8 @@
       <q-list bordered separator>
         <q-item-label header>Projects:</q-item-label>
         <q-separator spaced/>
-        <q-item clickable v-ripple v-for="project in projects" v-bind:key="project.info.name">
-          <q-item-section>
+        <q-item clickable v-ripple v-for='(project,index) in projects' v-bind:key="project.info.name">
+          <q-item-section v-on:click="showActionDialog(index)">
             <q-item-label>{{project.info.name}}</q-item-label>
             <q-item-label caption lines="2">
               Number of Images: {{ project.info.images?.length }} 
@@ -26,6 +26,26 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="action">
+      <q-card style="width: 300px">
+        <q-card-section>
+          <q-list bordered separator>
+          <q-item-label header>Actions</q-item-label>
+          <q-separator spaced/>
+          <q-item clickable v-ripple v-close-popup>
+            <q-item-section v-on:click="openSelected">
+              <q-item-label>Open</q-item-label>
+            </q-item-section>
+          </q-item>
+          <q-item clickable v-ripple v-close-popup>
+            <q-item-section v-on:click="deleteSelected">
+              <q-item-label>Delete</q-item-label>
+            </q-item-section>
+          </q-item>
+        </q-list>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
     <q-page-sticky position="bottom-right" :offset="[18, 18]">
       <q-btn fab icon="add" color="blue" v-on:click="addButtonClicked" />
     </q-page-sticky>
@@ -39,6 +59,8 @@ import { onMounted, ref } from "vue";
 const newProject = ref(false);
 const projectName = ref("");
 const projects = ref([] as Project[]);
+const action = ref(false);
+let selectedIndex = -1;
 onMounted(async () => {
   const savedProjects = await localForage.getItem("projects");
   if (savedProjects) {
@@ -82,6 +104,29 @@ const saveProjects = async () => {
     projectsToSave.push(project);
   });
   await localForage.setItem("projects", JSON.stringify(projectsToSave));
+}
+
+const showActionDialog = (index:number) => {
+  selectedIndex = index;
+  action.value = true;
+}
+
+const openSelected = () => {
+  console.log("open");
+}
+
+const deleteSelected = () => {
+  console.log(projects.value);
+  console.log(selectedIndex);
+  let newProjects = [];
+  for (let index = 0; index < projects.value.length; index++) {
+    const project = projects.value[index];
+    if (index != selectedIndex) {
+      newProjects.push(project);
+    }
+  }
+  projects.value = newProjects;
+  saveProjects();
 }
 
 </script>
