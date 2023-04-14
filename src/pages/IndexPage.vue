@@ -56,10 +56,12 @@
 import { Project } from "../definitions/project";
 import localForage from "localforage";
 import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 const newProject = ref(false);
 const projectName = ref("");
 const projects = ref([] as Project[]);
 const action = ref(false);
+const router = useRouter();
 let selectedIndex = -1;
 onMounted(async () => {
   const savedProjects = await localForage.getItem("projects");
@@ -112,7 +114,7 @@ const showActionDialog = (index:number) => {
 }
 
 const openSelected = () => {
-  console.log("open");
+  router.push("/project/"+encodeURIComponent(projects.value[selectedIndex].info.name));
 }
 
 const deleteSelected = () => {
