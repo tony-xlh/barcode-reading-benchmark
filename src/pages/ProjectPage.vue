@@ -11,7 +11,6 @@
         </div>
         <div>
           <q-btn outline color="primary" label="Start decoding" v-on:click="decode" />
-          <q-btn outline color="primary" label="Get statistics" v-on:click="getStatistics" />
         </div>
         <div>
           Statistics: 
