@@ -54,8 +54,11 @@
 
 <script setup lang="ts">
 import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
+import { Project } from "src/definitions/project";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import localForage from "localforage";
+
 const columns = [
   {
     name: 'name',
@@ -66,14 +69,10 @@ const columns = [
     sortable: true
   }
 ]
-
-const rows = [
-  {
-    filename: 'image.jpg',
-  }
-]
+let reader: BarcodeReader;
+let project:Project;
+const rows = ref([] as any[]);
 const engines = ref([] as string[])
-const reader: BarcodeReader = new BarcodeReader();
 const router = useRouter();
 const projectName = ref("");
 const selectedEngine = ref("");
@@ -93,12 +92,32 @@ const addGroundTruth = () => {
 onMounted(async () => {
   console.log("mounted");
   projectName.value = router.currentRoute.value.params.name as string;
+  const savedProjects = await localForage.getItem("projects");
+  if (savedProjects) {
+    const projects = JSON.parse(savedProjects as string);
+    project = projects[projectName.value];
+    updateRows();
+  }
   const supportedEngines = BarcodeReader.getEngines();
   engines.value = supportedEngines;
   if (supportedEngines.length>0) {
     selectedEngine.value = supportedEngines[0];
   }
 });
+
+const updateRows = () => {
+  if (project) {
+    let newRows = [];
+    for (let index = 0; index < project.info.images.length; index++) {
+      const image = project.info.images[index];
+      const row = {
+        filename:image
+      }
+      newRows.push(row);
+    } 
+    rows.value = newRows;
+  }
+}
 
 const decode = () => {
   console.log(selectedEngine.value);

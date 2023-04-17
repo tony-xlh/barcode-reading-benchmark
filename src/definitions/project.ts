@@ -8,5 +8,5 @@ export class Project {
 export interface ProjectInfo {
   name:string;
   creationTimestamp:number;
-  images?:string[];
+  images:string[];
 }
