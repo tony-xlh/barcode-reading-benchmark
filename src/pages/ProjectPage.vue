@@ -24,7 +24,7 @@
         :columns="columns"
         row-key="name"
       >
-        <template v-slot:top>
+        <template v-slot:top-right>
           <q-btn-dropdown color="primary" label="Action">
             <q-list>
               <q-item clickable v-close-popup @click="showLocalFilesDialog">
