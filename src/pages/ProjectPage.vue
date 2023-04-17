@@ -10,13 +10,30 @@
           <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
         <div>
-          <q-btn outline color="primary" label="Start decoding" @click="decode" />
-          <q-btn outline color="primary" label="Get statistics" @click="getStatistics" />
+          <q-btn outline color="primary" label="Start decoding" v-on:click="decode" />
+          <q-btn outline color="primary" label="Get statistics" v-on:click="getStatistics" />
         </div>
         <div>
           Statistics: 
         </div>
       </q-card-section>
+      <q-separator></q-separator>
+      <q-card-section>
+          <div>
+            <input type="file" id="imageFiles" multiple="true" v-on:change="loadImageFiles($event);" accept=".jpg,.jpeg,.png,.bmp" />
+            <label for="imageFiles">Image files.</label>
+          </div>
+          <div>
+            <input type="file" id="detectionResultFiles" multiple="true" v-on:change="loadDetectionResultFiles($event);" accept=".json" />
+            <label for="detectionResultFiles">Detection result files.</label>
+          </div>
+          <div>
+            <input type="file" id="groundTruthFiles" multiple="true" v-on:change="loadGroundTruthFiles($event);" accept=".json" />
+            <label for="imageFiles">Ground truth files.</label>
+          </div>
+          <q-btn color="primary" label="Add to project" v-on:click="addFilesToProject" />
+      </q-card-section>
+      <q-separator></q-separator>
       <q-card-section>
       <q-table
         title="Images"
@@ -24,27 +41,6 @@
         :columns="columns"
         row-key="name"
       >
-        <template v-slot:top>
-          <q-btn-dropdown color="primary" label="Action">
-            <q-list>
-              <q-item clickable v-close-popup @click="addImages">
-                <q-item-section>
-                  <q-item-label>Add images</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item clickable v-close-popup @click="addReadingResults">
-                <q-item-section>
-                  <q-item-label>Add reading results</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item clickable v-close-popup @click="addGroundTruth">
-                <q-item-section>
-                  <q-item-label>Add ground truth</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-          </q-btn-dropdown>
-        </template>
       </q-table>
       </q-card-section>
     </q-card>
@@ -76,19 +72,10 @@ const engines = ref([] as string[])
 const router = useRouter();
 const projectName = ref("");
 const selectedEngine = ref("");
+let imageFiles:string[] = [];
+let detectionResultFiles:string[] = [];
+let groundTruthFiles:string[] = [];
       
-const addImages = () => {
-  console.log("add")
-};
-
-const addReadingResults = () => {
-  console.log("add")
-};
-
-const addGroundTruth = () => {
-  console.log("add")
-};
-
 onMounted(async () => {
   console.log("mounted");
   projectName.value = router.currentRoute.value.params.name as string;
@@ -127,4 +114,24 @@ const getStatistics = () => {
   console.log(reader);
 }
 
+const loadDetectionResultFiles = (e:any) => {
+  detectionResultFiles = e.target.files;
+}
+
+const loadImageFiles = (e:any) => {
+  imageFiles = e.target.files;
+}
+
+const loadGroundTruthFiles = (e:any) => {
+  groundTruthFiles = e.target.files;
+}
+
+const addFilesToProject = () => {
+  console.log(groundTruthFiles);
+  console.log(imageFiles);
+  console.log(detectionResultFiles);
+}
 </script>
+
+<style>
+</style>
