@@ -32,6 +32,11 @@
                   <q-item-label>Add local files</q-item-label>
                 </q-item-section>
               </q-item>
+              <q-item clickable v-close-popup @click="clearProject">
+                <q-item-section>
+                  <q-item-label>Clear</q-item-label>
+                </q-item-section>
+              </q-item>
             </q-list>
          </q-btn-dropdown>
         </template>
@@ -154,9 +159,6 @@ const loadGroundTruthFiles = (e:any) => {
 }
 
 const addFilesToProject = async () => {
-  console.log(groundTruthFiles);
-  console.log(detectionResultFiles);
-  console.log(imageFiles);
   if (project) {
     for (let index = 0; index < groundTruthFiles.length; index++) {
       const file = groundTruthFiles[index];
@@ -192,6 +194,28 @@ const saveProjects = async () => {
 const showLocalFilesDialog = () => {
   action.value = true;
 }
+
+const clearProject = () => {
+  for (let index = 0; index < project.info.images.length; index++) {
+    const image = project.info.images[index];
+    localForage.removeItem(projectName.value+":image:"+image);
+    localForage.removeItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(image)+".json");
+    localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(image)+".json");
+  }
+  project.info.images = [];
+  saveProjects();
+  updateRows();
+}
+
+//scanned.jpg => scanned
+const getFilenameWithoutExtension = (filename:string) => {
+  if (filename.lastIndexOf(".") != -1) {
+    return filename.substring(0,filename.lastIndexOf("."));
+  }else{
+    return filename;
+  }
+}
+
 </script>
 
 <style>
