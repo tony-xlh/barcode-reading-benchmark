@@ -7,11 +7,11 @@
       <q-separator></q-separator>
       <q-card-section>
         <div style="padding-bottom: 20px;">
-          <q-select style="max-width: 300px" v-model="model" :options="options" label="Engine" />
+          <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
         <div>
-          <q-btn outline color="primary" label="Start decoding" @click="addImages" />
-          <q-btn outline color="primary" label="Get statistics" @click="addImages" />
+          <q-btn outline color="primary" label="Start decoding" @click="decode" />
+          <q-btn outline color="primary" label="Get statistics" @click="getStatistics" />
         </div>
         <div>
           Statistics: 
@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 const columns = [
@@ -71,10 +72,11 @@ const rows = [
     filename: 'image.jpg',
   }
 ]
+const engines = ref([] as string[])
+const reader: BarcodeReader = new BarcodeReader();
 const router = useRouter();
 const projectName = ref("");
-const model = ref(null);
-const options = ['Google', 'Facebook', 'Twitter', 'Apple', 'Oracle']
+const selectedEngine = ref("");
       
 const addImages = () => {
   console.log("add")
@@ -91,6 +93,19 @@ const addGroundTruth = () => {
 onMounted(async () => {
   console.log("mounted");
   projectName.value = router.currentRoute.value.params.name as string;
+  const supportedEngines = BarcodeReader.getEngines();
+  engines.value = supportedEngines;
+  if (supportedEngines.length>0) {
+    selectedEngine.value = supportedEngines[0];
+  }
 });
+
+const decode = () => {
+  console.log(selectedEngine.value);
+}
+
+const getStatistics = () => {
+  console.log(reader);
+}
 
 </script>
