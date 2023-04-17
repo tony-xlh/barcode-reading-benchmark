@@ -54,6 +54,7 @@ import { Project } from "src/definitions/project";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
+import { readFileAsDataURL, readFileAsText } from "src/utils";
 
 const columns = [
   {
@@ -72,23 +73,30 @@ const engines = ref([] as string[])
 const router = useRouter();
 const projectName = ref("");
 const selectedEngine = ref("");
-let imageFiles:string[] = [];
-let detectionResultFiles:string[] = [];
-let groundTruthFiles:string[] = [];
+let imageFiles:File[] = [];
+let detectionResultFiles:File[] = [];
+let groundTruthFiles:File[] = [];
+let projects:Project[] = [];
       
 onMounted(async () => {
   console.log("mounted");
   projectName.value = router.currentRoute.value.params.name as string;
   const savedProjects = await localForage.getItem("projects");
-  if (savedProjects) {
-    const projects = JSON.parse(savedProjects as string);
-    project = projects[projectName.value];
-    updateRows();
-  }
   const supportedEngines = BarcodeReader.getEngines();
   engines.value = supportedEngines;
   if (supportedEngines.length>0) {
     selectedEngine.value = supportedEngines[0];
+  }
+
+  if (savedProjects) {
+    projects = JSON.parse(savedProjects as string);
+    for (let index = 0; index < projects.length; index++) {
+      if (projects[index].info.name === projectName.value) {
+        project = projects[index];
+        updateRows();
+        return;
+      }    
+    }
   }
 });
 
@@ -126,10 +134,35 @@ const loadGroundTruthFiles = (e:any) => {
   groundTruthFiles = e.target.files;
 }
 
-const addFilesToProject = () => {
-  console.log(groundTruthFiles);
-  console.log(imageFiles);
-  console.log(detectionResultFiles);
+const addFilesToProject = async () => {
+  if (project) {
+    for (let index = 0; index < groundTruthFiles.length; index++) {
+      const file = groundTruthFiles[index];
+      const content = await readFileAsText(file);
+      localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
+    }
+    for (let index = 0; index < detectionResultFiles.length; index++) {
+      const file = detectionResultFiles[index];
+      const content = await readFileAsText(file);
+      localForage.setItem(projectName.value+":detectionResult:"+file.name,content);
+    }
+    for (let index = 0; index < imageFiles.length; index++) {
+      const file = imageFiles[index];
+      const dataURL = await readFileAsDataURL(file);
+      localForage.setItem(projectName.value+":image:"+file.name,dataURL);
+      project.info.images.push(file.name);
+    }
+    updateRows();
+    saveProjects();
+  }
+}
+
+const saveProjects = async () => {
+  let projectsToSave:Project[] = [];
+  projects.forEach(project => {
+    projectsToSave.push(project);
+  });
+  await localForage.setItem("projects", JSON.stringify(projectsToSave));
 }
 </script>
 
