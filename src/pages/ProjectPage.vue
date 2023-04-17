@@ -26,11 +26,11 @@
         row-key="name"
       >
         <template v-slot:top>
-          <q-btn-dropdown color="primary" label="Add files">
+          <q-btn-dropdown color="primary" label="Action">
             <q-list>
               <q-item clickable v-close-popup @click="showLocalFilesDialog">
                 <q-item-section>
-                  <q-item-label>Local files</q-item-label>
+                  <q-item-label>Add local files</q-item-label>
                 </q-item-section>
               </q-item>
             </q-list>
