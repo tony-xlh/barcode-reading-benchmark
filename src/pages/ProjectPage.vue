@@ -40,6 +40,13 @@
             </q-list>
          </q-btn-dropdown>
         </template>
+        <template v-slot:body="props">
+        <q-tr :props="props">
+          <q-td key="name" :props="props" @click="nameClicked(props.row.filename)">
+            {{ props.row.filename }}
+          </q-td>
+        </q-tr>
+      </template>
       </q-table>
       </q-card-section>
     </q-card>
@@ -214,6 +221,11 @@ const getFilenameWithoutExtension = (filename:string) => {
   }else{
     return filename;
   }
+}
+
+const nameClicked = (name:string) => {
+  console.log("clicked");
+  console.log(name);
 }
 
 </script>
