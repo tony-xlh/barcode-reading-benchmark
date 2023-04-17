@@ -19,6 +19,32 @@
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
+      <q-table
+        title="Images"
+        :rows="rows"
+        :columns="columns"
+        row-key="name"
+      >
+        <template v-slot:top>
+          <q-btn-dropdown color="primary" label="Add files">
+            <q-list>
+              <q-item clickable v-close-popup @click="showLocalFilesDialog">
+                <q-item-section>
+                  <q-item-label>Local files</q-item-label>
+                </q-item-section>
+              </q-item>
+            </q-list>
+         </q-btn-dropdown>
+        </template>
+      </q-table>
+      </q-card-section>
+    </q-card>
+    <q-dialog v-model="action">
+      <q-card>
+        <q-card-section>
+          <div class="text-h6">Add files</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
           <div>
             <input type="file" id="imageFiles" multiple="true" v-on:change="loadImageFiles($event);" accept=".jpg,.jpeg,.png,.bmp" />
             <label for="imageFiles">Image files.</label>
@@ -31,20 +57,13 @@
             <input type="file" id="groundTruthFiles" multiple="true" v-on:change="loadGroundTruthFiles($event);" accept=".json" />
             <label for="imageFiles">Ground truth files.</label>
           </div>
-          <q-btn color="primary" label="Add to project" v-on:click="addFilesToProject" />
-      </q-card-section>
-      <q-separator></q-separator>
-      <q-card-section>
-      <q-table
-        title="Images"
-        :rows="rows"
-        :columns="columns"
-        row-key="name"
-      >
-      </q-table>
-      </q-card-section>
-    </q-card>
-    
+        </q-card-section>
+        <q-card-actions align="right">
+          <q-btn flat color="primary" label="Add to project" v-on:click="addFilesToProject" />
+          <q-btn flat v-close-popup color="primary" label="Close"/>
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -73,6 +92,7 @@ const engines = ref([] as string[])
 const router = useRouter();
 const projectName = ref("");
 const selectedEngine = ref("");
+const action = ref(false);
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
 let groundTruthFiles:File[] = [];
@@ -135,6 +155,9 @@ const loadGroundTruthFiles = (e:any) => {
 }
 
 const addFilesToProject = async () => {
+  console.log(groundTruthFiles);
+  console.log(detectionResultFiles);
+  console.log(imageFiles);
   if (project) {
     for (let index = 0; index < groundTruthFiles.length; index++) {
       const file = groundTruthFiles[index];
@@ -154,6 +177,8 @@ const addFilesToProject = async () => {
     }
     updateRows();
     saveProjects();
+    alert("added");
+    action.value = false;
   }
 }
 
@@ -163,6 +188,10 @@ const saveProjects = async () => {
     projectsToSave.push(project);
   });
   await localForage.setItem("projects", JSON.stringify(projectsToSave));
+}
+
+const showLocalFilesDialog = () => {
+  action.value = true;
 }
 </script>
 
