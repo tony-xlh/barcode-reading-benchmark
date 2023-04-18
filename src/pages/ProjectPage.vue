@@ -311,8 +311,8 @@ const updateRows = async () => {
         totalBarcodesCorrectlyDetected = totalBarcodesCorrectlyDetected + detectionStatistics.correct;
         totalBarcodesMisDetected = totalBarcodesMisDetected + detectionStatistics.misdetected;
       }
-      const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes).toFixed(4))*100;
-      const precision = parseFloat(((totalBarcodes - totalBarcodesMisDetected) / totalBarcodes).toFixed(4))*100;
+      const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
+      const precision = parseFloat(((totalBarcodes - totalBarcodesMisDetected) / totalBarcodes * 100).toFixed(2));
       statistics.value = {
         fileNumber: project.info.images.length,
         barcodeNumber: totalBarcodes,
