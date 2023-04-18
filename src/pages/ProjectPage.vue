@@ -75,6 +75,9 @@
             <q-td key="correct" :props="props">
               {{ props.row.correct }}
             </q-td>
+            <q-td key="misdetected" :props="props">
+              {{ props.row.misdetected }}
+            </q-td>
           </q-tr>
         </template>
       </q-table>
@@ -114,7 +117,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { readFileAsDataURL, readFileAsText } from "src/utils";
+import { calculateDetectionStatistics, readFileAsDataURL, readFileAsText } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 
 const columns = [
@@ -167,6 +170,14 @@ const columns = [
     label: 'Correct',
     align: 'left',
     field: 'correct',
+    sortable: true
+  },
+  {
+    name: 'misdetected',
+    required: true,
+    label: 'Misdetected',
+    align: 'left',
+    field: 'misdetected',
     sortable: true
   }
 ]
@@ -224,12 +235,21 @@ const updateRows = async () => {
       let joinedDetectionResult = "";
       let elapsedTime = "";
       let barcodeFormat = "";
+      let correct = "";
+      let misdetected = "";
       const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
       if (detectionResultString) {
         const detectionResult:DetectionResult = JSON.parse(detectionResultString);
         joinedDetectionResult = getJoinedDetectionResult(detectionResult)
         barcodeFormat = getJoinedBarcodeFormat(detectionResult);
         elapsedTime = detectionResult.elapsedTime.toString();
+        const detectionStatistics = calculateDetectionStatistics(detectionResult.results,groundTruthList);
+        if (detectionStatistics.correct === detectionStatistics.groundTruth) {
+          correct = "true";
+        }else{
+          correct = "false";
+        }
+        misdetected = detectionStatistics.misdetected.toString();
       }
       const row = {
         number: (index + 1),
@@ -237,7 +257,9 @@ const updateRows = async () => {
         groundTruth: joinedGroundTruth,
         detectedText: joinedDetectionResult,
         time: elapsedTime,
-        barcodeFormat: barcodeFormat
+        barcodeFormat: barcodeFormat,
+        correct: correct,
+        misdetected: misdetected
       }
       newRows.push(row);
     } 

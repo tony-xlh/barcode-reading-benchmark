@@ -19,3 +19,24 @@ export interface Attrib {
 export interface ValueAttrib {
   Mode?:string;
 }
+
+export interface Point {
+  x:number;
+  y:number;
+}
+
+export interface Rect {
+  left:number;
+  right:number;
+  top:number;
+  bottom:number;
+  width:number;
+  height:number;
+}
+
+export interface DetectionStatistics {
+  groundTruth: number;
+  detected: number;
+  correct: number;
+  misdetected: number;
+}
