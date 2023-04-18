@@ -189,7 +189,6 @@ let groundTruthFiles:File[] = [];
 let projects:Project[] = [];
       
 onMounted(async () => {
-  console.log("mounted");
   projectName.value = router.currentRoute.value.params.name as string;
   const savedProjects = await localForage.getItem("projects");
   const supportedEngines = BarcodeReader.getEngines();
@@ -224,10 +223,12 @@ const updateRows = async () => {
       }
       let joinedDetectionResult = "";
       let elapsedTime = "";
+      let barcodeFormat = "";
       const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
       if (detectionResultString) {
         const detectionResult:DetectionResult = JSON.parse(detectionResultString);
         joinedDetectionResult = getJoinedDetectionResult(detectionResult)
+        barcodeFormat = getJoinedBarcodeFormat(detectionResult);
         elapsedTime = detectionResult.elapsedTime.toString();
       }
       const row = {
@@ -235,7 +236,8 @@ const updateRows = async () => {
         filename: imageName,
         groundTruth: joinedGroundTruth,
         detectedText: joinedDetectionResult,
-        time: elapsedTime
+        time: elapsedTime,
+        barcodeFormat: barcodeFormat
       }
       newRows.push(row);
     } 
@@ -260,6 +262,18 @@ const getJoinedDetectionResult = (detectionResult:DetectionResult) => {
   for (let index = 0; index < detectionResult.results.length; index++) {
     const result = detectionResult.results[index];
     joined = joined + result.barcodeText;
+    if (index != detectionResult.results.length - 1) {
+      joined = joined + ", ";
+    }
+  }
+  return joined;
+}
+
+const getJoinedBarcodeFormat = (detectionResult:DetectionResult) => {
+  let joined = "";
+  for (let index = 0; index < detectionResult.results.length; index++) {
+    const result = detectionResult.results[index];
+    joined = joined + result.barcodeFormat;
     if (index != detectionResult.results.length - 1) {
       joined = joined + ", ";
     }
