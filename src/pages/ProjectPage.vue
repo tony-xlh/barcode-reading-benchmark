@@ -79,11 +79,11 @@
             <label for="imageFiles">Image files.</label>
           </div>
           <div>
-            <input type="file" id="detectionResultFiles" multiple="true" v-on:change="loadDetectionResultFiles($event);" accept=".json" />
+            <input type="file" id="detectionResultFiles" multiple="true" v-on:change="loadDetectionResultFiles($event);" accept=".txt" />
             <label for="detectionResultFiles">Detection result files.</label>
           </div>
           <div>
-            <input type="file" id="groundTruthFiles" multiple="true" v-on:change="loadGroundTruthFiles($event);" accept=".json" />
+            <input type="file" id="groundTruthFiles" multiple="true" v-on:change="loadGroundTruthFiles($event);" accept=".txt" />
             <label for="imageFiles">Ground truth files.</label>
           </div>
         </q-card-section>
@@ -271,7 +271,7 @@ const clearProject = async () => {
   for (let index = 0; index < project.info.images.length; index++) {
     const image = project.info.images[index];
     localForage.removeItem(projectName.value+":image:"+image);
-    localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(image)+".json");
+    localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(image)+".txt");
   }
   const detectionResultFileNamesList:undefined|null|string[] = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
   if (detectionResultFileNamesList) {
