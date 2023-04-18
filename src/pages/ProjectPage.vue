@@ -108,7 +108,7 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
+import { BarcodeReader, DetectionResult } from "src/barcodeReader/BarcodeReader";
 import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -213,12 +213,24 @@ const updateRows = async () => {
     let newRows = [];
     for (let index = 0; index < project.info.images.length; index++) {
       const imageName = project.info.images[index];
-      const groundTruth = await getGroundTruth(imageName);
-
+      let joinedGroundTruth = "";
+      let groundTruthList:GroundTruth[] = [];
+      const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
+      if (groundTruthString) {
+        groundTruthList = JSON.parse(groundTruthString);
+        joinedGroundTruth = getJoinedGroundTruth(groundTruthList);
+      }
+      let joinedDetectionResult = "";
+      const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
+      if (detectionResultString) {
+        const detectionResult:DetectionResult = JSON.parse(detectionResultString);
+        joinedDetectionResult = getJoinedDetectionResult(detectionResult)
+      }
       const row = {
         number: (index + 1),
         filename: imageName,
-        groundTruth: groundTruth
+        groundTruth: joinedGroundTruth,
+        detectedText: joinedDetectionResult
       }
       newRows.push(row);
     } 
@@ -226,17 +238,25 @@ const updateRows = async () => {
   }
 }
 
-const getGroundTruth = async (name:string) => {
-  const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(name)+".txt");
+const getJoinedGroundTruth = (groundTruthList:GroundTruth[]) => {
   let joined = "";
-  if (groundTruthString) {
-    const groundTruthList:GroundTruth[] = JSON.parse(groundTruthString);
-    for (let index = 0; index < groundTruthList.length; index++) {
-      const groundTruth = groundTruthList[index];
-      joined = joined + groundTruth.text;
-      if (index != groundTruthList.length - 1) {
-        joined = joined + ", ";
-      }
+  for (let index = 0; index < groundTruthList.length; index++) {
+    const groundTruth = groundTruthList[index];
+    joined = joined + groundTruth.text;
+    if (index != groundTruthList.length - 1) {
+      joined = joined + ", ";
+    }
+  }
+  return joined;
+}
+
+const getJoinedDetectionResult = (detectionResult:DetectionResult) => {
+  let joined = "";
+  for (let index = 0; index < detectionResult.results.length; index++) {
+    const result = detectionResult.results[index];
+    joined = joined + result.barcodeText;
+    if (index != detectionResult.results.length - 1) {
+      joined = joined + ", ";
     }
   }
   return joined;

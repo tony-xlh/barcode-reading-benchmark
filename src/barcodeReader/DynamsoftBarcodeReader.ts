@@ -1,5 +1,5 @@
 import { BarcodeReader, TextResult } from "dynamsoft-javascript-barcode";
-import { BarcodeResult, DecodingResult } from "./BarcodeReader";
+import { BarcodeResult, DetectionResult } from "./BarcodeReader";
 import { DecimalToHex } from "./Shared";
 
 BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.11/dist/";
@@ -11,7 +11,7 @@ export default class DynamsoftBarcodeReader {
     return reader;
   }
 
-  async detect(image: ImageBitmapSource|string) : Promise<DecodingResult> {
+  async detect(image: ImageBitmapSource|string) : Promise<DetectionResult> {
     if (!reader) {
       throw new Error("Dynamsoft Barcode Reader has not been initialized.");
     }
@@ -23,7 +23,7 @@ export default class DynamsoftBarcodeReader {
       const barcode:BarcodeResult = this.wrapResult(result);
       barcodes.push(barcode);
     });
-    const decodingResult:DecodingResult = {
+    const decodingResult:DetectionResult = {
       elapsedTime:elapsedTime,
       results:barcodes
     };
