@@ -297,6 +297,7 @@ const decode = async () => {
     hasToStop = true;
     decoding.value = false;
   }
+  updateRows();
 }
 
 const getStatistics = () => {
