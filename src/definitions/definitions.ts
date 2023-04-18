@@ -40,3 +40,11 @@ export interface DetectionStatistics {
   correct: number;
   misdetected: number;
 }
+
+export interface PerfomenceMetrics {
+  fileNumber: number;
+  barcodeNumber: number;
+  accuracy:number;
+  precision:number;
+  averageTime:number;
+}

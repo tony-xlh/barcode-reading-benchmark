@@ -22,6 +22,55 @@
         </div>
         <div>
           Statistics: 
+          <div class="row">
+            <div>
+              Accuracy:
+              <q-circular-progress
+                show-value
+                font-size="12px"
+                :value="statistics.accuracy"
+                size="50px"
+                :thickness="0.22"
+                color="teal"
+                track-color="grey-3"
+                class="q-ma-md"
+              >
+                {{ statistics.accuracy }}%
+              </q-circular-progress>
+            </div>
+            <div>
+              Precision:
+              <q-circular-progress
+                show-value
+                font-size="12px"
+                :value="statistics.precision"
+                size="50px"
+                :thickness="0.22"
+                color="teal"
+                track-color="grey-3"
+                class="q-ma-md"
+              >
+                {{ statistics.precision }}%
+              </q-circular-progress>
+            </div>
+          </div>
+          <div>
+            <div>
+              Total files: {{ statistics.fileNumber }}
+            </div>
+            <div>
+              Total barcodes: {{ statistics.barcodeNumber }}
+            </div>
+            <div>
+              Detected barcodes:  {{  parseInt((statistics.accuracy / 100 * statistics.barcodeNumber).toString()) }}
+            </div>
+            <div>
+              Misdetected barcodes:  {{ parseInt((statistics.precision / 100 * statistics.barcodeNumber).toString()) }}
+            </div>
+            <div>
+              Average time (ms): {{statistics.averageTime}}
+            </div>
+          </div>
         </div>
       </q-card-section>
       <q-separator></q-separator>
@@ -193,6 +242,7 @@ const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
 const skipDetected = ref(true);
+const statistics = ref({fileNumber:0,barcodeNumber:0,accuracy:0,precision:0,averageTime:0});
 let hasToStop = false;
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
@@ -223,6 +273,11 @@ onMounted(async () => {
 const updateRows = async () => {
   if (project) {
     let newRows = [];
+    let totalBarcodes = 0;
+    let totalBarcodesCorrectlyDetected = 0;
+    let totalBarcodesMisDetected = 0;
+    let totalElapsedTime = 0;
+    let detectedFiles = 0;
     for (let index = 0; index < project.info.images.length; index++) {
       const imageName = project.info.images[index];
       let joinedGroundTruth = "";
@@ -243,14 +298,29 @@ const updateRows = async () => {
         joinedDetectionResult = getJoinedDetectionResult(detectionResult)
         barcodeFormat = getJoinedBarcodeFormat(detectionResult);
         elapsedTime = detectionResult.elapsedTime.toString();
+        totalElapsedTime = totalElapsedTime + detectionResult.elapsedTime;
         const detectionStatistics = calculateDetectionStatistics(detectionResult.results,groundTruthList);
         if (detectionStatistics.correct === detectionStatistics.groundTruth) {
           correct = "true";
         }else{
           correct = "false";
         }
+        detectedFiles = detectedFiles + 1;
         misdetected = detectionStatistics.misdetected.toString();
+        totalBarcodes = totalBarcodes + groundTruthList.length;
+        totalBarcodesCorrectlyDetected = totalBarcodesCorrectlyDetected + detectionStatistics.correct;
+        totalBarcodesMisDetected = totalBarcodesMisDetected + detectionStatistics.misdetected;
       }
+      const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes).toFixed(4))*100;
+      const precision = parseFloat(((totalBarcodes - totalBarcodesMisDetected) / totalBarcodes).toFixed(4))*100;
+      statistics.value = {
+        fileNumber: project.info.images.length,
+        barcodeNumber: totalBarcodes,
+        accuracy: accuracy,
+        precision: precision,
+        averageTime: parseFloat((totalElapsedTime / detectedFiles).toFixed(2))
+      }
+
       const row = {
         number: (index + 1),
         filename: imageName,
