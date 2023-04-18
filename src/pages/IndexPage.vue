@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { Project } from "../definitions/project";
+import { Project } from "src/project";
 import localForage from "localforage";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
