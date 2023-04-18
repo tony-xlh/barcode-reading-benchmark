@@ -1,5 +1,6 @@
 import { BarcodeReader, TextResult } from "dynamsoft-javascript-barcode";
 import { BarcodeResult, DecodingResult } from "./BarcodeReader";
+import { DecimalToHex } from "./Shared";
 
 BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.11/dist/";
 
@@ -34,7 +35,7 @@ export default class DynamsoftBarcodeReader {
     return { 
       barcodeFormat: result.barcodeFormatString, 
       barcodeText: result.barcodeText,
-      barcodeBytes: result.barcodeBytes.toString(),
+      barcodeBytes: this.getBinary(result.barcodeBytes),
       confidence: confidence,
       x1: result.localizationResult.x1,
       x2: result.localizationResult.x2,
@@ -45,5 +46,14 @@ export default class DynamsoftBarcodeReader {
       y3: result.localizationResult.y3,
       y4: result.localizationResult.y4
     };
+  }
+
+  getBinary(bytes:number[]){
+    let joined = "";
+    for (let index = 0; index < bytes.length; index++) {
+      const byte = bytes[index];
+      joined = joined + DecimalToHex(byte.toString());
+    }
+    return joined;
   }
 }
