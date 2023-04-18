@@ -49,10 +49,14 @@
               {{ props.row.filename }}
             </q-td>
             <q-td key="detectedText" :props="props">
-              {{ props.row.detectedText }}
+              <div class="text">
+                {{ props.row.detectedText }}
+              </div>
             </q-td>
             <q-td key="groundTruth" :props="props">
-              {{ props.row.groundTruth }}
+              <div class="text">
+                {{ props.row.groundTruth }}
+              </div>
             </q-td>
             <q-td key="barcodeFormat" :props="props">
               {{ props.row.barcodeFormat }}
@@ -98,11 +102,13 @@
 
 <script setup lang="ts">
 import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
-import { Project } from "src/definitions/project";
+import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
 import { readFileAsDataURL, readFileAsText } from "src/utils";
+import { GroundTruth } from "src/definitions/definitions";
+import { join } from "path";
 
 const columns = [
   {
@@ -187,24 +193,43 @@ onMounted(async () => {
         project = projects[index];
         updateRows();
         return;
-      }    
+      }
     }
   }
 });
 
-const updateRows = () => {
+const updateRows = async () => {
   if (project) {
     let newRows = [];
     for (let index = 0; index < project.info.images.length; index++) {
-      const image = project.info.images[index];
+      const imageName = project.info.images[index];
+      const groundTruth = await getGroundTruth(imageName);
+
       const row = {
         number: (index + 1),
-        filename:image
+        filename: imageName,
+        groundTruth: groundTruth
       }
       newRows.push(row);
     } 
     rows.value = newRows;
   }
+}
+
+const getGroundTruth = async (name:string) => {
+  const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(name)+".txt");
+  let joined = "";
+  if (groundTruthString) {
+    const groundTruthList:GroundTruth[] = JSON.parse(groundTruthString);
+    for (let index = 0; index < groundTruthList.length; index++) {
+      const groundTruth = groundTruthList[index];
+      joined = joined + groundTruth.text;
+      if (index != groundTruthList.length - 1) {
+        joined = joined + ", ";
+      }
+    }
+  }
+  return joined;
 }
 
 const decode = () => {
@@ -269,9 +294,9 @@ const showLocalFilesDialog = () => {
 
 const clearProject = async () => {
   for (let index = 0; index < project.info.images.length; index++) {
-    const image = project.info.images[index];
-    localForage.removeItem(projectName.value+":image:"+image);
-    localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(image)+".txt");
+    const imageName = project.info.images[index];
+    localForage.removeItem(projectName.value+":image:"+imageName);
+    localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
   }
   const detectionResultFileNamesList:undefined|null|string[] = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
   if (detectionResultFileNamesList) {
@@ -302,9 +327,10 @@ const nameClicked = (name:string) => {
 </script>
 
 <style>
-.q-td {
+.text {
   max-width: 150px;
+  max-height: 150px;
   white-space: break-spaces !important;
-  overflow-y: auto;
+  overflow: auto;
 }
 </style>
