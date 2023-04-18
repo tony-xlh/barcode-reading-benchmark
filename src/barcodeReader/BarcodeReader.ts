@@ -17,7 +17,7 @@ export class BarcodeReader {
     return await DynamsoftBarcodeReader.init();
   }
 
-  detect(image:ImageBitmapSource) : Promise<DecodingResult> {
+  detect(image:ImageBitmapSource|string) : Promise<DecodingResult> {
     return this.reader.detect(image);
   }
 

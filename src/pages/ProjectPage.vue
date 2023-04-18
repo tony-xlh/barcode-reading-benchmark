@@ -90,7 +90,7 @@
             <label for="imageFiles">Image files.</label>
           </div>
           <div>
-            <input type="file" id="detectionResultFiles" multiple="true" v-on:change="loadDetectionResultFiles($event);" accept=".txt" />
+            <input type="file" id="detectionResultFiles" multiple="true" v-on:change="loadDetectionResultFiles($event);" accept=".json" />
             <label for="detectionResultFiles">Detection result files.</label>
           </div>
           <div>
@@ -180,6 +180,7 @@ const action = ref(false);
 const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
+let hasToStop = false;
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
 let groundTruthFiles:File[] = [];
@@ -241,9 +242,38 @@ const getGroundTruth = async (name:string) => {
   return joined;
 }
 
-const decode = () => {
+const decode = async () => {
   console.log(selectedEngine.value);
-  decoding.value = !decoding.value;
+  if (decoding.value === false) {
+    decoding.value = true;
+    hasToStop = false;
+    if (!reader) {
+      reader = new BarcodeReader();
+      progressLabel.value = "Initializing...";
+      await reader.initDBR();
+      progressLabel.value = "";
+    }
+    const length = project.info.images.length;
+    progress.value = 0.0;
+    progressLabel.value = "0/"+length;
+    for (let index = 0; index < length; index++) {
+      if (hasToStop) {
+        return;
+      }
+      const imageName = project.info.images[index];
+      const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
+      if (dataURL) {
+        let decodingResult = await reader.detect(dataURL);
+        console.log(decodingResult);
+        await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json",JSON.stringify(decodingResult));
+      }
+      progress.value = parseFloat(((index + 1) / length).toFixed(2));
+      progressLabel.value = (index+1)+"/"+length;
+    }
+  }else{
+    hasToStop = true;
+    decoding.value = false;
+  }
 }
 
 const getStatistics = () => {

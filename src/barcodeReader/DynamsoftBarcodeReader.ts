@@ -11,7 +11,7 @@ export default class DynamsoftBarcodeReader {
     return reader;
   }
 
-  async detect(image: ImageBitmapSource) : Promise<DecodingResult> {
+  async detect(image: ImageBitmapSource|string) : Promise<DecodingResult> {
     if (!reader) {
       throw new Error("Dynamsoft Barcode Reader has not been initialized.");
     }
