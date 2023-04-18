@@ -156,7 +156,7 @@ const columns = [
   {
     name: 'time',
     required: true,
-    label: 'Time',
+    label: 'Time (ms)',
     align: 'left',
     field: 'time'
   },
@@ -221,16 +221,19 @@ const updateRows = async () => {
         joinedGroundTruth = getJoinedGroundTruth(groundTruthList);
       }
       let joinedDetectionResult = "";
+      let elapsedTime = "";
       const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
       if (detectionResultString) {
         const detectionResult:DetectionResult = JSON.parse(detectionResultString);
         joinedDetectionResult = getJoinedDetectionResult(detectionResult)
+        elapsedTime = detectionResult.elapsedTime.toString();
       }
       const row = {
         number: (index + 1),
         filename: imageName,
         groundTruth: joinedGroundTruth,
-        detectedText: joinedDetectionResult
+        detectedText: joinedDetectionResult,
+        time: elapsedTime
       }
       newRows.push(row);
     } 
