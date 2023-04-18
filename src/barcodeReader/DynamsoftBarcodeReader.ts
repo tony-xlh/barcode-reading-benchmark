@@ -1,5 +1,5 @@
 import { BarcodeReader, TextResult } from "dynamsoft-javascript-barcode";
-import { BarcodeResult, Point2D } from "./BarcodeReader";
+import { BarcodeResult, DecodingResult } from "./BarcodeReader";
 
 BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.11/dist/";
 
@@ -10,33 +10,40 @@ export default class DynamsoftBarcodeReader {
     return reader;
   }
 
-  async detect(image: ImageBitmapSource) : Promise<BarcodeResult[]> {
+  async detect(image: ImageBitmapSource) : Promise<DecodingResult> {
     if (!reader) {
       throw new Error("Dynamsoft Barcode Reader has not been initialized.");
     }
+    const startTime = Date.now();
     const results:TextResult[] = await reader.decode(image as any);
+    const elapsedTime = Date.now() - startTime;
     const barcodes:BarcodeResult[] = [];
     results.forEach(result => {
       const barcode:BarcodeResult = this.wrapResult(result);
       barcodes.push(barcode);
     });
-    return barcodes;
+    const decodingResult:DecodingResult = {
+      elapsedTime:elapsedTime,
+      results:barcodes
+    };
+    return decodingResult;
   }
 
   wrapResult(result:TextResult):BarcodeResult{
-    const cornerPoints:Point2D[] = [];
-    for (let index = 1; index < 5; index++) {
-      const localizationResult:any = result.localizationResult;
-      const x = localizationResult["x"+index];
-      const y = localizationResult["y"+index];
-      const point:Point2D = {x:x,y:y};
-      cornerPoints.push(point);
-    }
+    const confidence = (result as any)["results"][0]["confidence"];
     return { 
       barcodeFormat: result.barcodeFormatString, 
       barcodeText: result.barcodeText,
-      barcodeBinary: result.barcodeBytes.toString(),
-      cornerPoints:cornerPoints
+      barcodeBytes: result.barcodeBytes.toString(),
+      confidence: confidence,
+      x1: result.localizationResult.x1,
+      x2: result.localizationResult.x2,
+      x3: result.localizationResult.x3,
+      x4: result.localizationResult.x4,
+      y1: result.localizationResult.y1,
+      y2: result.localizationResult.y2,
+      y3: result.localizationResult.y3,
+      y4: result.localizationResult.y4
     };
   }
 }

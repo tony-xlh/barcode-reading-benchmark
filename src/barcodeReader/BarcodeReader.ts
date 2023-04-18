@@ -17,7 +17,7 @@ export class BarcodeReader {
     return await DynamsoftBarcodeReader.init();
   }
 
-  detect(image:ImageBitmapSource) : Promise<BarcodeResult[]> {
+  detect(image:ImageBitmapSource) : Promise<DecodingResult> {
     return this.reader.detect(image);
   }
 
@@ -26,14 +26,22 @@ export class BarcodeReader {
   }
 }
 
-export interface BarcodeResult {
-  barcodeFormat:string;
-  barcodeText:string;
-  barcodeBinary: string;
-  cornerPoints: ReadonlyArray<Point2D>;
+export interface DecodingResult {
+  elapsedTime:number;
+  results:BarcodeResult[];
 }
 
-export interface Point2D {
-  x : number, 
-  y : number
-};
+export interface BarcodeResult {
+  barcodeFormat: string;
+  barcodeText: string;
+  barcodeBytes: string;
+  confidence?: number;
+  x1:number;
+  x2:number;
+  x3:number;
+  x4:number;
+  y1:number;
+  y2:number;
+  y3:number;
+  y4:number;
+}
