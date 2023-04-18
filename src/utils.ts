@@ -1,6 +1,15 @@
 import { BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
 import { DetectionStatistics, GroundTruth, Point, Rect } from "./definitions/definitions";
 
+//scanned.jpg => scanned
+export const getFilenameWithoutExtension = (filename:string) => {
+  if (filename.lastIndexOf(".") != -1) {
+    return filename.substring(0,filename.lastIndexOf("."));
+  }else{
+    return filename;
+  }
+}
+
 export const readFileAsDataURL = async (file:File):Promise<string> => {
   return new Promise(function (resolve, reject) {
     const fileReader = new FileReader();
