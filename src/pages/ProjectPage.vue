@@ -65,7 +65,7 @@
               Detected barcodes:  {{  parseInt((statistics.accuracy / 100 * statistics.barcodeNumber).toString()) }}
             </div>
             <div>
-              Misdetected barcodes:  {{ parseInt((statistics.precision / 100 * statistics.barcodeNumber).toString()) }}
+              Misdetected barcodes:  {{ parseInt(((1 - statistics.precision / 100) * statistics.barcodeNumber).toString()) }}
             </div>
             <div>
               Average time (ms): {{statistics.averageTime}}
