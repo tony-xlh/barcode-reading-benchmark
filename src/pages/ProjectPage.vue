@@ -116,7 +116,9 @@
               </div>
             </q-td>
             <q-td key="barcodeFormat" :props="props">
-              {{ props.row.barcodeFormat }}
+              <div class="text">
+                {{ props.row.barcodeFormat }}
+              </div>
             </q-td>
             <q-td key="time" :props="props">
               {{ props.row.time }}
