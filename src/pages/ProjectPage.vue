@@ -9,8 +9,15 @@
         <div style="padding-bottom: 20px;">
           <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
-        <div>
-          <q-btn outline color="primary" label="Start decoding" v-on:click="decode" />
+        <div class="row" style="align-items: center;">
+          <q-btn outline color="primary" :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode" />
+          <div v-if="decoding" style="width:100px;padding-left: 20px;">
+            <q-linear-progress size="25px" :value="progress" color="blue">
+            <div class="absolute-full flex flex-center">
+              <q-badge color="white" text-color="black" :label="progressLabel" />
+            </div>
+            </q-linear-progress>
+          </div>
         </div>
         <div>
           Statistics: 
@@ -108,7 +115,6 @@ import { useRouter } from "vue-router";
 import localForage from "localforage";
 import { readFileAsDataURL, readFileAsText } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
-import { join } from "path";
 
 const columns = [
   {
@@ -171,6 +177,9 @@ const router = useRouter();
 const projectName = ref("");
 const selectedEngine = ref("");
 const action = ref(false);
+const progress = ref(0.5);
+const progressLabel = ref("");
+const decoding = ref(false);
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
 let groundTruthFiles:File[] = [];
@@ -234,6 +243,7 @@ const getGroundTruth = async (name:string) => {
 
 const decode = () => {
   console.log(selectedEngine.value);
+  decoding.value = !decoding.value;
 }
 
 const getStatistics = () => {
