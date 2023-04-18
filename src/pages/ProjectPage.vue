@@ -103,7 +103,9 @@
               {{ props.row.number }}
             </q-td>
             <q-td key="name" :props="props" @click="nameClicked(props.row.filename)">
-              {{ props.row.filename }}
+              <div class="filename">
+                {{ props.row.filename }}
+              </div>
             </q-td>
             <q-td key="detectedText" :props="props">
               <div class="text">
@@ -512,5 +514,10 @@ const nameClicked = (name:string) => {
   max-height: 150px;
   white-space: break-spaces !important;
   overflow: auto;
+}
+
+.filename {
+  text-decoration: underline;
+  cursor: pointer;
 }
 </style>
