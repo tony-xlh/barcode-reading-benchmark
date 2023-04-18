@@ -41,12 +41,30 @@
          </q-btn-dropdown>
         </template>
         <template v-slot:body="props">
-        <q-tr :props="props">
-          <q-td key="name" :props="props" @click="nameClicked(props.row.filename)">
-            {{ props.row.filename }}
-          </q-td>
-        </q-tr>
-      </template>
+          <q-tr :props="props">
+            <q-td key="number" :props="props">
+              {{ props.row.number }}
+            </q-td>
+            <q-td key="name" :props="props" @click="nameClicked(props.row.filename)">
+              {{ props.row.filename }}
+            </q-td>
+            <q-td key="detectedText" :props="props">
+              {{ props.row.detectedText }}
+            </q-td>
+            <q-td key="groundTruth" :props="props">
+              {{ props.row.groundTruth }}
+            </q-td>
+            <q-td key="barcodeFormat" :props="props">
+              {{ props.row.barcodeFormat }}
+            </q-td>
+            <q-td key="time" :props="props">
+              {{ props.row.time }}
+            </q-td>
+            <q-td key="correct" :props="props">
+              {{ props.row.correct }}
+            </q-td>
+          </q-tr>
+        </template>
       </q-table>
       </q-card-section>
     </q-card>
@@ -88,11 +106,54 @@ import { readFileAsDataURL, readFileAsText } from "src/utils";
 
 const columns = [
   {
+    name: 'number',
+    required: true,
+    label: 'No.',
+    align: 'left',
+    field: 'number'
+  },
+  {
     name: 'name',
     required: true,
     label: 'Filename',
     align: 'left',
     field: 'filename',
+    sortable: true
+  },
+  {
+    name: 'detectedText',
+    required: true,
+    label: 'Detected Text',
+    align: 'left',
+    field: 'detectedText'
+  },
+  {
+    name: 'groundTruth',
+    required: true,
+    label: 'Ground Truth',
+    align: 'left',
+    field: 'groundTruth'
+  },
+  {
+    name: 'barcodeFormat',
+    required: true,
+    label: 'Barcode Format',
+    align: 'left',
+    field: 'barcodeFormat'
+  },
+  {
+    name: 'time',
+    required: true,
+    label: 'Time',
+    align: 'left',
+    field: 'time'
+  },
+  {
+    name: 'correct',
+    required: true,
+    label: 'Correct',
+    align: 'left',
+    field: 'correct',
     sortable: true
   }
 ]
@@ -137,6 +198,7 @@ const updateRows = () => {
     for (let index = 0; index < project.info.images.length; index++) {
       const image = project.info.images[index];
       const row = {
+        number: (index + 1),
         filename:image
       }
       newRows.push(row);
@@ -231,4 +293,9 @@ const nameClicked = (name:string) => {
 </script>
 
 <style>
+.q-td {
+  max-width: 150px;
+  white-space: break-spaces !important;
+  overflow-y: auto;
+}
 </style>
