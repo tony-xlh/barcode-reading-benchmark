@@ -170,7 +170,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateDetectionStatistics, readFileAsDataURL, readFileAsText } from "src/utils";
+import { calculateDetectionStatistics, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 
 const columns = [
@@ -492,19 +492,12 @@ const clearProject = async () => {
   updateRows();
 }
 
-//scanned.jpg => scanned
-const getFilenameWithoutExtension = (filename:string) => {
-  if (filename.lastIndexOf(".") != -1) {
-    return filename.substring(0,filename.lastIndexOf("."));
-  }else{
-    return filename;
-  }
-}
-
 const nameClicked = (name:string) => {
   console.log("clicked");
   console.log(name);
-  router.push("/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngine.value);
+  const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngine.value;
+  const routeUrl = router.resolve(href);
+  window.open(routeUrl.href,'_blank');
 }
 
 </script>
