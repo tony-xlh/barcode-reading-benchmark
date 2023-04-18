@@ -234,9 +234,11 @@ const addFilesToProject = async () => {
       const content = await readFileAsText(file);
       localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
     }
+    let detectionResultFileNamesList = [];
     for (let index = 0; index < detectionResultFiles.length; index++) {
       const file = detectionResultFiles[index];
       const content = await readFileAsText(file);
+      detectionResultFileNamesList.push(file.name);
       localForage.setItem(projectName.value+":detectionResult:"+file.name,content);
     }
     for (let index = 0; index < imageFiles.length; index++) {
@@ -245,6 +247,7 @@ const addFilesToProject = async () => {
       localForage.setItem(projectName.value+":image:"+file.name,dataURL);
       project.info.images.push(file.name);
     }
+    localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
     updateRows();
     saveProjects();
     alert("added");
@@ -264,12 +267,18 @@ const showLocalFilesDialog = () => {
   action.value = true;
 }
 
-const clearProject = () => {
+const clearProject = async () => {
   for (let index = 0; index < project.info.images.length; index++) {
     const image = project.info.images[index];
     localForage.removeItem(projectName.value+":image:"+image);
-    localForage.removeItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(image)+".json");
     localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(image)+".json");
+  }
+  const detectionResultFileNamesList:undefined|null|string[] = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+  if (detectionResultFileNamesList) {
+    for (let index = 0; index < detectionResultFileNamesList.length; index++) {
+      const filename = detectionResultFileNamesList[index];
+      localForage.removeItem(projectName.value+":detectionResult:"+filename);  
+    }
   }
   project.info.images = [];
   saveProjects();
