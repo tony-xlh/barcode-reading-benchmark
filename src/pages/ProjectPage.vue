@@ -11,6 +11,7 @@
         </div>
         <div class="row" style="align-items: center;">
           <q-btn outline color="primary" :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode" />
+          <q-checkbox  style="padding-left: 10px;" left-label v-model="skipDetected" label="Skip Detected" />
           <div v-if="decoding" style="width:100px;padding-left: 20px;">
             <q-linear-progress size="25px" :value="progress" color="blue">
             <div class="absolute-full flex flex-center">
@@ -180,6 +181,7 @@ const action = ref(false);
 const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
+const skipDetected = ref(true);
 let hasToStop = false;
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
@@ -284,6 +286,12 @@ const decode = async () => {
         return;
       }
       const imageName = project.info.images[index];
+      if (skipDetected.value) {
+        let detectedResult = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
+        if (detectedResult) {
+          continue;
+        }
+      }
       const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
       if (dataURL) {
         let decodingResult = await reader.detect(dataURL);
