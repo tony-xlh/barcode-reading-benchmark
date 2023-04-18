@@ -504,6 +504,7 @@ const getFilenameWithoutExtension = (filename:string) => {
 const nameClicked = (name:string) => {
   console.log("clicked");
   console.log(name);
+  router.push("/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngine.value);
 }
 
 </script>
