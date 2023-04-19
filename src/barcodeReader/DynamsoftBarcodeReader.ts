@@ -1,6 +1,7 @@
-import { BarcodeReader, TextResult } from "dynamsoft-javascript-barcode";
+import { BarcodeReader, EnumBarcodeFormat, TextResult } from "dynamsoft-javascript-barcode";
 import { BarcodeResult, DetectionResult } from "./BarcodeReader";
 import { DecimalToHex } from "./Shared";
+import Encoding from "encoding-japanese";
 
 BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.20/dist/";
 
@@ -17,6 +18,7 @@ export default class DynamsoftBarcodeReader {
     }
     const startTime = Date.now();
     const results:TextResult[] = await reader.decode(image as any);
+    console.log(results);
     const elapsedTime = Date.now() - startTime;
     const barcodes:BarcodeResult[] = [];
     results.forEach(result => {
@@ -31,10 +33,20 @@ export default class DynamsoftBarcodeReader {
   }
 
   wrapResult(result:TextResult):BarcodeResult{
+    let barcodeText = result.barcodeText;
     const confidence = (result as any)["results"][0]["confidence"];
+    if (result.barcodeFormat === EnumBarcodeFormat.BF_QR_CODE) {
+      const mode = (result as any)["detailedResult"]["mode"];
+      if (mode === 8) {
+        const sjisArray = result.barcodeBytes;
+        const unicodeArray = Encoding.convert(sjisArray, { to: 'UNICODE', from: 'SJIS'}); 
+        barcodeText = Encoding.codeToString(unicodeArray); // Convert code array to string
+      }
+    }
+
     return { 
       barcodeFormat: result.barcodeFormatString, 
-      barcodeText: result.barcodeText,
+      barcodeText: barcodeText,
       barcodeBytes: this.getBinary(result.barcodeBytes),
       confidence: confidence,
       x1: result.localizationResult.x1,
