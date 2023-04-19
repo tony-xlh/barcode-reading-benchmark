@@ -6,6 +6,11 @@
           <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
         <div>
+          <q-btn outline color="primary" label="Decode" v-on:click="decode" />
+          <q-checkbox v-model="saveDetectionResults" label="Save Detection Results" />
+          <span style="padding-left:10px;">{{ status }}</span>
+        </div>
+        <div>
           <q-checkbox v-model="showDetectionResults" label="Show Detection Results" />
         </div>
         <div>
@@ -82,6 +87,8 @@ const barcodeResults = ref([] as BarcodeResult[]);
 const groundTruthList = ref([] as GroundTruth[]);
 const showDetectionResults = ref(true);
 const showGroundTruth = ref(true);
+const saveDetectionResults = ref(false);
+const status = ref("");
 let reader: BarcodeReader;
 
 onMounted(() => {
@@ -128,6 +135,26 @@ const getPointsData = (result:BarcodeResult|GroundTruth) => {
   pointsData = pointsData + result.x3+ "," + result.y3 + " ";
   pointsData = pointsData + result.x4+ "," + result.y4;
   return pointsData;
+}
+
+const decode = async () => {
+  if (!reader) {
+    status.value = "Initializing...";
+    reader = new BarcodeReader();
+    await reader.initDBR();
+    status.value = "";
+  }
+  const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName.value);
+  if (dataURL) {
+    status.value = "Decoding...";
+    let decodingResult = await reader.detect(dataURL);
+    status.value = "";
+    console.log(decodingResult);
+    barcodeResults.value = decodingResult.results;
+    if (saveDetectionResults.value === true) {
+      await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngine.value+".json",JSON.stringify(decodingResult));
+    }
+  }
 }
 </script>
 <style>
