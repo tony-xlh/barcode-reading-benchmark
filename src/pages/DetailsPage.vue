@@ -5,6 +5,12 @@
         <div style="padding-bottom: 20px;">
           <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
+        <div>
+          <q-checkbox v-model="showDetectionResults" label="Show Detection Results" />
+        </div>
+        <div>
+          <q-checkbox v-model="showGroundTruth" label="Show Ground Trurh" />
+        </div>
       </div>
       <div class="col">
         <svg
@@ -12,12 +18,23 @@
           class="overlay"
         >
           <image :href="dataURL"></image>
-          <polygon v-bind:key="'polygon'+index" v-for="(barcodeResult,index) in barcodeResults"
-            :points="getPointsData(barcodeResult)"
-            class="barcode-polygon"
-          >
-            <title>{{ barcodeResult.barcodeText }}</title>
-          </polygon>
+          <a v-if="showDetectionResults">
+            <polygon v-bind:key="'polygon'+index" v-for="(barcodeResult,index) in barcodeResults"
+              :points="getPointsData(barcodeResult)"
+              class="barcode-polygon"
+            >
+              <title>{{ barcodeResult.barcodeText }}</title>
+            </polygon>
+          </a>
+          <a v-if="showGroundTruth">
+            <polygon v-bind:key="'polygon'+index" v-for="(groundTruth,index) in groundTruthList"
+              :points="getPointsData(groundTruth)"
+              class="groundtruth-polygon"
+            >
+              <title>{{ groundTruth.text }}</title>
+            </polygon>
+          </a>
+          
         </svg>
       </div>
     </div>
@@ -30,6 +47,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
 import { getFilenameWithoutExtension } from "src/utils";
+import { GroundTruth } from "src/definitions/definitions";
 const router = useRouter();
 const projectName = ref("");
 const imageName = ref("");
@@ -38,6 +56,9 @@ const engines = ref([] as string[])
 const viewBox = ref("")
 const dataURL = ref("");
 const barcodeResults = ref([] as BarcodeResult[]);
+const groundTruthList = ref([] as GroundTruth[]);
+const showDetectionResults = ref(true);
+const showGroundTruth = ref(true);
 let reader: BarcodeReader;
 
 onMounted(() => {
@@ -48,6 +69,7 @@ onMounted(() => {
   engines.value = supportedEngines;
   loadImage();
   loadBarcodeResults();
+  loadGroundTruth();
 });
 
 const loadImage = async () => {
@@ -70,7 +92,14 @@ const loadBarcodeResults = async () => {
   }
 }
 
-const getPointsData = (result:BarcodeResult) => {
+const loadGroundTruth = async () => {
+  const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
+  if (groundTruthString) {
+    groundTruthList.value = JSON.parse(groundTruthString);
+  }
+}
+
+const getPointsData = (result:BarcodeResult|GroundTruth) => {
   let pointsData = result.x1 + "," + result.y1 + " ";
   pointsData = pointsData + result.x2+ "," + result.y2 + " ";
   pointsData = pointsData + result.x3+ "," + result.y3 + " ";
@@ -82,11 +111,23 @@ const getPointsData = (result:BarcodeResult) => {
 .barcode-polygon {
   fill:rgba(85,240,40,0.5);
   stroke:green;
-  stroke-width:1;
+  stroke-width:15;
 }
 
 .barcode-polygon:hover {
   fill:rgba(85,240,40,0.6);
+  stroke:green;
+  stroke-width:15;
+}
+
+.groundtruth-polygon {
+  fill:rgba(208, 240, 91, 0.2);
+  stroke:green;
+  stroke-width:5;
+}
+
+.groundtruth-polygon:hover {
+  fill:rgba(208, 240, 91, 0.3);
   stroke:green;
   stroke-width:5;
 }
