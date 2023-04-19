@@ -131,7 +131,14 @@ const getPointsData = (result:BarcodeResult|GroundTruth) => {
 }
 </script>
 <style>
-
+.q-item {
+  padding: 0px;
+}
+.q-item__label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 pre {
   padding: 5px;
   margin: 0;
