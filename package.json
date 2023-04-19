@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "@undecaf/zbar-wasm": "^0.9.12",
     "dynamsoft-javascript-barcode": "^9.6.20",
     "encoding-japanese": "^2.0.0",
     "leven": "^4.0.0",
