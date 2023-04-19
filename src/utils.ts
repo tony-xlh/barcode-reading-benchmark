@@ -50,31 +50,10 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
       const points2 = getPointsFromGroundTruth(groundTruth);
       if (intersectionOverUnion(points1,points2) > 0.3) {
         if (groundTruth.text) {
-          if (groundTruth.value_attrib.Mode === "binary") {
-            const distance = leven(groundTruth.text,barcodeResult.barcodeBytes)/4;
-            const similarity =  (1 - distance / Math.max(groundTruth.text.length,barcodeResult.barcodeBytes.length));
-            if (similarity >= 0.85) {
-              correct = correct + 1;
-            }else{
-              misdetected = misdetected + 1;
-            }
+          if (textCorrect(groundTruth,barcodeResult)) {
+            correct = correct + 1;
           }else{
-            let barcodeText = barcodeResult.barcodeText;
-            if (barcodeResult.barcodeFormat.toLowerCase().indexOf("upc") != -1 && groundTruth.attrib.Type.toLowerCase().indexOf("ean") != -1) {
-              barcodeText = "0" + barcodeText;
-            }
-            if (barcodeResult.barcodeFormat.toLowerCase().indexOf("ean") != -1 && groundTruth.attrib.Type.toLowerCase().indexOf("upc") != -1) {
-              barcodeText = barcodeText.substring(1,barcodeText.length);
-            }
-            barcodeText = removeAddedText(barcodeText);
-            barcodeText = removeInteferenceText(barcodeText);
-            let groundTruthText = groundTruth.text;
-            groundTruthText = removeInteferenceText(groundTruthText);
-            if (groundTruthText === barcodeText) {
-              correct = correct + 1;
-            }else{
-              misdetected = misdetected + 1;
-            }
+            misdetected = misdetected + 1;  
           }
         }else{
           correct = correct + 1;
@@ -88,6 +67,35 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
     detected:detectedBarcodesNumber,
     misdetected:misdetected,
     correct:correct
+  }
+}
+
+export function textCorrect(groundTruth:GroundTruth,barcodeResult:BarcodeResult){
+  if (groundTruth.value_attrib.Mode === "binary") {
+    const distance = leven(groundTruth.text,barcodeResult.barcodeBytes)/4;
+    const similarity =  (1 - distance / Math.max(groundTruth.text.length,barcodeResult.barcodeBytes.length));
+    if (similarity >= 0.85) {
+      return true;
+    }else{
+      return false;
+    }
+  }else{
+    let barcodeText = barcodeResult.barcodeText;
+    if (barcodeResult.barcodeFormat.toLowerCase().indexOf("upc") != -1 && groundTruth.attrib.Type.toLowerCase().indexOf("ean") != -1) {
+      barcodeText = "0" + barcodeText;
+    }
+    if (barcodeResult.barcodeFormat.toLowerCase().indexOf("ean") != -1 && groundTruth.attrib.Type.toLowerCase().indexOf("upc") != -1) {
+      barcodeText = barcodeText.substring(1,barcodeText.length);
+    }
+    barcodeText = removeAddedText(barcodeText);
+    barcodeText = removeInteferenceText(barcodeText);
+    let groundTruthText = groundTruth.text;
+    groundTruthText = removeInteferenceText(groundTruthText);
+    if (groundTruthText === barcodeText) {
+      return true;
+    }else{
+      return false;
+    }
   }
 }
 
