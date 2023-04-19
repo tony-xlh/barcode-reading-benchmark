@@ -1,5 +1,6 @@
 import { BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
 import { DetectionStatistics, GroundTruth, Point, Rect } from "./definitions/definitions";
+import leven from 'leven';
 
 //scanned.jpg => scanned
 export const getFilenameWithoutExtension = (filename:string) => {
@@ -50,7 +51,9 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
       if (intersectionOverUnion(points1,points2) > 0.3) {
         if (groundTruth.text) {
           if (groundTruth.value_attrib.Mode === "binary") {
-            if (groundTruth.text === barcodeResult.barcodeBytes) {
+            const distance = leven(groundTruth.text,barcodeResult.barcodeBytes);
+            const similarity =  (1 - distance / Math.max(groundTruth.text.length,barcodeResult.barcodeBytes.length));
+            if (similarity >= 0.93) {
               correct = correct + 1;
             }else{
               misdetected = misdetected + 1;
