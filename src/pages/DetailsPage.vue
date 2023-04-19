@@ -148,13 +148,13 @@ pre {
 .barcode-polygon {
   fill:rgba(85,240,40,0.5);
   stroke:green;
-  stroke-width:15;
+  stroke-width:7;
 }
 
 .barcode-polygon:hover {
   fill:rgba(85,240,40,0.6);
   stroke:green;
-  stroke-width:15;
+  stroke-width:7;
 }
 
 .groundtruth-polygon {
