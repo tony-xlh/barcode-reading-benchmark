@@ -11,6 +11,22 @@
         <div>
           <q-checkbox v-model="showGroundTruth" label="Show Ground Trurh" />
         </div>
+        <div class="row">
+          <div class="col">
+            Barcode Results:
+            <q-tree
+              :nodes="barcodeResultsTree"
+              node-key="label"
+            />
+          </div>
+          <div class="col">
+            Ground Truth:
+            <q-tree
+              :nodes="groundTruthTree"
+              node-key="label"
+            />
+          </div>
+        </div>
       </div>
       <div class="col">
         <div style="max-height:500px;overflow:auto;">
@@ -54,13 +70,15 @@ const projectName = ref("");
 const imageName = ref("");
 const selectedEngine = ref("");
 const engines = ref([] as string[])
-const viewBox = ref("")
+const viewBox = ref("0 0 0 0")
 const dataURL = ref("");
 const barcodeResults = ref([] as BarcodeResult[]);
 const groundTruthList = ref([] as GroundTruth[]);
 const showDetectionResults = ref(true);
 const showGroundTruth = ref(true);
 let reader: BarcodeReader;
+let barcodeResultsTree:any[] = [];
+let groundTruthTree:any[] = [];
 
 onMounted(() => {
   projectName.value = router.currentRoute.value.params.name as string;
@@ -89,14 +107,58 @@ const loadBarcodeResultsAndGroundTruth = async () => {
   let detectionResult:DetectionResult;
   if (detectionResultString) {
     detectionResult = JSON.parse(detectionResultString);
+    buildBarcodeResultsTree(detectionResult);
     barcodeResults.value = detectionResult.results;
+    
   }
   const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
   let parsedGroundTruth;
   if (groundTruthString) {
     parsedGroundTruth = JSON.parse(groundTruthString);
+    buildGroundTruthTree(parsedGroundTruth);
     groundTruthList.value = parsedGroundTruth;
   }
+  console.log(barcodeResultsTree);
+}
+
+const buildBarcodeResultsTree = (detectionResult:DetectionResult) => {
+  let nodes = [];
+  for (let index = 0; index < detectionResult.results.length; index++) {
+    const result = detectionResult.results[index];
+    let node:any = {};
+    node.label = index.toString();
+    node.children = [];
+    for (const key in result) {
+      let dataNode:any = {};
+      dataNode.label = (result as any)[key];
+      node.children.push({
+        label: key,
+        children: [dataNode]
+      })
+    }
+    nodes.push(node);
+  }
+  barcodeResultsTree = nodes;
+}
+
+const buildGroundTruthTree = (parsedGroundTruth:GroundTruth[]) => {
+  let nodes = [];
+  for (let index = 0; index < parsedGroundTruth.length; index++) {
+    const groundTruth = parsedGroundTruth[index];
+    let node:any = {};
+    node.label = index.toString();
+    node.children = [];
+    for (const key in groundTruth) {
+      let dataNode:any = {};
+      dataNode.label = (groundTruth as any)[key];
+      node.children.push({
+        label: key,
+        children: [dataNode]
+      })
+    }
+    nodes.push(node);
+  }
+  groundTruthTree = nodes;
 }
 
 const getPointsData = (result:BarcodeResult|GroundTruth) => {
