@@ -58,7 +58,10 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
           }else{
             let barcodeText = barcodeResult.barcodeText;
             barcodeText = removeAddedText(barcodeText);
-            if (groundTruth.text === barcodeText) {
+            barcodeText = removeInteferenceText(barcodeText);
+            let groundTruthText = groundTruth.text;
+            groundTruthText = removeInteferenceText(groundTruthText);
+            if (groundTruthText === barcodeText) {
               correct = correct + 1;
             }else{
               misdetected = misdetected + 1;
@@ -80,8 +83,15 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
 }
 
 function removeAddedText(barcodeText:string):string {
-  barcodeText = barcodeText.replace("{GS}","");
+  barcodeText = barcodeText.replaceAll("{GS}","");
   return barcodeText;
+}
+
+function removeInteferenceText(text:string):string {
+  text = text.replaceAll("\r","");
+  text = text.replaceAll("\n","");
+  text = text.replaceAll("\t","");
+  return text;
 }
 
 function getPointsFromGroundTruth(groundTruth:GroundTruth) {
