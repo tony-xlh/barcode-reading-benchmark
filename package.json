@@ -15,6 +15,7 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "dynamsoft-javascript-barcode": "^9.6.20",
+    "encoding-japanese": "^2.0.0",
     "leven": "^4.0.0",
     "localforage": "^1.10.0",
     "quasar": "^2.6.0",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
+    "@types/encoding-japanese": "^2.0.1",
     "@types/node": "^12.20.21",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
