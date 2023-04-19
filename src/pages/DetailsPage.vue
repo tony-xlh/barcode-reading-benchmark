@@ -20,7 +20,7 @@
           <div class="col">
             Barcode Results:
             <q-list bordered class="rounded-borders">
-              <q-expansion-item v-for="(barcodeResult,index) in barcodeResults" switch-toggle-side dense-toggle :label="index.toString()+': '+barcodeResult.barcodeText" v-bind:key="index">
+              <q-expansion-item :class="(incorrectDetectionResultIndex.indexOf(index) != -1)?'incorrect':'correct'" v-for="(barcodeResult,index) in barcodeResults" switch-toggle-side dense-toggle :label="index.toString()+': '+barcodeResult.barcodeText" v-bind:key="index">
                 <pre>
 {{ JSON.stringify(barcodeResult,null,4) }}
                 </pre>
@@ -74,7 +74,7 @@ import { BarcodeReader, BarcodeResult, DetectionResult } from "src/barcodeReader
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { getFilenameWithoutExtension } from "src/utils";
+import { getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 const router = useRouter();
 const projectName = ref("");
@@ -89,6 +89,7 @@ const showDetectionResults = ref(true);
 const showGroundTruth = ref(true);
 const saveDetectionResults = ref(false);
 const status = ref("");
+const incorrectDetectionResultIndex = ref([] as number[]);
 let reader: BarcodeReader;
 
 onMounted(() => {
@@ -119,13 +120,16 @@ const loadBarcodeResultsAndGroundTruth = async () => {
   if (detectionResultString) {
     detectionResult = JSON.parse(detectionResultString);
     barcodeResults.value = detectionResult.results;
-    
   }
   const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
   let parsedGroundTruth;
   if (groundTruthString) {
     parsedGroundTruth = JSON.parse(groundTruthString);
     groundTruthList.value = parsedGroundTruth;
+  }
+
+  if (detectionResult && groundTruthString) {
+    findOutIncorrectDetectionResults(detectionResult.results,parsedGroundTruth);
   }
 }
 
@@ -155,6 +159,27 @@ const decode = async () => {
       await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngine.value+".json",JSON.stringify(decodingResult));
     }
   }
+}
+
+const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],groundTruthList:GroundTruth[]) => {
+  let index:number[] = [];
+  for (let i = 0; i < barcodeResultList.length; i++) {
+    const barcodeResult = barcodeResultList[i];
+    for (let j = 0; j < groundTruthList.length; j++) {
+      const groundTruth = groundTruthList[j];
+      const points1 = getPointsFromBarcodeResultResult(barcodeResult);
+      const points2 = getPointsFromGroundTruth(groundTruth);
+      if (intersectionOverUnion(points1,points2) > 0.3) {
+        if (groundTruth.text) {
+          if (!textCorrect(groundTruth,barcodeResult)) {
+            index.push(i);
+          }
+        }
+        continue;
+      }
+    }
+  }
+  incorrectDetectionResultIndex.value = index;
 }
 </script>
 <style>
@@ -194,5 +219,9 @@ pre {
   fill:rgba(208, 240, 91, 0.3);
   stroke:green;
   stroke-width:5;
+}
+
+.incorrect {
+  background: rgba(255, 0, 0, 0.5);
 }
 </style>

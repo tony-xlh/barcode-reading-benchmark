@@ -80,16 +80,20 @@ export function textCorrect(groundTruth:GroundTruth,barcodeResult:BarcodeResult)
       return false;
     }
   }else{
+    let groundTruthText = groundTruth.text;
     let barcodeText = barcodeResult.barcodeText;
     if (barcodeResult.barcodeFormat.toLowerCase().indexOf("upc") != -1 && groundTruth.attrib.Type.toLowerCase().indexOf("ean") != -1) {
-      barcodeText = "0" + barcodeText;
+      if (barcodeText != groundTruthText) {
+        barcodeText = "0" + barcodeText;
+      }
     }
     if (barcodeResult.barcodeFormat.toLowerCase().indexOf("ean") != -1 && groundTruth.attrib.Type.toLowerCase().indexOf("upc") != -1) {
-      barcodeText = barcodeText.substring(1,barcodeText.length);
+      if (barcodeText != groundTruthText) {
+        barcodeText = barcodeText.substring(1,barcodeText.length);
+      }
     }
     barcodeText = removeAddedText(barcodeText);
     barcodeText = removeInteferenceText(barcodeText);
-    let groundTruthText = groundTruth.text;
     groundTruthText = removeInteferenceText(groundTruthText);
     if (groundTruthText === barcodeText) {
       return true;
@@ -111,7 +115,7 @@ function removeInteferenceText(text:string):string {
   return text;
 }
 
-function getPointsFromGroundTruth(groundTruth:GroundTruth) {
+export function getPointsFromGroundTruth(groundTruth:GroundTruth) {
   const p1:Point = {x:groundTruth.x1,y:groundTruth.y1};
   const p2:Point = {x:groundTruth.x2,y:groundTruth.y2};
   const p3:Point = {x:groundTruth.x3,y:groundTruth.y3};
@@ -119,7 +123,7 @@ function getPointsFromGroundTruth(groundTruth:GroundTruth) {
   return [p1,p2,p3,p4];
 }
 
-function getPointsFromBarcodeResultResult(barcodeResult:BarcodeResult) {
+export function getPointsFromBarcodeResultResult(barcodeResult:BarcodeResult) {
   const p1:Point = {x:barcodeResult.x1,y:barcodeResult.y1};
   const p2:Point = {x:barcodeResult.x2,y:barcodeResult.y2};
   const p3:Point = {x:barcodeResult.x3,y:barcodeResult.y3};
