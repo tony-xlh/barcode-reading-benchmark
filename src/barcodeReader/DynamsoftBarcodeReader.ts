@@ -2,7 +2,7 @@ import { BarcodeReader, TextResult } from "dynamsoft-javascript-barcode";
 import { BarcodeResult, DetectionResult } from "./BarcodeReader";
 import { DecimalToHex } from "./Shared";
 
-BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.11/dist/";
+BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.20/dist/";
 
 let reader:BarcodeReader;
 export default class DynamsoftBarcodeReader {
