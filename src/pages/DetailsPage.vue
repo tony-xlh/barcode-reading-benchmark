@@ -14,17 +14,23 @@
         <div class="row">
           <div class="col">
             Barcode Results:
-            <q-tree
-              :nodes="barcodeResultsTree"
-              node-key="label"
-            />
+            <q-list bordered class="rounded-borders">
+              <q-expansion-item v-for="(barcodeResult,index) in barcodeResults" switch-toggle-side dense-toggle :label="index.toString()" v-bind:key="index">
+                <pre>
+{{ JSON.stringify(barcodeResult,null,4) }}
+                </pre>
+              </q-expansion-item>
+            </q-list>
           </div>
           <div class="col">
             Ground Truth:
-            <q-tree
-              :nodes="groundTruthTree"
-              node-key="label"
-            />
+            <q-list bordered class="rounded-borders">
+              <q-expansion-item v-for="(groundTruth,index) in groundTruthList" switch-toggle-side dense-toggle :label="index.toString()" v-bind:key="index">
+                <pre>
+{{ JSON.stringify(groundTruth,null,4) }}
+                </pre>
+              </q-expansion-item>
+            </q-list>
           </div>
         </div>
       </div>
@@ -77,8 +83,6 @@ const groundTruthList = ref([] as GroundTruth[]);
 const showDetectionResults = ref(true);
 const showGroundTruth = ref(true);
 let reader: BarcodeReader;
-let barcodeResultsTree:any[] = [];
-let groundTruthTree:any[] = [];
 
 onMounted(() => {
   projectName.value = router.currentRoute.value.params.name as string;
@@ -107,7 +111,6 @@ const loadBarcodeResultsAndGroundTruth = async () => {
   let detectionResult:DetectionResult;
   if (detectionResultString) {
     detectionResult = JSON.parse(detectionResultString);
-    buildBarcodeResultsTree(detectionResult);
     barcodeResults.value = detectionResult.results;
     
   }
@@ -115,50 +118,8 @@ const loadBarcodeResultsAndGroundTruth = async () => {
   let parsedGroundTruth;
   if (groundTruthString) {
     parsedGroundTruth = JSON.parse(groundTruthString);
-    buildGroundTruthTree(parsedGroundTruth);
     groundTruthList.value = parsedGroundTruth;
   }
-  console.log(barcodeResultsTree);
-}
-
-const buildBarcodeResultsTree = (detectionResult:DetectionResult) => {
-  let nodes = [];
-  for (let index = 0; index < detectionResult.results.length; index++) {
-    const result = detectionResult.results[index];
-    let node:any = {};
-    node.label = index.toString();
-    node.children = [];
-    for (const key in result) {
-      let dataNode:any = {};
-      dataNode.label = (result as any)[key];
-      node.children.push({
-        label: key,
-        children: [dataNode]
-      })
-    }
-    nodes.push(node);
-  }
-  barcodeResultsTree = nodes;
-}
-
-const buildGroundTruthTree = (parsedGroundTruth:GroundTruth[]) => {
-  let nodes = [];
-  for (let index = 0; index < parsedGroundTruth.length; index++) {
-    const groundTruth = parsedGroundTruth[index];
-    let node:any = {};
-    node.label = index.toString();
-    node.children = [];
-    for (const key in groundTruth) {
-      let dataNode:any = {};
-      dataNode.label = (groundTruth as any)[key];
-      node.children.push({
-        label: key,
-        children: [dataNode]
-      })
-    }
-    nodes.push(node);
-  }
-  groundTruthTree = nodes;
 }
 
 const getPointsData = (result:BarcodeResult|GroundTruth) => {
@@ -170,6 +131,13 @@ const getPointsData = (result:BarcodeResult|GroundTruth) => {
 }
 </script>
 <style>
+
+pre {
+  padding: 5px;
+  margin: 0;
+  white-space: break-spaces;
+  word-wrap: break-word;
+}
 .barcode-polygon {
   fill:rgba(85,240,40,0.5);
   stroke:green;
