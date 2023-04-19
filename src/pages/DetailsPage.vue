@@ -15,7 +15,7 @@
           <div class="col">
             Barcode Results:
             <q-list bordered class="rounded-borders">
-              <q-expansion-item v-for="(barcodeResult,index) in barcodeResults" switch-toggle-side dense-toggle :label="index.toString()" v-bind:key="index">
+              <q-expansion-item v-for="(barcodeResult,index) in barcodeResults" switch-toggle-side dense-toggle :label="index.toString()+': '+barcodeResult.barcodeText" v-bind:key="index">
                 <pre>
 {{ JSON.stringify(barcodeResult,null,4) }}
                 </pre>
@@ -25,7 +25,7 @@
           <div class="col">
             Ground Truth:
             <q-list bordered class="rounded-borders">
-              <q-expansion-item v-for="(groundTruth,index) in groundTruthList" switch-toggle-side dense-toggle :label="index.toString()" v-bind:key="index">
+              <q-expansion-item v-for="(groundTruth,index) in groundTruthList" switch-toggle-side dense-toggle :label="index.toString()+': '+groundTruth.text" v-bind:key="index">
                 <pre>
 {{ JSON.stringify(groundTruth,null,4) }}
                 </pre>
