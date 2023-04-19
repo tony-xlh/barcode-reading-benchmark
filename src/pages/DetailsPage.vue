@@ -13,29 +13,30 @@
         </div>
       </div>
       <div class="col">
-        <svg
-          :viewBox="viewBox"
-          class="overlay"
-        >
-          <image :href="dataURL"></image>
-          <a v-if="showDetectionResults">
-            <polygon v-bind:key="'polygon'+index" v-for="(barcodeResult,index) in barcodeResults"
-              :points="getPointsData(barcodeResult)"
-              class="barcode-polygon"
-            >
-              <title>{{ barcodeResult.barcodeText }}</title>
-            </polygon>
-          </a>
-          <a v-if="showGroundTruth">
-            <polygon v-bind:key="'polygon'+index" v-for="(groundTruth,index) in groundTruthList"
-              :points="getPointsData(groundTruth)"
-              class="groundtruth-polygon"
-            >
-              <title>{{ groundTruth.text }}</title>
-            </polygon>
-          </a>
-          
-        </svg>
+        <div style="max-height:500px;overflow:auto;">
+          <svg
+            :viewBox="viewBox"
+            class="overlay"
+          >
+            <image :href="dataURL"></image>
+            <a v-if="showDetectionResults">
+              <polygon v-bind:key="'polygon'+index" v-for="(barcodeResult,index) in barcodeResults"
+                :points="getPointsData(barcodeResult)"
+                class="barcode-polygon"
+              >
+                <title>{{ barcodeResult.barcodeText }}</title>
+              </polygon>
+            </a>
+            <a v-if="showGroundTruth">
+              <polygon v-bind:key="'polygon'+index" v-for="(groundTruth,index) in groundTruthList"
+                :points="getPointsData(groundTruth)"
+                class="groundtruth-polygon"
+              >
+                <title>{{ groundTruth.text }}</title>
+              </polygon>
+            </a>
+          </svg>
+        </div>
       </div>
     </div>
   </div>
@@ -68,8 +69,7 @@ onMounted(() => {
   const supportedEngines = BarcodeReader.getEngines();
   engines.value = supportedEngines;
   loadImage();
-  loadBarcodeResults();
-  loadGroundTruth();
+  loadBarcodeResultsAndGroundTruth();
 });
 
 const loadImage = async () => {
@@ -84,18 +84,18 @@ const loadImage = async () => {
   }
 }
 
-const loadBarcodeResults = async () => {
+const loadBarcodeResultsAndGroundTruth = async () => {
   const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngine.value+".json");
+  let detectionResult:DetectionResult;
   if (detectionResultString) {
-    const detectionResult:DetectionResult = JSON.parse(detectionResultString);
+    detectionResult = JSON.parse(detectionResultString);
     barcodeResults.value = detectionResult.results;
   }
-}
-
-const loadGroundTruth = async () => {
   const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
+  let parsedGroundTruth;
   if (groundTruthString) {
-    groundTruthList.value = JSON.parse(groundTruthString);
+    parsedGroundTruth = JSON.parse(groundTruthString);
+    groundTruthList.value = parsedGroundTruth;
   }
 }
 
