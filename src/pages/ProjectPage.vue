@@ -425,10 +425,6 @@ const decode = async () => {
   updateRows();
 }
 
-const getStatistics = () => {
-  console.log(reader);
-}
-
 const loadDetectionResultFiles = (e:any) => {
   detectionResultFiles = e.target.files;
 }

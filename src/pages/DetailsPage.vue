@@ -181,17 +181,23 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
   let index:number[] = [];
   for (let i = 0; i < barcodeResultList.length; i++) {
     const barcodeResult = barcodeResultList[i];
+    let hasCorrectResult = false;
     for (let j = 0; j < groundTruthList.length; j++) {
       const groundTruth = groundTruthList[j];
       const points1 = getPointsFromBarcodeResultResult(barcodeResult);
       const points2 = getPointsFromGroundTruth(groundTruth);
-      if (intersectionOverUnion(points1,points2) > 0.3) {
+      if (intersectionOverUnion(points1,points2) > 0.1) {
         if (groundTruth.text) {
           if (!textCorrect(groundTruth,barcodeResult)) {
             index.push(i);
+          }else{
+            hasCorrectResult = true;
           }
         }
         continue;
+      }
+      if (j === groundTruthList.length - 1 && hasCorrectResult === false) {
+        index.push(i);
       }
     }
   }
