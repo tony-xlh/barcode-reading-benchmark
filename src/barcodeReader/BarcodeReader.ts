@@ -3,7 +3,7 @@ import ZXing from "./ZXing";
 
 export class BarcodeReader {
   private engine = "Dynamsoft";
-  private reader!: DynamsoftBarcodeReader|ZXing|ZBar;
+  private reader!: DynamsoftBarcodeReader|ZXing;
   static async createInstance(engine:string):Promise<BarcodeReader> {
     const reader = new BarcodeReader();
     reader.setEngine(engine);
