@@ -23,8 +23,11 @@ export default class ZXing {
     const binaryBitmap = this.createBinaryBitmap(image as HTMLVisualMediaElement);
     const results = [];
     let result;
+    let elapsedTime = 0;
     try {
-      result = this.reader.decode(binaryBitmap);  
+      const startTime = Date.now();
+      result = this.reader.decode(binaryBitmap);
+      elapsedTime = Date.now() - startTime; 
     } catch (error) {
       console.log(error);
     }
@@ -32,7 +35,7 @@ export default class ZXing {
       results.push(this.wrapResult(result));
     }
     const decodingResult:DetectionResult = {
-      elapsedTime:0,
+      elapsedTime:elapsedTime,
       results:results
     };
     return decodingResult;
@@ -54,10 +57,15 @@ export default class ZXing {
 
   wrapResult(result:Result):BarcodeResult {
     const rect:Rect = this.getRectFromPoints(result.getResultPoints());
+    let bytes = "";
+    if (result.getRawBytes()) {
+      bytes = this.getBinary(result.getRawBytes());
+    }
+    const format = BarcodeFormat[result.getBarcodeFormat()];
     return { 
-      barcodeFormat: result.getBarcodeFormat().toString(), 
+      barcodeFormat: format, 
       barcodeText: result.getText(),
-      barcodeBytes: this.getBinary(result.getRawBytes()),
+      barcodeBytes: bytes,
       x1: rect.left,
       x2: rect.right,
       x3: rect.right,
