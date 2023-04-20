@@ -65,6 +65,11 @@ export default class ZXing {
       bytes = this.getBinary(result.getRawBytes());
     }
     const format = BarcodeFormat[result.getBarcodeFormat()];
+    const top = rect.top;
+    let bottom = rect.bottom;
+    if (bottom === top) {
+      bottom = top + 2;
+    }
     return { 
       barcodeFormat: format, 
       barcodeText: result.getText(),
@@ -73,10 +78,10 @@ export default class ZXing {
       x2: rect.right,
       x3: rect.right,
       x4: rect.left,
-      y1: rect.top,
-      y2: rect.top,
-      y3: rect.bottom,
-      y4: rect.bottom
+      y1: top,
+      y2: top,
+      y3: bottom,
+      y4: bottom
     };
   }
 
