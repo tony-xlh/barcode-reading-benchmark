@@ -66,6 +66,9 @@
         </div>
       </div>
     </div>
+    <div class="row">
+      <q-btn outline color="red" label="Delete this image" v-on:click="deleteThisImage" />
+    </div>
   </div>
 </template>
 
@@ -77,6 +80,7 @@ import localForage from "localforage";
 import { getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 import { event } from "quasar";
+import { Project } from "src/project";
 const router = useRouter();
 const projectName = ref("");
 const imageName = ref("");
@@ -208,6 +212,30 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
 
 const selectedEngineChanged = (value:string) => {
   loadBarcodeResultsAndGroundTruth(value);
+}
+
+const deleteThisImage = async () => {
+  localForage.removeItem(projectName.value+":image:"+imageName.value);
+  localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
+  const savedProjects = await localForage.getItem("projects");
+  if (savedProjects) {
+    const projects:Project[] = JSON.parse(savedProjects as string);
+    for (let i = 0; i < projects.length; i++) {
+      if (projects[i].info.name === projectName.value) {
+        const project = projects[i];
+        const newImages = [];
+        for (let j = 0; j < project.info.images.length; j++) {
+          const name = project.info.images[j];
+          if (name != imageName.value) { //skip the current image
+            newImages.push(name);
+          }
+        }
+        project.info.images = newImages;
+      }
+    }
+    await localForage.setItem("projects", JSON.stringify(projects));
+    alert("deleted");
+  }
 }
 
 </script>
