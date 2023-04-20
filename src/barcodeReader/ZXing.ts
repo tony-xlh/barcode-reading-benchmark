@@ -1,5 +1,5 @@
 import { BarcodeResult, DetectionResult } from "./BarcodeReader";
-import { MultiFormatReader, BarcodeFormat, RGBLuminanceSource, BinaryBitmap, HybridBinarizer, HTMLVisualMediaElement, HTMLCanvasElementLuminanceSource, Result, ResultPoint } from '@zxing/library';
+import { MultiFormatReader, BarcodeFormat, RGBLuminanceSource, BinaryBitmap, HybridBinarizer, HTMLVisualMediaElement, HTMLCanvasElementLuminanceSource, Result, ResultPoint, DecodeHintType } from '@zxing/library';
 import { DecimalToHex } from "./Shared";
 import { Point, Rect } from "src/definitions/definitions";
 import { getRectFromPoints } from "src/utils";
@@ -9,7 +9,10 @@ export default class ZXing {
   private canvas!:HTMLCanvasElement;
   async init() : Promise<void> {
     if (!this.reader) {
+      //const hints:Map<DecodeHintType, any> = new Map<DecodeHintType, any>();
+      //hints.set(DecodeHintType.TRY_HARDER,true);
       this.reader = new MultiFormatReader();
+      //this.reader.setHints(hints);
     }
     if (!this.canvas) {
       this.canvas = document.createElement("canvas");
