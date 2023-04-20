@@ -1,10 +1,9 @@
 import DynamsoftBarcodeReader from "./DynamsoftBarcodeReader";
-import ZBar from "./ZBar";
 import ZXing from "./ZXing";
 
 export class BarcodeReader {
   private engine = "Dynamsoft";
-  private reader!: DynamsoftBarcodeReader|ZXing|ZBar;
+  private reader!: DynamsoftBarcodeReader|ZXing;
   static async createInstance(engine:string):Promise<BarcodeReader> {
     const reader = new BarcodeReader();
     reader.setEngine(engine);
@@ -23,8 +22,6 @@ export class BarcodeReader {
   async init(): Promise<void> {
     if (this.engine === "Dynamsoft") {
       this.reader = new DynamsoftBarcodeReader();
-    }else if(this.engine === "ZBar") {
-      this.reader = new ZBar();
     }else{
       this.reader = new ZXing();
     }
@@ -36,7 +33,7 @@ export class BarcodeReader {
   }
 
   static getEngines():string[] {
-    return ["Dynamsoft","ZXing","ZBar"];
+    return ["Dynamsoft","ZXing"];
   }
 }
 
