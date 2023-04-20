@@ -1,28 +1,39 @@
 import DynamsoftBarcodeReader from "./DynamsoftBarcodeReader";
-import { BarcodeReader as DBR} from "dynamsoft-javascript-barcode";
-
-
+import ZXing from "./ZXing";
 
 export class BarcodeReader {
-  private reader: DynamsoftBarcodeReader;
-  constructor(){
-    this.reader = new DynamsoftBarcodeReader();
+  private engine = "Dynamsoft";
+  private reader!: DynamsoftBarcodeReader|ZXing;
+  static async createInstance(engine:string):Promise<BarcodeReader> {
+    const reader = new BarcodeReader();
+    reader.setEngine(engine);
+    await reader.init()
+    return reader;
   }
 
-  setEngine(name:string){
-    console.log(name);
+  setEngine(name:string) {
+    this.engine = name;
   }
 
-  async initDBR() : Promise<DBR> {
-    return await DynamsoftBarcodeReader.init();
+  getEngine():string {
+    return this.engine;
   }
 
-  detect(image:ImageBitmapSource|string) : Promise<DetectionResult> {
+  async init(): Promise<void> {
+    if (this.engine === "Dynamsoft") {
+      this.reader = new DynamsoftBarcodeReader();
+    }else{
+      this.reader = new ZXing();
+    }
+    await this.reader.init();
+  }
+
+  detect(image:ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement): Promise<DetectionResult> {
     return this.reader.detect(image);
   }
 
   static getEngines():string[] {
-    return ["Dynamsoft"];
+    return ["Dynamsoft","ZXing"];
   }
 }
 

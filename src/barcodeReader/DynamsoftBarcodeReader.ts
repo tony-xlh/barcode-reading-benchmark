@@ -7,12 +7,13 @@ BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barco
 
 let reader:BarcodeReader;
 export default class DynamsoftBarcodeReader {
-  static async init() : Promise<BarcodeReader> {
-    reader = await BarcodeReader.createInstance();
-    return reader;
+  async init() : Promise<void> {
+    if (!reader) {
+      reader = await BarcodeReader.createInstance();
+    }
   }
 
-  async detect(image: ImageBitmapSource|string) : Promise<DetectionResult> {
+  async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement) : Promise<DetectionResult> {
     if (!reader) {
       throw new Error("Dynamsoft Barcode Reader has not been initialized.");
     }

@@ -3,7 +3,7 @@
     <div class="row">
       <div class="col">
         <div style="padding-bottom: 20px;">
-          <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
+          <q-select @update:model-value="selectedEngineChanged($event)" style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
         <div>
           <q-btn outline color="primary" label="Decode" v-on:click="decode" />
@@ -76,6 +76,7 @@ import { useRouter } from "vue-router";
 import localForage from "localforage";
 import { getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
+import { event } from "quasar";
 const router = useRouter();
 const projectName = ref("");
 const imageName = ref("");
@@ -114,12 +115,20 @@ const loadImage = async () => {
   }
 }
 
-const loadBarcodeResultsAndGroundTruth = async () => {
-  const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngine.value+".json");
+const loadBarcodeResultsAndGroundTruth = async (engine?:string) => {
+  let selectedEngineName;
+  if (engine) {
+    selectedEngineName = engine;
+  }else{
+    selectedEngineName = selectedEngine.value;
+  }
+  const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngineName+".json");
   let detectionResult:DetectionResult;
   if (detectionResultString) {
     detectionResult = JSON.parse(detectionResultString);
     barcodeResults.value = detectionResult.results;
+  }else{
+    barcodeResults.value = [];
   }
   const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
   let parsedGroundTruth;
@@ -142,10 +151,17 @@ const getPointsData = (result:BarcodeResult|GroundTruth) => {
 }
 
 const decode = async () => {
+  let needInitialization = false;
   if (!reader) {
+    needInitialization = true;
+  }else{
+    if (reader.getEngine() != selectedEngine.value) {
+      needInitialization = true;
+    }
+  }
+  if (needInitialization) {
     status.value = "Initializing...";
-    reader = new BarcodeReader();
-    await reader.initDBR();
+    reader = await BarcodeReader.createInstance(selectedEngine.value);
     status.value = "";
   }
   const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName.value);
@@ -181,6 +197,11 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
   }
   incorrectDetectionResultIndex.value = index;
 }
+
+const selectedEngineChanged = (value:string) => {
+  loadBarcodeResultsAndGroundTruth(value);
+}
+
 </script>
 <style>
 .q-item {

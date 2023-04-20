@@ -7,7 +7,7 @@
       <q-separator></q-separator>
       <q-card-section>
         <div style="padding-bottom: 20px;">
-          <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
+          <q-select @update:model-value="selectedEngineChanged()" style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
         <div class="row" style="align-items: center;">
           <q-btn outline color="primary" :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode" />
@@ -382,10 +382,17 @@ const decode = async () => {
   if (decoding.value === false) {
     decoding.value = true;
     hasToStop = false;
+    let needInitialization = false;
     if (!reader) {
-      reader = new BarcodeReader();
+      needInitialization = true;
+    }else{
+      if (reader.getEngine() != selectedEngine.value) {
+        needInitialization = true;
+      }
+    }
+    if (needInitialization) {
       progressLabel.value = "Initializing...";
-      await reader.initDBR();
+      reader = await BarcodeReader.createInstance(selectedEngine.value);
       progressLabel.value = "";
     }
     const length = project.info.images.length;
@@ -498,6 +505,11 @@ const nameClicked = (name:string) => {
   const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngine.value;
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
+}
+
+const selectedEngineChanged = () => {
+  console.log("changed");
+  updateRows();
 }
 
 </script>
