@@ -174,6 +174,7 @@ const decode = async () => {
     if (saveDetectionResults.value === true) {
       await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngine.value+".json",JSON.stringify(decodingResult));
     }
+    loadBarcodeResultsAndGroundTruth();
   }
 }
 
@@ -186,7 +187,8 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
       const groundTruth = groundTruthList[j];
       const points1 = getPointsFromBarcodeResultResult(barcodeResult);
       const points2 = getPointsFromGroundTruth(groundTruth);
-      if (intersectionOverUnion(points1,points2) > 0.1) {
+      const IoU = intersectionOverUnion(points1,points2);
+      if (IoU > 0) {
         if (groundTruth.text) {
           if (!textCorrect(groundTruth,barcodeResult)) {
             index.push(i);
