@@ -57,6 +57,7 @@ import { Project } from "src/project";
 import localForage from "localforage";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
+import { removeProjectFiles } from "src/utils";
 const newProject = ref(false);
 const projectName = ref("");
 const projects = ref([] as Project[]);
@@ -117,14 +118,14 @@ const openSelected = () => {
   router.push("/project/"+encodeURIComponent(projects.value[selectedIndex].info.name));
 }
 
-const deleteSelected = () => {
-  console.log(projects.value);
-  console.log(selectedIndex);
+const deleteSelected = async () => {
   let newProjects = [];
   for (let index = 0; index < projects.value.length; index++) {
     const project = projects.value[index];
     if (index != selectedIndex) {
       newProjects.push(project);
+    }else{
+      await removeProjectFiles(project);
     }
   }
   projects.value = newProjects;

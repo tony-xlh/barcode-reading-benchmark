@@ -1,6 +1,8 @@
 import { BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
 import { DetectionStatistics, GroundTruth, Point, Rect } from "./definitions/definitions";
 import leven from 'leven';
+import { Project } from "./project";
+import localForage from "localforage";
 
 //scanned.jpg => scanned
 export const getFilenameWithoutExtension = (filename:string) => {
@@ -186,4 +188,20 @@ export function getRectFromPoints(points:Point[]) : Rect {
   }else{
     throw new Error("Invalid number of points");
   }
+}
+
+export const removeProjectFiles = async (project:Project) => {
+  for (let index = 0; index < project.info.images.length; index++) {
+    const imageName = project.info.images[index];
+    localForage.removeItem(project.info.name+":image:"+imageName);
+    localForage.removeItem(project.info.name+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
+  }
+  const detectionResultFileNamesList:undefined|null|string[] = await localForage.getItem(project.info.name+":detectionResultFileNamesList");
+  if (detectionResultFileNamesList) {
+    for (let index = 0; index < detectionResultFileNamesList.length; index++) {
+      const filename = detectionResultFileNamesList[index];
+      localForage.removeItem(project.info.name+":detectionResult:"+filename);  
+    }
+  }
+  project.info.images = [];
 }

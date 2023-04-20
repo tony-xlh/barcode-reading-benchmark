@@ -170,7 +170,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateDetectionStatistics, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText } from "src/utils";
+import { calculateDetectionStatistics, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 
 const columns = [
@@ -478,19 +478,7 @@ const showLocalFilesDialog = () => {
 }
 
 const clearProject = async () => {
-  for (let index = 0; index < project.info.images.length; index++) {
-    const imageName = project.info.images[index];
-    localForage.removeItem(projectName.value+":image:"+imageName);
-    localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
-  }
-  const detectionResultFileNamesList:undefined|null|string[] = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
-  if (detectionResultFileNamesList) {
-    for (let index = 0; index < detectionResultFileNamesList.length; index++) {
-      const filename = detectionResultFileNamesList[index];
-      localForage.removeItem(projectName.value+":detectionResult:"+filename);  
-    }
-  }
-  project.info.images = [];
+  await removeProjectFiles(project);
   saveProjects();
   updateRows();
 }
