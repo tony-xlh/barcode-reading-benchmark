@@ -198,7 +198,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateDetectionStatistics, dataURItoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
+import { calculateDetectionStatistics, dataURLtoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 import JSZip from "jszip";
 
@@ -543,7 +543,7 @@ const downloadImages = async () => {
     const imageName = project.info.images[index];
     const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
     if (dataURL) {
-      const blob = dataURItoBlob(dataURL);
+      const blob = dataURLtoBlob(dataURL);
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob);
       link.download = imageName;
@@ -574,8 +574,9 @@ const downloadTextResults = async () => {
         zip.file(detectionResultFileName, detectionResultString);  
       }
     }
+    zip.file("detection_result_filenames.json", JSON.stringify(detectionResultFileNamesList));
   }
-  
+  zip.file("project_manifest.json", JSON.stringify(project));
   zip.generateAsync({type:"blob"}).then(function(content) {
     const link = document.createElement('a')
     link.href = URL.createObjectURL(content);
