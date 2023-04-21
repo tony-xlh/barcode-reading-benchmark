@@ -62,6 +62,9 @@
               Total barcodes: {{ statistics.barcodeNumber }}
             </div>
             <div>
+              Correctly detected files: {{ statistics.correctFilesNumber }}
+            </div>
+            <div>
               Detected barcodes:  {{  parseInt((statistics.accuracy / 100 * statistics.barcodeNumber).toString()) }}
             </div>
             <div>
@@ -246,7 +249,7 @@ const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
 const skipDetected = ref(true);
-const statistics = ref({fileNumber:0,barcodeNumber:0,accuracy:0,precision:0,averageTime:0});
+const statistics = ref({fileNumber:0,correctFilesNumber:0,barcodeNumber:0,accuracy:0,precision:0,averageTime:0});
 let hasToStop = false;
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
@@ -282,6 +285,7 @@ const updateRows = async () => {
     let totalBarcodesMisDetected = 0;
     let totalElapsedTime = 0;
     let detectedFiles = 0;
+    let totalCorrectFiles = 0;
     for (let index = 0; index < project.info.images.length; index++) {
       const imageName = project.info.images[index];
       let joinedGroundTruth = "";
@@ -315,10 +319,14 @@ const updateRows = async () => {
         totalBarcodesCorrectlyDetected = totalBarcodesCorrectlyDetected + detectionStatistics.correct;
         totalBarcodesMisDetected = totalBarcodesMisDetected + detectionStatistics.misdetected;
       }
+      if (correct === "true") {
+        totalCorrectFiles = totalCorrectFiles + 1;
+      }
       const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
       const precision = parseFloat(((totalBarcodes - totalBarcodesMisDetected) / totalBarcodes * 100).toFixed(2));
       statistics.value = {
         fileNumber: project.info.images.length,
+        correctFilesNumber: totalCorrectFiles,
         barcodeNumber: totalBarcodes,
         accuracy: accuracy,
         precision: precision,
