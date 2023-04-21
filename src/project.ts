@@ -1,25 +1,11 @@
 export class Project {
   info:ProjectInfo;
+  baseURL:string = "";
   constructor(info:ProjectInfo){
     this.info = info;
   }
-}
 
-export interface ProjectInfo {
-  name:string;
-  creationTimestamp:number;
-  images:string[];
-}
-
-export interface OnlineProjectsManifest {
-  projects:OnlineProject[];
-}
-
-export class OnlineProject {
-  project:Project;
-  baseURL:string;
-  constructor(project:Project,baseURL:string){
-    this.project = project;
+  setBaseURL(baseURL:string){
     this.baseURL = baseURL;
   }
 
@@ -30,4 +16,10 @@ export class OnlineProject {
   getAnnotationsLink(){
     return this.baseURL + "/annotations.zip";
   }
+}
+
+export interface ProjectInfo {
+  name:string;
+  creationTimestamp:number;
+  images:string[];
 }
