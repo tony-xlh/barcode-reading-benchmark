@@ -433,9 +433,13 @@ const decode = async () => {
     const length = project.info.images.length;
     progress.value = 0.0;
     progressLabel.value = "0/"+length;
-    let detectionResultFileNamesList = [];
+    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+    if (!detectionResultFileNamesList) {
+      detectionResultFileNamesList = [];
+    }
     for (let index = 0; index < length; index++) {
       if (hasToStop) {
+        await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
         return;
       }
       const imageName = project.info.images[index];
@@ -483,7 +487,10 @@ const addFilesToProject = async () => {
       const content = await readFileAsText(file);
       await localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
     }
-    let detectionResultFileNamesList = [];
+    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+    if (!detectionResultFileNamesList) {
+      detectionResultFileNamesList = [];
+    }
     for (let index = 0; index < detectionResultFiles.length; index++) {
       const file = detectionResultFiles[index];
       const content = await readFileAsText(file);
