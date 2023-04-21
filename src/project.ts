@@ -1,6 +1,6 @@
 export class Project {
   info:ProjectInfo;
-  baseURL:string = "";
+  baseURL = "";
   constructor(info:ProjectInfo){
     this.info = info;
   }

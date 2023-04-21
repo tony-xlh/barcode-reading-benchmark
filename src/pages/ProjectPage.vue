@@ -92,6 +92,11 @@
                   <q-item-label>Add local files</q-item-label>
                 </q-item-section>
               </q-item>
+              <q-item clickable v-close-popup @click="exportProject">
+                <q-item-section>
+                  <q-item-label>Export</q-item-label>
+                </q-item-section>
+              </q-item>
               <q-item clickable v-close-popup @click="clearProject">
                 <q-item-section>
                   <q-item-label>Clear</q-item-label>
@@ -139,31 +144,51 @@
       </q-table>
       </q-card-section>
     </q-card>
-    <q-dialog v-model="action">
-      <q-card>
-        <q-card-section>
-          <div class="text-h6">Add files</div>
-        </q-card-section>
-        <q-card-section class="q-pt-none">
-          <div>
-            <input type="file" id="imageFiles" multiple="true" v-on:change="loadImageFiles($event);" accept=".jpg,.jpeg,.png,.bmp" />
-            <label for="imageFiles">Image files.</label>
-          </div>
-          <div>
-            <input type="file" id="detectionResultFiles" multiple="true" v-on:change="loadDetectionResultFiles($event);" accept=".json" />
-            <label for="detectionResultFiles">Detection result files.</label>
-          </div>
-          <div>
-            <input type="file" id="groundTruthFiles" multiple="true" v-on:change="loadGroundTruthFiles($event);" accept=".txt" />
-            <label for="imageFiles">Ground truth files.</label>
-          </div>
-        </q-card-section>
-        <q-card-actions align="right">
-          <q-btn flat color="primary" label="Add to project" v-on:click="addFilesToProject" />
-          <q-btn flat v-close-popup color="primary" label="Close"/>
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <div class="dialogs">
+      <q-dialog v-model="addAction">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Add files</div>
+          </q-card-section>
+          <q-card-section class="q-pt-none">
+            <div>
+              <input type="file" id="imageFiles" multiple="true" v-on:change="loadImageFiles($event);" accept=".jpg,.jpeg,.png,.bmp" />
+              <label for="imageFiles">Image files.</label>
+            </div>
+            <div>
+              <input type="file" id="detectionResultFiles" multiple="true" v-on:change="loadDetectionResultFiles($event);" accept=".json" />
+              <label for="detectionResultFiles">Detection result files.</label>
+            </div>
+            <div>
+              <input type="file" id="groundTruthFiles" multiple="true" v-on:change="loadGroundTruthFiles($event);" accept=".txt" />
+              <label for="imageFiles">Ground truth files.</label>
+            </div>
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn flat color="primary" label="Add to project" v-on:click="addFilesToProject" />
+            <q-btn flat v-close-popup color="primary" label="Close"/>
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+      <q-dialog v-model="exportAction">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Export</div>
+          </q-card-section>
+          <q-card-section class="q-pt-none">
+            <div>
+              <q-btn outline color="primary" label="Download images" v-on:click="downloadImages" />
+            </div>
+            <div>
+              <q-btn outline color="primary" label="Download TextResults.zip" v-on:click="downloadTextResults" />
+            </div>
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn flat v-close-popup color="primary" label="Close"/>
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+    </div>
   </q-page>
 </template>
 
@@ -173,7 +198,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateDetectionStatistics, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
+import { calculateDetectionStatistics, dataURItoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 
 const columns = [
@@ -244,7 +269,8 @@ const engines = ref([] as string[])
 const router = useRouter();
 const projectName = ref("");
 const selectedEngine = ref("");
-const action = ref(false);
+const addAction = ref(false);
+const exportAction = ref(false);
 const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
@@ -406,6 +432,7 @@ const decode = async () => {
     const length = project.info.images.length;
     progress.value = 0.0;
     progressLabel.value = "0/"+length;
+    let detectionResultFileNamesList = [];
     for (let index = 0; index < length; index++) {
       if (hasToStop) {
         return;
@@ -421,11 +448,14 @@ const decode = async () => {
       if (dataURL) {
         let decodingResult = await reader.detect(dataURL);
         console.log(decodingResult);
+        detectionResultFileNamesList.push(getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
         await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json",JSON.stringify(decodingResult));
       }
       progress.value = parseFloat(((index + 1) / length).toFixed(2));
       progressLabel.value = (index+1)+"/"+length;
     }
+    await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+    decoding.value = false;
   }else{
     hasToStop = true;
     decoding.value = false;
@@ -450,26 +480,26 @@ const addFilesToProject = async () => {
     for (let index = 0; index < groundTruthFiles.length; index++) {
       const file = groundTruthFiles[index];
       const content = await readFileAsText(file);
-      localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
+      await localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
     }
     let detectionResultFileNamesList = [];
     for (let index = 0; index < detectionResultFiles.length; index++) {
       const file = detectionResultFiles[index];
       const content = await readFileAsText(file);
       detectionResultFileNamesList.push(file.name);
-      localForage.setItem(projectName.value+":detectionResult:"+file.name,content);
+      await localForage.setItem(projectName.value+":detectionResult:"+file.name,content);
     }
     for (let index = 0; index < imageFiles.length; index++) {
       const file = imageFiles[index];
       const dataURL = await readFileAsDataURL(file);
-      localForage.setItem(projectName.value+":image:"+file.name,dataURL);
+      await localForage.setItem(projectName.value+":image:"+file.name,dataURL);
       project.info.images.push(file.name);
     }
-    localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+    await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
     updateRows();
     saveProjects();
     alert("added");
-    action.value = false;
+    addAction.value = false;
   }
 }
 
@@ -482,7 +512,7 @@ const saveProjects = async () => {
 }
 
 const showLocalFilesDialog = () => {
-  action.value = true;
+  addAction.value = true;
 }
 
 const clearProject = async () => {
@@ -491,9 +521,31 @@ const clearProject = async () => {
   updateRows();
 }
 
+const exportProject = async () => {
+  exportAction.value = true;
+};
+
+const downloadImages = async () => {
+  for (let index = 0; index < project.info.images.length; index++) {
+    const imageName = project.info.images[index];
+    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
+    if (dataURL) {
+      const blob = dataURItoBlob(dataURL);
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob);
+      link.download = imageName;
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+  }
+};
+
+const downloadTextResults = async () => {
+  console.log("text files");
+};
+
 const nameClicked = (name:string) => {
-  console.log("clicked");
-  console.log(name);
   const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngine.value;
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
