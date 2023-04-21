@@ -20,6 +20,7 @@ export default class ZXing {
   }
 
   async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement) : Promise<DetectionResult> {
+    const startTime = Date.now();
     if (typeof(image) === "string") {
       image = await this.loadImageFromDataURL(image);
     }
@@ -28,7 +29,6 @@ export default class ZXing {
     let result;
     let elapsedTime = 0;
     try {
-      const startTime = Date.now();
       result = this.reader.decode(binaryBitmap);
       elapsedTime = Date.now() - startTime; 
     } catch (error) {

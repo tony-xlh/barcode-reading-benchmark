@@ -14,6 +14,7 @@ export default class ZBar {
   }
 
   async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement) : Promise<DetectionResult> {
+    const startTime = Date.now();
     if (image instanceof HTMLCanvasElement) {
       image = image.toDataURL(); 
     }
@@ -24,7 +25,6 @@ export default class ZBar {
     const results:BarcodeResult[] = [];
     const imageData = this.getImageData(image as any);
     if (imageData) {
-      const startTime = Date.now();
       const symbols = await this.reader.scanImageData(imageData);
       elapsedTime = Date.now() - startTime; 
       for (let index = 0; index < symbols.length; index++) {
