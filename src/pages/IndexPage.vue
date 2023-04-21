@@ -2,7 +2,20 @@
   <q-page class="row justify-evenly">
     <div class="q-pa-md" style="width: 100%">
       <q-list bordered separator>
-        <q-item-label header>Projects:</q-item-label>
+        <q-item-label header>Local Projects:</q-item-label>
+        <q-separator spaced/>
+        <q-item clickable v-ripple v-for='(project,index) in projects' v-bind:key="project.info.name">
+          <q-item-section v-on:click="showActionDialog(index)">
+            <q-item-label>{{project.info.name}}</q-item-label>
+            <q-item-label caption lines="2">
+              Number of Images: {{ project.info.images?.length }} 
+              Creation Time: {{ getLocalTime(project.info.creationTimestamp) }}
+            </q-item-label>
+          </q-item-section>
+        </q-item>
+      </q-list>
+      <q-list bordered separator>
+        <q-item-label header>Online Projects:</q-item-label>
         <q-separator spaced/>
         <q-item clickable v-ripple v-for='(project,index) in projects' v-bind:key="project.info.name">
           <q-item-section v-on:click="showActionDialog(index)">
