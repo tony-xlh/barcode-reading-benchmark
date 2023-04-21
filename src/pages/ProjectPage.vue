@@ -200,6 +200,7 @@ import { useRouter } from "vue-router";
 import localForage from "localforage";
 import { calculateDetectionStatistics, dataURItoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
+import JSZip from "jszip";
 
 const columns = [
   {
@@ -542,7 +543,35 @@ const downloadImages = async () => {
 };
 
 const downloadTextResults = async () => {
-  console.log("text files");
+  const zip = new JSZip();
+  for (let index = 0; index < project.info.images.length; index++) {
+    const imageName = project.info.images[index];
+    const groundTruthFileName = getFilenameWithoutExtension(imageName)+".txt";
+    const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
+    if (groundTruthString) {
+      zip.file(groundTruthFileName, groundTruthString);
+    }
+  }
+
+  const detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+  if (detectionResultFileNamesList) {
+    for (let index = 0; index < detectionResultFileNamesList.length; index++) {
+      const detectionResultFileName = detectionResultFileNamesList[index];
+      const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+detectionResultFileName);
+      if (detectionResultString) {
+        zip.file(detectionResultFileName, detectionResultString);  
+      }
+    }
+  }
+  
+  zip.generateAsync({type:"blob"}).then(function(content) {
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(content);
+    link.download = projectName.value+"-results.zip";
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  });
 };
 
 const nameClicked = (name:string) => {
