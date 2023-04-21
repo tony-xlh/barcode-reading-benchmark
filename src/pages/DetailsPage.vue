@@ -119,20 +119,24 @@ const loadImage = async () => {
   }
 }
 
-const loadBarcodeResultsAndGroundTruth = async (engine?:string) => {
+const loadBarcodeResultsAndGroundTruth = async (engine?:string,detectionResult?:DetectionResult) => {
   let selectedEngineName;
   if (engine) {
     selectedEngineName = engine;
   }else{
     selectedEngineName = selectedEngine.value;
   }
-  const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngineName+".json");
-  let detectionResult:DetectionResult;
-  if (detectionResultString) {
-    detectionResult = JSON.parse(detectionResultString);
+  if (detectionResult) {
     barcodeResults.value = detectionResult.results;
   }else{
-    barcodeResults.value = [];
+    const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngineName+".json");
+    let detectionResult:DetectionResult;
+    if (detectionResultString) {
+      detectionResult = JSON.parse(detectionResultString);
+      barcodeResults.value = detectionResult.results;
+    }else{
+      barcodeResults.value = [];
+    }
   }
   const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
   let parsedGroundTruth;
@@ -178,7 +182,7 @@ const decode = async () => {
     if (saveDetectionResults.value === true) {
       await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngine.value+".json",JSON.stringify(decodingResult));
     }
-    loadBarcodeResultsAndGroundTruth();
+    loadBarcodeResultsAndGroundTruth(selectedEngine.value,decodingResult);
   }
 }
 
