@@ -101,6 +101,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { removeProjectFiles, BlobtoDataURL, getFilenameWithoutExtension } from "src/utils";
 import JSZip from "jszip";
+import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
 
 const newProject = ref(false);
 const projectName = ref("");
@@ -303,6 +304,15 @@ const loadTextResultsFromZip = async () => {
           await localForage.setItem(key,groundTruthString);
         }
       }
+      const engines = BarcodeReader.getEngines();
+      for (let index = 0; index < engines.length; index++) {
+        const engine = engines[index];
+        const settingsString = await zip.file(engine+"_settings.json")?.async("string");
+        if (settingsString) {
+          await localForage.setItem(projectName.value+":settings:"+engine,settingsString);
+        }
+      }
+      
     }
   }
 }

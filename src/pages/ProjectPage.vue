@@ -495,6 +495,7 @@ const downloadTextResults = async () => {
     zip.file("detection_result_filenames.json", JSON.stringify(detectionResultFileNamesList));
   }
   zip.file("project_manifest.json", JSON.stringify(project));
+  await addSettingsFileToZip(zip);
   zip.generateAsync({type:"blob"}).then(function(content) {
     const link = document.createElement('a')
     link.href = URL.createObjectURL(content);
@@ -504,6 +505,16 @@ const downloadTextResults = async () => {
     document.body.removeChild(link)
   });
 };
+
+const addSettingsFileToZip = async (zip:JSZip) => {
+  for (let index = 0; index < engines.value.length; index++) {
+    const engine = engines.value[index];
+    const settings = await localForage.getItem(projectName.value+":settings:"+engine);
+    if (settings) {
+      zip.file(engine+"_settings.json", JSON.stringify(settings));
+    }
+  }
+}
 
 const nameClicked = (name:string) => {
   const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngine.value;
