@@ -73,7 +73,12 @@ export default class DynamsoftBarcodeReader {
 
   async updateRuntimeSettings(template:string){
     console.log("Using template: "+template);
-    await reader.initRuntimeSettingsWithString(template);
+    if (template) {
+      await reader.initRuntimeSettingsWithString(template);
+    }else{
+      await reader.resetRuntimeSettings();
+    }
+    
   }
 
   getSupportedSettings():string[] {
