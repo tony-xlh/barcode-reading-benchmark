@@ -79,7 +79,6 @@ import { useRouter } from "vue-router";
 import localForage from "localforage";
 import { getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
-import { event } from "quasar";
 import { Project } from "src/project";
 const router = useRouter();
 const projectName = ref("");
