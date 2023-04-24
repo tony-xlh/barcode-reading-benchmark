@@ -94,13 +94,13 @@ const getStatistics = async () => {
   }
   statisticsOfEngines.sort((a, b) => b.metrics.accuracy - a.metrics.accuracy);
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
-  const readRates = getReadingRateData(statisticsOfEngines);
+  const readRates = getData(statisticsOfEngines,"accuracy");
   
-  const labelOption = {
+  const readingRateLabelOption = {
     show: true,
     position: 'top',
     formatter: '{c}%',
-    fontSize: 16,
+    fontSize: 12,
     rich: {
       name: {}
     }
@@ -128,9 +128,47 @@ const getStatistics = async () => {
     },
     xAxis: { type: 'category', data: sortedEngineNames },
     yAxis: { type: 'value' },
-    series: [{ label: labelOption, data: readRates, type: 'bar' }]
+    series: [{ label: readingRateLabelOption, data: readRates, type: 'bar' }]
   };
   readingRateOption.value = optionForReadingRate;
+
+  const averageTimes = getData(statisticsOfEngines,"averageTime");
+  
+  const averageTimeLabelOption = {
+    show: true,
+    position: 'top',
+    formatter: '{c}ms',
+    fontSize: 12,
+    rich: {
+      name: {}
+    }
+  };
+
+  const optionForAverageTime = {
+    title: {
+      text: 'Average Time',
+      x: 'center'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    toolbox: {
+      show: true,
+      orient: 'vertical',
+      left: 'right',
+      top: 'center',
+      feature: {
+        saveAsImage: { show: true }
+      }
+    },
+    xAxis: { type: 'category', data: sortedEngineNames },
+    yAxis: { type: 'value' },
+    series: [{ label: averageTimeLabelOption, data: averageTimes, type: 'bar' }]
+  };
+  averageTimeOption.value = optionForAverageTime;
 }
 
 const getSelectedEngines = () => {
@@ -153,13 +191,13 @@ const getEngineNames = (statisticsOfEngines:EngineStatistics[]) => {
   return engineNames;
 }
 
-const getReadingRateData = (statisticsOfEngines:EngineStatistics[]) => {
-  const readingRate = [];
+const getData = (statisticsOfEngines:EngineStatistics[],key:string) => {
+  const data = [];
   for (let index = 0; index < statisticsOfEngines.length; index++) {
     const statistics = statisticsOfEngines[index];
-    readingRate.push(statistics.metrics.accuracy);
+    data.push((statistics.metrics as any)[key]);
   }
-  return readingRate;
+  return data;
 }
 
 
