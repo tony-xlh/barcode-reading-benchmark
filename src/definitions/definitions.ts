@@ -50,7 +50,7 @@ export interface PerformanceMetrics {
   averageTime:number;
 }
 
-export interface ProjectStatistics {
+export interface EngineStatistics {
   metrics: PerformanceMetrics;
   rows?:EngineDataTableRow[];
 }

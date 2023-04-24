@@ -1,5 +1,5 @@
 import { BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
-import { DetectionStatistics, EngineDataTableRow, GroundTruth, PerformanceMetrics, Point, ProjectStatistics, Rect } from "./definitions/definitions";
+import { DetectionStatistics, EngineDataTableRow, GroundTruth, PerformanceMetrics, Point, EngineStatistics, Rect } from "./definitions/definitions";
 import leven from 'leven';
 import { Project } from "./project";
 import localForage from "localforage";
@@ -39,7 +39,7 @@ export const readFileAsText = async (file:File):Promise<string> => {
   });
 }
 
-export const calculateProjectStatistics = async (project:Project,engine:string) => {
+export const calculateEngineStatistics = async (project:Project,engine:string) => {
   const projectName = project.info.name;
   const newRows = [];
   let totalBarcodes = 0;
@@ -106,11 +106,11 @@ export const calculateProjectStatistics = async (project:Project,engine:string) 
     precision: precision,
     averageTime: parseFloat((totalElapsedTime / detectedFiles).toFixed(2))
   }
-  const projectStatistics:ProjectStatistics = {
+  const engineStatistics:EngineStatistics = {
     metrics:performanceMetrics,
     rows:newRows
   };
-  return projectStatistics;
+  return engineStatistics;
 }
 
 const getJoinedGroundTruth = (groundTruthList:GroundTruth[]) => {

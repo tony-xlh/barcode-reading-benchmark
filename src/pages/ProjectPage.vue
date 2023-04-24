@@ -201,7 +201,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateProjectStatistics, dataURLtoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
+import { calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
 import JSZip from "jszip";
 import { PerformanceMetrics } from "src/definitions/definitions";
 
@@ -309,10 +309,10 @@ onMounted(async () => {
 
 const updateRows = async () => {
   if (project) {
-    const projectStatistics = await calculateProjectStatistics(project,selectedEngine.value);
-    statistics.value = projectStatistics.metrics;
-    if (projectStatistics.rows) {
-      rows.value = projectStatistics.rows;
+    const engineStatistics = await calculateEngineStatistics(project,selectedEngine.value);
+    statistics.value = engineStatistics.metrics;
+    if (engineStatistics.rows) {
+      rows.value = engineStatistics.rows;
     }
   }
 }
