@@ -51,6 +51,7 @@ export interface PerformanceMetrics {
 }
 
 export interface EngineStatistics {
+  name: string;
   metrics: PerformanceMetrics;
   rows?:EngineDataTableRow[];
 }

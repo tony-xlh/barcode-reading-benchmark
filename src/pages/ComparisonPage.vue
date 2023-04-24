@@ -11,9 +11,9 @@
           <q-checkbox v-model="engine.enabled" :label="engine.name" v-for="engine in engines" v-bind:key="engine.name"/>
         </div>
         <q-btn outline color="primary" label="Get comparison statistics" v-on:click="getStatistics()" />
-        <div class="row" style="padding-top:1em;">
+        <div class="row" style="padding-top:1em;" v-if="Object.keys(readingRateOption).length > 0">
           <div class="col">
-            <v-chart class="chart" :option="readRateOption" />
+            <v-chart class="chart" :option="readingRateOption" />
           </div>
           <div class="col">
             <v-chart class="chart" :option="averageTimeOption" />
@@ -34,22 +34,28 @@ import { use } from "echarts/core";
 import { SVGRenderer } from "echarts/renderers";
 import { PieChart,BarChart } from "echarts/charts";
 import {
+  GridComponent,
   TitleComponent,
+  ToolboxComponent,
   TooltipComponent,
   LegendComponent
 } from "echarts/components";
 import VChart from "vue-echarts";
+import { EngineStatistics } from "src/definitions/definitions";
+import { calculateEngineStatistics } from "src/utils";
 
 use([
   SVGRenderer,
   PieChart,
   BarChart,
+  GridComponent,
+  ToolboxComponent,
   TitleComponent,
   TooltipComponent,
   LegendComponent
 ]);
 
-const readRateOption = ref({});
+const readingRateOption = ref({});
 const averageTimeOption = ref({});
 
 const projectName = ref("");
@@ -78,28 +84,82 @@ onMounted(async () => {
   }
 });
 
-const getStatistics = () => {
-  const selectedEngines = getSelectedEngines()
-  const optionForReadRate = {
-    xAxis: { type: 'category', data: selectedEngines },
-    yAxis: { type: 'value' },
-    series: [{ data: [120, 200, 150, 80, 70, 110, 130], type: 'bar' }]
+const getStatistics = async () => {
+  const selectedEngines = getSelectedEngines();
+  const statisticsOfEngines:EngineStatistics[] = [];
+  for (let index = 0; index < selectedEngines.length; index++) {
+    const engine = selectedEngines[index];
+    const statistics = await calculateEngineStatistics(project,engine);
+    statisticsOfEngines.push(statistics);
+  }
+  statisticsOfEngines.sort((a, b) => b.metrics.accuracy - a.metrics.accuracy);
+  const sortedEngineNames = getEngineNames(statisticsOfEngines);
+  const readRates = getReadingRateData(statisticsOfEngines);
+  
+  const labelOption = {
+    show: true,
+    position: 'top',
+    formatter: '{c}%',
+    fontSize: 16,
+    rich: {
+      name: {}
+    }
   };
+  
+  const optionForReadingRate = {
+    title: {
+      text: 'Reading Rate',
+      x: 'center'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    toolbox: {
+      show: true,
+      orient: 'vertical',
+      left: 'right',
+      top: 'center',
+      feature: {
+        saveAsImage: { show: true }
+      }
+    },
+    xAxis: { type: 'category', data: sortedEngineNames },
+    yAxis: { type: 'value' },
+    series: [{ label: labelOption, data: readRates, type: 'bar' }]
+  };
+  readingRateOption.value = optionForReadingRate;
 }
 
 const getSelectedEngines = () => {
-  const selectedEngines = [];
+  const selectedEngines:string[] = [];
   for (let index = 0; index < engines.value.length; index++) {
     const engine = engines.value[index];
     if (engine.enabled) {
-      selectedEngines.push(engine);
+      selectedEngines.push(engine.name);
     }
   }
   return selectedEngines;
 }
 
-const getReadRate = (engine:string) => {
-  console.log(engine);
+const getEngineNames = (statisticsOfEngines:EngineStatistics[]) => {
+  const engineNames = [];
+  for (let index = 0; index < statisticsOfEngines.length; index++) {
+    const statistics = statisticsOfEngines[index];
+    engineNames.push(statistics.name);
+  }
+  return engineNames;
+}
+
+const getReadingRateData = (statisticsOfEngines:EngineStatistics[]) => {
+  const readingRate = [];
+  for (let index = 0; index < statisticsOfEngines.length; index++) {
+    const statistics = statisticsOfEngines[index];
+    readingRate.push(statistics.metrics.accuracy);
+  }
+  return readingRate;
 }
 
 

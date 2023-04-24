@@ -107,6 +107,7 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
     averageTime: parseFloat((totalElapsedTime / detectedFiles).toFixed(2))
   }
   const engineStatistics:EngineStatistics = {
+    name:engine,
     metrics:performanceMetrics,
     rows:newRows
   };
