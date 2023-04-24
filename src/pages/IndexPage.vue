@@ -96,7 +96,7 @@ import { Project } from "src/project";
 import localForage from "localforage";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { removeProjectFiles, BlobtoDataURL } from "src/utils";
+import { removeProjectFiles, BlobtoDataURL, getFilenameWithoutExtension } from "src/utils";
 import JSZip from "jszip";
 
 const newProject = ref(false);
@@ -270,14 +270,35 @@ const importRemoteProject = async () => {
 }
 
 const loadTextResultsFromZip = async () => {
-  const blob:Blob|null|undefined = await localForage.getItem(remoteProject.value?.info.name+":results.zip");
-  if (blob) {
-    const zip = new JSZip();
-    await zip.loadAsync(blob);
-    const detectionResultsString = await zip.file("detection_result_filenames.json")?.async("string");
-    console.log(detectionResultsString);
-    //To do...
+  if (remoteProject.value) {
+    const blob:Blob|null|undefined = await localForage.getItem(remoteProject.value.info.name+":results.zip");
+    if (blob) {
+      const zip = new JSZip();
+      await zip.loadAsync(blob);
+      const detectionResultFileNamesListString = await zip.file("detection_result_filenames.json")?.async("string");
+      if (detectionResultFileNamesListString) {
+        const detectionResultFileNamesList:string[] = JSON.parse(detectionResultFileNamesListString);
+        for (let index = 0; index < detectionResultFileNamesList.length; index++) {
+          const detectionResultFileName = detectionResultFileNamesList[index];
+          const detectionResultString:string|undefined = await zip.file(detectionResultFileName)?.async("string");
+          if (detectionResultString) {
+            await localForage.setItem(remoteProject.value.info.name+":detectionResult:"+detectionResultFileName,detectionResultString);
+          }
+        }
+        await localForage.setItem(remoteProject.value.info.name+":detectionResultFileNamesList",detectionResultFileNamesList);
+      }
+      for (let index = 0; index < remoteProject.value.info.images.length; index++) {
+        const imageName = remoteProject.value.info.images[index];
+        const groundTruthName = getFilenameWithoutExtension(imageName)+".txt";
+        const key = remoteProject.value.info.name+":groundTruth:"+groundTruthName;
+        const groundTruthString:string|undefined = await zip.file(groundTruthName)?.async("string");
+        if (groundTruthString) {
+          await localForage.setItem(key,groundTruthString);
+        }
+      }
+    }
   }
 }
+
 
 </script>
