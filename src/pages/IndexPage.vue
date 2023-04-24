@@ -309,7 +309,7 @@ const loadTextResultsFromZip = async () => {
         const engine = engines[index];
         const settingsString = await zip.file(engine+"_settings.json")?.async("string");
         if (settingsString) {
-          await localForage.setItem(projectName.value+":settings:"+engine,settingsString);
+          await localForage.setItem(remoteProject.value.info.name+":settings:"+engine,JSON.parse(settingsString));
         }
       }
       
