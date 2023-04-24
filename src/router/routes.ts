@@ -16,6 +16,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('pages/DetailsPage.vue') }],
   },
+  {
+    path: '/project/:name/comparison',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/ComparisonPage.vue') }],
+  },
   // Always leave this as last one,
   // but you can also remove it
   {

@@ -75,6 +75,9 @@
             </div>
           </div>
         </div>
+        <div style="padding-top:1em;">
+          <a href="javascript:void();" @click="goToComparisonPage()">Go to comparison page</a>
+        </div>
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
@@ -596,6 +599,12 @@ const nameClicked = (name:string) => {
 const selectedEngineChanged = () => {
   console.log("changed");
   updateRows();
+}
+
+const goToComparisonPage = () => {
+  const href = "/project/"+encodeURIComponent(projectName.value)+"/comparison";
+  const routeUrl = router.resolve(href);
+  window.open(routeUrl.href,'_blank');
 }
 
 </script>
