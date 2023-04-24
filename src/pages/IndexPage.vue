@@ -28,6 +28,9 @@
       <q-dialog v-model="newProject">
         <q-card>
           <q-card-section>
+            <div class="text-h6">New project</div>
+          </q-card-section>
+          <q-card-section>
             <q-input outlined v-model="projectName" label="Project Name" />
           </q-card-section>
           <q-card-actions align="right">
