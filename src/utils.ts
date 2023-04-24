@@ -1,4 +1,4 @@
-import { BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
+import { BarcodeReader, BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
 import { DetectionStatistics, EngineDataTableRow, GroundTruth, PerformanceMetrics, Point, EngineStatistics, Rect } from "./definitions/definitions";
 import leven from 'leven';
 import { Project } from "./project";
@@ -313,6 +313,11 @@ export const removeProjectFiles = async (project:Project) => {
       const filename = detectionResultFileNamesList[index];
       localForage.removeItem(project.info.name+":detectionResult:"+filename);  
     }
+  }
+  const engines = BarcodeReader.getEngines();
+  for (let index = 0; index < engines.length; index++) {
+    const engine = engines[index];
+    localForage.removeItem(project.info.name+":settings:"+engine);
   }
   project.info.images = [];
 }
