@@ -51,7 +51,7 @@
                 :points="getPointsData(barcodeResult)"
                 class="barcode-polygon"
               >
-                <title>{{ barcodeResult.barcodeText }}</title>
+                <title>{{ barcodeResult.barcodeFormat + ": " + barcodeResult.barcodeText }}</title>
               </polygon>
             </a>
             <a v-if="showGroundTruth">
@@ -59,7 +59,7 @@
                 :points="getPointsData(groundTruth)"
                 class="groundtruth-polygon"
               >
-                <title>{{ groundTruth.text }}</title>
+                <title>{{ groundTruth.attrib.Type + ": " + groundTruth.text }}</title>
               </polygon>
             </a>
           </svg>
