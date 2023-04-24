@@ -77,7 +77,7 @@ import { BarcodeReader, BarcodeResult, DetectionResult } from "src/barcodeReader
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, textCorrect } from "src/utils";
+import { getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 import { Project } from "src/project";
 const router = useRouter();
@@ -171,6 +171,7 @@ const decode = async () => {
     reader = await BarcodeReader.createInstance(selectedEngine.value);
     status.value = "";
   }
+  await updateBarcodeReaderSettings();
   const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName.value);
   if (dataURL) {
     status.value = "Decoding...";
@@ -183,6 +184,12 @@ const decode = async () => {
     }
     loadBarcodeResultsAndGroundTruth(selectedEngine.value,decodingResult);
   }
+}
+
+const updateBarcodeReaderSettings = async () => {
+  const settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,reader.getSupportedSettings());
+  console.log(settings);
+  await reader.setSupportedSettings(settings);
 }
 
 const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],groundTruthList:GroundTruth[]) => {

@@ -7,6 +7,7 @@ BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barco
 
 let reader:BarcodeReader;
 export default class DynamsoftBarcodeReader {
+  private settings:any;
   async init() : Promise<void> {
     if (!reader) {
       reader = await BarcodeReader.createInstance();
@@ -68,5 +69,24 @@ export default class DynamsoftBarcodeReader {
       joined = joined + DecimalToHex(byte.toString());
     }
     return joined;
+  }
+
+  async updateRuntimeSettings(template:string){
+    console.log("Using template: "+template);
+    await reader.initRuntimeSettingsWithString(template);
+  }
+
+  getSupportedSettings():string[] {
+    return ["template"];
+  }
+
+  async setSupportedSettings(settings:any):Promise<void> {
+    this.settings = settings;
+    for (let index = 0; index < settings.length; index++) {
+      const setting = settings[index];
+      if (setting.name === "template") {
+        await this.updateRuntimeSettings(setting.value);
+      }
+    }
   }
 }

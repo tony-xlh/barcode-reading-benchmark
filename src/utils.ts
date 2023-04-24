@@ -342,3 +342,24 @@ export function BlobtoDataURL(blob:Blob):Promise<string> {
     fr.readAsDataURL(blob)
   });
 }
+
+export const loadBarcodeReaderSettings = async (projectName:string,engine:string,settingsItems:string[]) => {
+  const savedSettings:any = await localForage.getItem(projectName+":settings:"+engine);
+  const items = [];
+  for (let i = 0; i < settingsItems.length; i++) {
+    const setting = settingsItems[i];
+    let value = "";
+    for (let j = 0; j < savedSettings.length; j++) {
+      const savedSettingsItem = savedSettings[j];
+      if (savedSettingsItem.name === setting) {
+        value = savedSettingsItem.value;
+      }
+    }
+    const item: {name:string,value:string} = {
+      name: setting,
+      value: value
+    }
+    items.push(item);
+  }
+  return items;
+}

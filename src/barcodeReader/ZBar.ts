@@ -6,6 +6,7 @@ import { DecimalToHex } from "./Shared";
 export default class ZBar {
   private canvas!:HTMLCanvasElement;
   private reader:any;
+  private settings:any;
   async init() : Promise<void> {
     if (!this.canvas) {
       this.canvas = document.createElement("canvas");
@@ -111,5 +112,13 @@ export default class ZBar {
       joined = joined + DecimalToHex(byte.toString());
     }
     return joined;
+  }
+
+  getSupportedSettings():string[] {
+    return [];
+  }
+
+  async setSupportedSettings(settings:any):Promise<void> {
+    this.settings = settings;
   }
 }

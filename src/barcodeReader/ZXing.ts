@@ -7,6 +7,7 @@ import { getRectFromPoints } from "src/utils";
 export default class ZXing {
   private reader!:MultiFormatReader;
   private canvas!:HTMLCanvasElement;
+  private settings:any;
   async init() : Promise<void> {
     if (!this.reader) {
       //const hints:Map<DecodeHintType, any> = new Map<DecodeHintType, any>();
@@ -125,5 +126,13 @@ export default class ZXing {
     const luminanceSource = new HTMLCanvasElementLuminanceSource(this.canvas);
     const hybridBinarizer = new HybridBinarizer(luminanceSource);
     return new BinaryBitmap(hybridBinarizer);
+  }
+
+  getSupportedSettings():string[] {
+    return [];
+  }
+
+  async setSupportedSettings(settings:any):Promise<void> {
+    this.settings = settings;
   }
 }

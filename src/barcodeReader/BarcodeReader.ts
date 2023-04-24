@@ -39,6 +39,14 @@ export class BarcodeReader {
   static getEngines():string[] {
     return ["Dynamsoft","ZXing","ZBar"];
   }
+
+  getSupportedSettings():string[] {
+    return this.reader.getSupportedSettings();
+  }
+
+  async setSupportedSettings(settings:any):Promise<void> {
+    return this.reader.setSupportedSettings(settings);
+  }
 }
 
 export interface DetectionResult {

@@ -6,8 +6,9 @@
       </q-card-section>
       <q-separator></q-separator>
       <q-card-section>
-        <div style="padding-bottom: 20px;">
-          <q-select @update:model-value="selectedEngineChanged()" style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
+        <div class="row" style="padding-bottom: 20px;">
+          <q-select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngine" :options="engines" label="Engine" />
+          <q-btn flat round color="primary" icon="settings" @click="showSettingsModal()" />
         </div>
         <div class="row" style="align-items: center;">
           <q-btn outline color="primary" :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode" />
@@ -191,6 +192,27 @@
           </q-card-actions>
         </q-card>
       </q-dialog>
+      <q-dialog v-model="showSettings">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Settings</div>
+          </q-card-section>
+          <q-card-section class="q-pt-none">
+            <div v-for="setting in barcodeReaderSettings" v-bind:key="setting.name">
+              <div>
+                <label for="'settings-' + setting.name">{{ setting.name + ":" }}</label>
+              </div>
+              <div>
+                <textarea :id="'settings-' + setting.name" v-model="setting.value"/>
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn flat v-close-popup color="primary" label="Save" @click="saveSettings()"/>
+            <q-btn flat v-close-popup color="primary" label="Close"/>
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </div>
   </q-page>
 </template>
@@ -201,7 +223,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
+import { calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
 import JSZip from "jszip";
 import { PerformanceMetrics } from "src/definitions/definitions";
 
@@ -275,6 +297,8 @@ const projectName = ref("");
 const selectedEngine = ref("");
 const addAction = ref(false);
 const exportAction = ref(false);
+const showSettings = ref(false);
+const barcodeReaderSettings = ref([] as any[]);
 const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
@@ -307,9 +331,9 @@ onMounted(async () => {
   }
 });
 
-const updateRows = async () => {
+const updateRows = async (engine?:string) => {
   if (project) {
-    const engineStatistics = await calculateEngineStatistics(project,selectedEngine.value);
+    const engineStatistics = await calculateEngineStatistics(project,engine ?? selectedEngine.value);
     statistics.value = engineStatistics.metrics;
     if (engineStatistics.rows) {
       rows.value = engineStatistics.rows;
@@ -322,19 +346,8 @@ const decode = async () => {
   if (decoding.value === false) {
     decoding.value = true;
     hasToStop = false;
-    let needInitialization = false;
-    if (!reader) {
-      needInitialization = true;
-    }else{
-      if (reader.getEngine() != selectedEngine.value) {
-        needInitialization = true;
-      }
-    }
-    if (needInitialization) {
-      progressLabel.value = "Initializing...";
-      reader = await BarcodeReader.createInstance(selectedEngine.value);
-      progressLabel.value = "";
-    }
+    await reinitializeReaderIfNeeded();
+    await updateBarcodeReaderSettings();
     const length = project.info.images.length;
     progress.value = 0.0;
     progressLabel.value = "0/"+length;
@@ -498,15 +511,63 @@ const nameClicked = (name:string) => {
   window.open(routeUrl.href,'_blank');
 }
 
-const selectedEngineChanged = () => {
-  console.log("changed");
-  updateRows();
+const selectedEngineChanged = (engine:string) => {
+  updateRows(engine);
 }
 
 const goToComparisonPage = () => {
   const href = "/project/"+encodeURIComponent(projectName.value)+"/comparison";
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
+}
+
+const showSettingsModal = async () => {
+  await reinitializeReaderIfNeeded();
+  const settingsItems = reader.getSupportedSettings();
+  if (settingsItems.length>0) {
+    showSettings.value = true;
+    console.log(showSettings.value);
+    loadSettings(settingsItems);
+  }else{
+    alert("This engine does not have settings.");
+  }
+}
+
+const reinitializeReaderIfNeeded = async () => {
+  let needInitialization = false;
+  if (!reader) {
+    needInitialization = true;
+  }else{
+    if (reader.getEngine() != selectedEngine.value) {
+      needInitialization = true;
+    }
+  }
+  if (needInitialization) {
+    progressLabel.value = "Initializing...";
+    reader = await BarcodeReader.createInstance(selectedEngine.value);
+    progressLabel.value = "";
+  }
+}
+
+const loadSettings = async (settingsItems:string[]) => {
+  const items = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,settingsItems);
+  barcodeReaderSettings.value = items;
+}
+
+const saveSettings = async () => {
+  const settings = [];
+  for (let index = 0; index < barcodeReaderSettings.value.length; index++) {
+    const setting = barcodeReaderSettings.value[index];
+    const item:any = {};
+    item.name = setting.name;
+    item.value = setting.value;
+    settings.push(item);
+  }
+  await localForage.setItem(projectName.value+":settings:"+selectedEngine.value,settings);
+}
+
+const updateBarcodeReaderSettings = async () => {
+  await reader.setSupportedSettings(barcodeReaderSettings.value);
 }
 
 </script>
