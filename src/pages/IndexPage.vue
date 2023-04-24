@@ -257,11 +257,15 @@ const updateRemoteProjectProgress = (index:number) => {
 }
 
 const importRemoteProject = async () => {
-  await loadTextResultsFromZip();
   let newProjects:Project[] = [];
   projects.value.forEach(project => {
+    if (project.info.name === remoteProject.value?.info.name) {
+      alert("The project has already been added.");
+      return;
+    }
     newProjects.push(project);
   });
+  await loadTextResultsFromZip();
   if (remoteProject.value) {
     newProjects.push(remoteProject.value);
   }
