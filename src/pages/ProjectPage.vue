@@ -536,8 +536,8 @@ const showSettingsModal = async () => {
   await reinitializeReaderIfNeeded();
   const settingsItems = reader.getSupportedSettings();
   if (settingsItems.length>0) {
+    console.log(settingsItems);
     showSettings.value = true;
-    console.log(showSettings.value);
     loadSettings(settingsItems);
   }else{
     alert("This engine does not have settings.");

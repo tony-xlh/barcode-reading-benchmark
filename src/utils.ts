@@ -345,14 +345,16 @@ export function BlobtoDataURL(blob:Blob):Promise<string> {
 
 export const loadBarcodeReaderSettings = async (projectName:string,engine:string,settingsItems:string[]) => {
   const savedSettings:any = await localForage.getItem(projectName+":settings:"+engine);
-  const items = [];
+  const items:{name:string,value:string}[] = [];
   for (let i = 0; i < settingsItems.length; i++) {
     const setting = settingsItems[i];
     let value = "";
-    for (let j = 0; j < savedSettings.length; j++) {
-      const savedSettingsItem = savedSettings[j];
-      if (savedSettingsItem.name === setting) {
-        value = savedSettingsItem.value;
+    if (savedSettings) {
+      for (let j = 0; j < savedSettings.length; j++) {
+        const savedSettingsItem = savedSettings[j];
+        if (savedSettingsItem.name === setting) {
+          value = savedSettingsItem.value;
+        }
       }
     }
     const item: {name:string,value:string} = {
