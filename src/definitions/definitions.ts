@@ -41,10 +41,27 @@ export interface DetectionStatistics {
   misdetected: number;
 }
 
-export interface PerfomenceMetrics {
+export interface PerformanceMetrics {
   fileNumber: number;
+  correctFilesNumber:number;
   barcodeNumber: number;
   accuracy:number;
   precision:number;
   averageTime:number;
+}
+
+export interface ProjectStatistics {
+  metrics: PerformanceMetrics;
+  rows?:EngineDataTableRow[];
+}
+
+export interface EngineDataTableRow {
+  number: number;
+  filename: string;
+  groundTruth: string;
+  detectedText: string;
+  time: string;
+  barcodeFormat: string;
+  correct: string;
+  misdetected: string;
 }

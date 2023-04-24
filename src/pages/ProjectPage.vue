@@ -196,14 +196,14 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader, DetectionResult } from "src/barcodeReader/BarcodeReader";
+import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
 import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateDetectionStatistics, dataURLtoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
-import { GroundTruth } from "src/definitions/definitions";
+import { calculateProjectStatistics, dataURLtoBlob, getFilenameWithoutExtension, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
 import JSZip from "jszip";
+import { PerformanceMetrics } from "src/definitions/definitions";
 
 const columns = [
   {
@@ -279,7 +279,7 @@ const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
 const skipDetected = ref(true);
-const statistics = ref({fileNumber:0,correctFilesNumber:0,barcodeNumber:0,accuracy:0,precision:0,averageTime:0});
+const statistics = ref({fileNumber:0,correctFilesNumber:0,barcodeNumber:0,accuracy:0,precision:0,averageTime:0} as PerformanceMetrics);
 let hasToStop = false;
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
@@ -309,110 +309,12 @@ onMounted(async () => {
 
 const updateRows = async () => {
   if (project) {
-    let newRows = [];
-    let totalBarcodes = 0;
-    let totalBarcodesCorrectlyDetected = 0;
-    let totalBarcodesMisDetected = 0;
-    let totalElapsedTime = 0;
-    let detectedFiles = 0;
-    let totalCorrectFiles = 0;
-    for (let index = 0; index < project.info.images.length; index++) {
-      const imageName = project.info.images[index];
-      let joinedGroundTruth = "";
-      let groundTruthList:GroundTruth[] = [];
-      const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
-      if (groundTruthString) {
-        groundTruthList = JSON.parse(groundTruthString);
-        joinedGroundTruth = getJoinedGroundTruth(groundTruthList);
-      }
-      let joinedDetectionResult = "";
-      let elapsedTime = "";
-      let barcodeFormat = "";
-      let correct = "";
-      let misdetected = "";
-      const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
-      if (detectionResultString) {
-        const detectionResult:DetectionResult = JSON.parse(detectionResultString);
-        joinedDetectionResult = getJoinedDetectionResult(detectionResult)
-        barcodeFormat = getJoinedBarcodeFormat(detectionResult);
-        elapsedTime = detectionResult.elapsedTime.toString();
-        totalElapsedTime = totalElapsedTime + detectionResult.elapsedTime;
-        const detectionStatistics = calculateDetectionStatistics(detectionResult.results,groundTruthList);
-        if (detectionStatistics.correct === detectionStatistics.groundTruth) {
-          correct = "true";
-        }else{
-          correct = "false";
-        }
-        detectedFiles = detectedFiles + 1;
-        misdetected = detectionStatistics.misdetected.toString();
-        totalBarcodes = totalBarcodes + groundTruthList.length;
-        totalBarcodesCorrectlyDetected = totalBarcodesCorrectlyDetected + detectionStatistics.correct;
-        totalBarcodesMisDetected = totalBarcodesMisDetected + detectionStatistics.misdetected;
-      }
-      if (correct === "true") {
-        totalCorrectFiles = totalCorrectFiles + 1;
-      }
-      const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
-      const precision = parseFloat(((totalBarcodes - totalBarcodesMisDetected) / totalBarcodes * 100).toFixed(2));
-      statistics.value = {
-        fileNumber: project.info.images.length,
-        correctFilesNumber: totalCorrectFiles,
-        barcodeNumber: totalBarcodes,
-        accuracy: accuracy,
-        precision: precision,
-        averageTime: parseFloat((totalElapsedTime / detectedFiles).toFixed(2))
-      }
-
-      const row = {
-        number: (index + 1),
-        filename: imageName,
-        groundTruth: joinedGroundTruth,
-        detectedText: joinedDetectionResult,
-        time: elapsedTime,
-        barcodeFormat: barcodeFormat,
-        correct: correct,
-        misdetected: misdetected
-      }
-      newRows.push(row);
-    } 
-    rows.value = newRows;
-  }
-}
-
-const getJoinedGroundTruth = (groundTruthList:GroundTruth[]) => {
-  let joined = "";
-  for (let index = 0; index < groundTruthList.length; index++) {
-    const groundTruth = groundTruthList[index];
-    joined = joined + groundTruth.text;
-    if (index != groundTruthList.length - 1) {
-      joined = joined + ", ";
+    const projectStatistics = await calculateProjectStatistics(project,selectedEngine.value);
+    statistics.value = projectStatistics.metrics;
+    if (projectStatistics.rows) {
+      rows.value = projectStatistics.rows;
     }
   }
-  return joined;
-}
-
-const getJoinedDetectionResult = (detectionResult:DetectionResult) => {
-  let joined = "";
-  for (let index = 0; index < detectionResult.results.length; index++) {
-    const result = detectionResult.results[index];
-    joined = joined + result.barcodeText;
-    if (index != detectionResult.results.length - 1) {
-      joined = joined + ", ";
-    }
-  }
-  return joined;
-}
-
-const getJoinedBarcodeFormat = (detectionResult:DetectionResult) => {
-  let joined = "";
-  for (let index = 0; index < detectionResult.results.length; index++) {
-    const result = detectionResult.results[index];
-    joined = joined + result.barcodeFormat;
-    if (index != detectionResult.results.length - 1) {
-      joined = joined + ", ";
-    }
-  }
-  return joined;
 }
 
 const decode = async () => {

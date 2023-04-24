@@ -1,5 +1,5 @@
 import { BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
-import { DetectionStatistics, GroundTruth, Point, Rect } from "./definitions/definitions";
+import { DetectionStatistics, EngineDataTableRow, GroundTruth, PerformanceMetrics, Point, ProjectStatistics, Rect } from "./definitions/definitions";
 import leven from 'leven';
 import { Project } from "./project";
 import localForage from "localforage";
@@ -37,6 +37,116 @@ export const readFileAsText = async (file:File):Promise<string> => {
     };
     fileReader.readAsText(file);
   });
+}
+
+export const calculateProjectStatistics = async (project:Project,engine:string) => {
+  const projectName = project.info.name;
+  const newRows = [];
+  let totalBarcodes = 0;
+  let totalBarcodesCorrectlyDetected = 0;
+  let totalBarcodesMisDetected = 0;
+  let totalElapsedTime = 0;
+  let detectedFiles = 0;
+  let totalCorrectFiles = 0;
+  for (let index = 0; index < project.info.images.length; index++) {
+    const imageName = project.info.images[index];
+    let joinedGroundTruth = "";
+    let groundTruthList:GroundTruth[] = [];
+    const groundTruthString:string|null|undefined = await localForage.getItem(projectName+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
+    if (groundTruthString) {
+      groundTruthList = JSON.parse(groundTruthString);
+      joinedGroundTruth = getJoinedGroundTruth(groundTruthList);
+    }
+    let joinedDetectionResult = "";
+    let elapsedTime = "";
+    let barcodeFormat = "";
+    let correct = "";
+    let misdetected = "";
+    const detectionResultString:string|null|undefined = await localForage.getItem(projectName+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+engine+".json");
+    if (detectionResultString) {
+      const detectionResult:DetectionResult = JSON.parse(detectionResultString);
+      joinedDetectionResult = getJoinedDetectionResult(detectionResult)
+      barcodeFormat = getJoinedBarcodeFormat(detectionResult);
+      elapsedTime = detectionResult.elapsedTime.toString();
+      totalElapsedTime = totalElapsedTime + detectionResult.elapsedTime;
+      const detectionStatistics = calculateDetectionStatistics(detectionResult.results,groundTruthList);
+      if (detectionStatistics.correct === detectionStatistics.groundTruth) {
+        correct = "true";
+      }else{
+        correct = "false";
+      }
+      detectedFiles = detectedFiles + 1;
+      misdetected = detectionStatistics.misdetected.toString();
+      totalBarcodes = totalBarcodes + groundTruthList.length;
+      totalBarcodesCorrectlyDetected = totalBarcodesCorrectlyDetected + detectionStatistics.correct;
+      totalBarcodesMisDetected = totalBarcodesMisDetected + detectionStatistics.misdetected;
+    }
+    if (correct === "true") {
+      totalCorrectFiles = totalCorrectFiles + 1;
+    }
+    const row:EngineDataTableRow = {
+      number: (index + 1),
+      filename: imageName,
+      groundTruth: joinedGroundTruth,
+      detectedText: joinedDetectionResult,
+      time: elapsedTime,
+      barcodeFormat: barcodeFormat,
+      correct: correct,
+      misdetected: misdetected
+    }
+    newRows.push(row);
+  }
+  const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
+  const precision = parseFloat(((totalBarcodes - totalBarcodesMisDetected) / totalBarcodes * 100).toFixed(2));
+  const performanceMetrics:PerformanceMetrics = {
+    fileNumber: project.info.images.length,
+    correctFilesNumber: totalCorrectFiles,
+    barcodeNumber: totalBarcodes,
+    accuracy: accuracy,
+    precision: precision,
+    averageTime: parseFloat((totalElapsedTime / detectedFiles).toFixed(2))
+  }
+  const projectStatistics:ProjectStatistics = {
+    metrics:performanceMetrics,
+    rows:newRows
+  };
+  return projectStatistics;
+}
+
+const getJoinedGroundTruth = (groundTruthList:GroundTruth[]) => {
+  let joined = "";
+  for (let index = 0; index < groundTruthList.length; index++) {
+    const groundTruth = groundTruthList[index];
+    joined = joined + groundTruth.text;
+    if (index != groundTruthList.length - 1) {
+      joined = joined + ", ";
+    }
+  }
+  return joined;
+}
+
+const getJoinedDetectionResult = (detectionResult:DetectionResult) => {
+  let joined = "";
+  for (let index = 0; index < detectionResult.results.length; index++) {
+    const result = detectionResult.results[index];
+    joined = joined + result.barcodeText;
+    if (index != detectionResult.results.length - 1) {
+      joined = joined + ", ";
+    }
+  }
+  return joined;
+}
+
+const getJoinedBarcodeFormat = (detectionResult:DetectionResult) => {
+  let joined = "";
+  for (let index = 0; index < detectionResult.results.length; index++) {
+    const result = detectionResult.results[index];
+    joined = joined + result.barcodeFormat;
+    if (index != detectionResult.results.length - 1) {
+      joined = joined + ", ";
+    }
+  }
+  return joined;
 }
 
 export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],groundTruthList:GroundTruth[]):DetectionStatistics => {
