@@ -80,7 +80,7 @@
               </q-linear-progress>
               <q-btn outline color="primary" label="Download" v-on:click="downloadImages" />
             </div>
-            <div>
+            <div style="height:25px;">
               <span>{{ downloadingStatus }}</span>
             </div>
           </q-card-section>
