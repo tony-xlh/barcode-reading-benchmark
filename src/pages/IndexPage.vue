@@ -125,7 +125,7 @@ onMounted(async () => {
 });
 
 const loadRemoteProjects = async () => {
-  const resp = await fetch("/dataset/projects.json");
+  const resp = await fetch("./dataset/projects.json");
   const text = await resp.text();
   if (text) {
     try {
@@ -199,7 +199,7 @@ const deleteSelected = async () => {
 
 
 const showRemoteProjectActionDialog = async (name:string) => {
-  const resp = await fetch("/dataset/"+name+"/project_manifest.json");
+  const resp = await fetch("./dataset/"+name+"/project_manifest.json");
   const text = await resp.text();
   const projectObj:Project = JSON.parse(text);
   remoteProject.value = projectObj;
@@ -223,7 +223,7 @@ const showRemoteProjectActionDialog = async (name:string) => {
 
 const downloadTextResults = async () => {
   downloadingStatus.value = "Downloading...";
-  const resp = await fetch ("/dataset/"+remoteProject.value?.info.name+"/results.zip");
+  const resp = await fetch ("./dataset/"+remoteProject.value?.info.name+"/results.zip");
   downloadingStatus.value = "";
   const blob = await resp.blob();
   if (blob.size>0) {
@@ -241,7 +241,7 @@ const downloadImages = async () => {
       const image = remoteProject.value.info.images[index];
       const dataURLInDB = await localForage.getItem(remoteProject.value.info.name+":image:"+image);
       if (!dataURLInDB) {
-        const resp = await fetch ("/dataset/"+remoteProject.value.info.name+"/"+image);
+        const resp = await fetch ("./dataset/"+remoteProject.value.info.name+"/"+image);
         const blob = await resp.blob();
         if (blob.size>0) {
           const dataURL = BlobtoDataURL(blob);
