@@ -66,7 +66,7 @@ module.exports = configure(function (/* ctx */) {
       // vueOptionsAPI: false,
 
       // rebuildCache: true, // rebuilds Vite/linter/etc cache on startup
-      publicPath: '/barcode-dataset'
+      publicPath: '/barcode-dataset/benchmark'
       // publicPath: '/',
       // analyze: true,
       // env: {},
