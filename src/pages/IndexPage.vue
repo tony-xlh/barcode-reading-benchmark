@@ -66,7 +66,7 @@
           </q-card-section>
           <q-card-section>
             <div>
-              Text results<span v-if="textResultsDownloaded"> (downloaded)</span>: <span>{{ downloadingStatus }}</span>
+              Text results<span v-if="textResultsDownloaded"> (downloaded)</span>: 
               <div>
                 <q-btn outline color="primary" label="Download" v-on:click="downloadTextResults" />
               </div>
@@ -79,6 +79,9 @@
                 </div>
               </q-linear-progress>
               <q-btn outline color="primary" label="Download" v-on:click="downloadImages" />
+            </div>
+            <div>
+              <span>{{ downloadingStatus }}</span>
             </div>
           </q-card-section>
           <q-card-actions align="right">
@@ -222,6 +225,10 @@ const showRemoteProjectActionDialog = async (name:string) => {
 }
 
 const downloadTextResults = async () => {
+  if (downloadingStatus.value === "Downloading...") {
+    alert("Already downloading.");
+    return;
+  }
   downloadingStatus.value = "Downloading...";
   const resp = await fetch ("./dataset/"+remoteProject.value?.info.name+"/results.zip");
   downloadingStatus.value = "";
@@ -234,8 +241,14 @@ const downloadTextResults = async () => {
 
 const downloadImages = async () => {
   if (remoteProject.value) {
+    if (downloadingStatus.value === "Downloading...") {
+      alert("Already downloading.");
+      return;
+    }
+    downloadingStatus.value = "Downloading...";
     for (let index = 0; index < remoteProject.value.info.images.length; index++) {
       if (remoteProjectAction.value === false) { //stop downloading if the dialog is hidden
+        downloadingStatus.value = "";
         return;
       }
       const image = remoteProject.value.info.images[index];
@@ -250,6 +263,7 @@ const downloadImages = async () => {
       }
       updateRemoteProjectProgress(index);
     }
+    downloadingStatus.value = "";
   }
 }
 
