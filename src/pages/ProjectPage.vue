@@ -184,6 +184,9 @@
               <q-btn outline color="primary" label="Download images" v-on:click="downloadImages" />
             </div>
             <div>
+              <q-btn outline color="primary" label="Download images in a zip" v-on:click="downloadImagesAsZip" />
+            </div>
+            <div>
               <q-btn outline color="primary" label="Download TextResults.zip" v-on:click="downloadTextResults" />
             </div>
           </q-card-section>
@@ -471,6 +474,27 @@ const downloadImages = async () => {
       document.body.removeChild(link)
     }
   }
+};
+
+const downloadImagesAsZip = async () => {
+  const zip = new JSZip();
+  for (let index = 0; index < project.info.images.length; index++) {
+    const imageName = project.info.images[index];
+    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
+    if (dataURL) {
+      console.log(imageName);
+      const blob = dataURLtoBlob(dataURL);
+      zip.file(imageName, blob);
+    }
+  }
+  zip.generateAsync({type:"blob"}).then(function(content) {
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(content);
+    link.download = projectName.value+"-images.zip";
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  });
 };
 
 const downloadTextResults = async () => {
