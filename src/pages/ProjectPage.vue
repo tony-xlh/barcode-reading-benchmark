@@ -224,6 +224,7 @@
 import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
 import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
+import { useMeta } from 'quasar'
 import { useRouter } from "vue-router";
 import localForage from "localforage";
 import { calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
@@ -321,7 +322,10 @@ onMounted(async () => {
   if (supportedEngines.length>0) {
     selectedEngine.value = supportedEngines[0];
   }
-
+  useMeta({
+    // sets document title
+    title: 'Barcode Reading Benchmark - '+ projectName.value,
+  })
   if (savedProjects) {
     projects = JSON.parse(savedProjects as string);
     for (let index = 0; index < projects.length; index++) {

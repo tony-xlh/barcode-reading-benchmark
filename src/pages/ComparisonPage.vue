@@ -63,6 +63,7 @@ import {
 import VChart from "vue-echarts";
 import { EngineStatistics } from "src/definitions/definitions";
 import { calculateEngineStatistics } from "src/utils";
+import { useMeta } from "quasar";
 
 use([
   SVGRenderer,
@@ -101,6 +102,10 @@ onMounted(async () => {
     enginesList.push(item);
   }
   engines.value = enginesList;
+  useMeta({
+    // sets document title
+    title: 'Barcode Reading Benchmark - '+ projectName.value + ' - Comparison',
+  })
   const savedProjects = await localForage.getItem("projects");
   if (savedProjects) {
     const projects = JSON.parse(savedProjects as string);

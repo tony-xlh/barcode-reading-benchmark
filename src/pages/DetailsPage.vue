@@ -83,6 +83,7 @@ import localForage from "localforage";
 import { dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 import { Project } from "src/project";
+import { useMeta } from "quasar";
 const router = useRouter();
 const projectName = ref("");
 const imageName = ref("");
@@ -105,6 +106,10 @@ onMounted(() => {
   selectedEngine.value = router.currentRoute.value.params.engine as string;
   const supportedEngines = BarcodeReader.getEngines();
   engines.value = supportedEngines;
+  useMeta({
+    // sets document title
+    title: 'Barcode Reading Benchmark - '+ projectName.value + ' - ' + imageName.value,
+  })
   loadImage();
   loadBarcodeResultsAndGroundTruth();
 });
