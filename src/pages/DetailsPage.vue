@@ -64,6 +64,9 @@
             </a>
           </svg>
         </div>
+        <div>
+          <a href="javascript:void();" @click="downloadImage()">Download</a>
+        </div>
       </div>
     </div>
     <div class="row">
@@ -77,7 +80,7 @@ import { BarcodeReader, BarcodeResult, DetectionResult } from "src/barcodeReader
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
+import { dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 import { Project } from "src/project";
 const router = useRouter();
@@ -246,6 +249,16 @@ const deleteThisImage = async () => {
     await localForage.setItem("projects", JSON.stringify(projects));
     alert("deleted");
   }
+}
+
+const downloadImage = () => {
+  const blob = dataURLtoBlob(dataURL.value);
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob);
+  link.download = imageName.value;
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
 }
 
 </script>
