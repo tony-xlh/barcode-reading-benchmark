@@ -223,7 +223,7 @@ import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles } from "src/utils";
+import { calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
 import JSZip from "jszip";
 import { PerformanceMetrics } from "src/definitions/definitions";
 
@@ -461,6 +461,7 @@ const downloadImages = async () => {
     const imageName = project.info.images[index];
     const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
     if (dataURL) {
+      await sleep(1000);
       const blob = dataURLtoBlob(dataURL);
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob);

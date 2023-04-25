@@ -370,3 +370,9 @@ export const loadBarcodeReaderSettings = async (projectName:string,engine:string
   }
   return items;
 }
+
+export function sleep(time:number){
+  return new Promise(function(resolve){
+    setTimeout(resolve, time);
+  });
+}
