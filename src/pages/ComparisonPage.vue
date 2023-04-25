@@ -20,6 +20,26 @@
           </div>
         </div>
       </q-card-section>
+      <q-card-section v-if="tableRows.length > 0">
+        <q-markup-table>
+          <thead>
+            <tr>
+              <th class="text-left">No.</th>
+              <th class="text-left">Filename</th>
+              <th class="text-left">Detected engines</th>
+              <th class="text-left">Failed engines</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="row in tableRows" v-bind:key="row.number">
+              <td>{{ row.number }}</td>
+              <td><a href="javascript:void();" @click="goToDetailsPage(row.filename)"> {{ row.filename }} </a></td>
+              <td>{{ row.detectedEngines.join(", ") }}</td>
+              <td>{{ row.failedEngines.join(", ") }}</td>
+            </tr>
+          </tbody>
+        </q-markup-table>
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
@@ -61,7 +81,16 @@ const averageTimeOption = ref({});
 const projectName = ref("");
 const engines = ref([] as {name:string,enabled:boolean}[])
 const router = useRouter();
+const tableRows = ref([] as tableRow[]);
 let project:Project;
+
+interface tableRow {
+  number:number;
+  filename:string;
+  detectedEngines:string[];
+  failedEngines:string[];
+}
+
 onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
   const supportedEngines = BarcodeReader.getEngines();
@@ -93,6 +122,9 @@ const getStatistics = async () => {
     statisticsOfEngines.push(statistics);
   }
   statisticsOfEngines.sort((a, b) => b.metrics.accuracy - a.metrics.accuracy);
+
+  calculateTableRows(statisticsOfEngines);
+
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
   const readRates = getData(statisticsOfEngines,"accuracy");
   
@@ -171,6 +203,34 @@ const getStatistics = async () => {
   averageTimeOption.value = optionForAverageTime;
 }
 
+const calculateTableRows = (statisticsOfEngines:EngineStatistics[]) => {
+  const rows:tableRow[] = [];
+  if (statisticsOfEngines[0].rows) {
+    for (let i = 0; i < statisticsOfEngines[0].rows.length; i++) {
+      const detectedEngines = [];
+      const failedEngines = [];
+      for (let j = 0; j < statisticsOfEngines.length; j++) {
+        const statistics = statisticsOfEngines[j];
+        if (statistics.rows) {
+          if (statistics.rows[i].correct === "true") {
+            detectedEngines.push(statistics.name);
+          }else{
+            failedEngines.push(statistics.name);
+          }
+        }
+      }
+      const row:tableRow = {
+        number: (i+1),
+        filename: statisticsOfEngines[0].rows[i].filename,
+        detectedEngines: detectedEngines,
+        failedEngines: failedEngines
+      }
+      rows.push(row);
+    }
+  }
+  tableRows.value = rows;
+}
+
 const getSelectedEngines = () => {
   const selectedEngines:string[] = [];
   for (let index = 0; index < engines.value.length; index++) {
@@ -198,6 +258,12 @@ const getData = (statisticsOfEngines:EngineStatistics[],key:string) => {
     data.push((statistics.metrics as any)[key]);
   }
   return data;
+}
+
+const goToDetailsPage = (name:string) => {
+  const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name);
+  const routeUrl = router.resolve(href);
+  window.open(routeUrl.href,'_blank');
 }
 
 
