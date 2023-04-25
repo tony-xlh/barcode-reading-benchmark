@@ -19,9 +19,9 @@ The following SDKs are included for testing:
 
 ## How the Metrics are Calculated
 
-* Reading rate: correctly detected barcodes / total barcodes
-* Precision: incorrectly detected barcodes / total barcodes
-* Average time: total time elapsed time / total files
+* Reading rate: `correctly detected barcodes / total barcodes`
+* Precision: `incorrectly detected barcodes / total barcodes`
+* Average time: `total time elapsed time / total files`
 
 ## How to infer that a Barcode is Correctly Detected
 
