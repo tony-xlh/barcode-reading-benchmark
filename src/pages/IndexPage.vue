@@ -72,7 +72,13 @@
               </div>
             </div>
             <div>
-              Images:
+              Images 
+              <a href="javascript:void();">
+                (help)
+                <q-tooltip style="font-size: 14px;">
+                  required if you need to checkout the images or rerun the decoding
+                </q-tooltip>
+              </a>:
               <q-linear-progress size="25px" :value="remoteImageFilesProgress" color="blue">
                 <div class="absolute-full flex flex-center">
                   <q-badge color="white" text-color="black" :label="remoteImageFilesProgressLabel" />
