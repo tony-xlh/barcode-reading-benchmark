@@ -1,8 +1,108 @@
-# Barcode Reading Benchmark (barcode-reading-benchmark)
+# Barcode Reading Benchmark
 
-Barcode reading benchmark tool
+A barcode reading benchmark tool based on Quasar + Vue. It can create barcode reading benchmark projects which save the test results and images in indexedDB. The benchmark can run purely in the browser.
 
-## Install the dependencies
+The following SDKs are included for testing:
+
+* [Dynamsoft Barcode Reader JavaScript Edition](https://www.dynamsoft.com/barcode-reader/sdk-javascript/)
+* [ZBar.wasm](https://github.com/undecaf/zbar-wasm)
+* [ZXing-js](https://github.com/zxing-js/library)
+
+[Online demo](https://tony-xlh.github.io/barcode-dataset/benchmark/)
+
+## Features
+
+* Run batch barcode decoding on an image dataset
+* Calculate metrics like reading rate, precision and average time
+* Compare the performance of different barcode reading libraries
+* Export and import of benchmark projects
+
+## How the Metrics are Calculated
+
+* Reading rate: correctly detected barcodes / total barcodes
+* Precision: incorrectly detected barcodes / total barcodes
+* Average time: total time elapsed time / total files
+
+## How to infer that a Barcode is Correctly Detected
+
+1. Check if there is a ground truth barcode which overlaps with the detected barcode using IoU (intersection of union).
+2. Check if the barcode text is correct. If the barcode content is in raw bytes, compare the binaries. Since 2D barcodes use Reed–Solomon error correction, it is okay if some of the binaries do not match with the ground truth's (based on edit distance).
+
+## Dive into Formats
+
+* Barcode Detection Result
+   
+   ```ts
+   export interface DetectionResult {
+     elapsedTime:number;
+     results:BarcodeResult[];
+   }
+
+   export interface BarcodeResult {
+     barcodeFormat: string;
+     barcodeText: string;
+     barcodeBytes: string;
+     confidence?: number;
+     x1:number;
+     x2:number;
+     x3:number;
+     x4:number;
+     y1:number;
+     y2:number;
+     y3:number;
+     y4:number;
+   }
+   ```
+   
+   Barcode detection result is saved in the above format in JSON with the `.json` extension.
+
+* Ground Truth
+
+   ```ts
+   export interface GroundTruth {
+     text:string;
+     x1:number;
+     x2:number;
+     x3:number;
+     x4:number;
+     y1:number;
+     y2:number;
+     y3:number;
+     y4:number;
+     attrib:Attrib;
+     value_attrib:ValueAttrib;
+   }
+
+   export interface Attrib {
+     Type:string;
+   }
+
+   export interface ValueAttrib {
+     Mode?:string;
+   }
+   ```
+   
+   Ground truth is saved in the above format in JSON with the `.txt` extension.
+
+* Remote Projects
+
+   Put the files like the following example to the dataset folder as remote projects. Users can download them to check them out locally. The files can be retrieved using the export feature.
+
+   ```
+   │  projects.json
+   │
+   │─ Project
+           detection_result_filenames.json
+           project_manifest.json
+           results.zip
+           [P]ISBN_18_0010.jpg
+           [P]ISBN_18_0077.jpg
+   ```
+
+## How to run the app
+
+### Install the dependencies
+
 ```bash
 yarn
 # or
@@ -13,23 +113,6 @@ npm install
 ```bash
 quasar dev
 ```
-
-
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
-
-
-### Format the files
-```bash
-yarn format
-# or
-npm run format
-```
-
 
 
 ### Build the app for production
