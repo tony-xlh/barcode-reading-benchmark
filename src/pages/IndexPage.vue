@@ -281,6 +281,10 @@ const updateRemoteProjectProgress = (index:number) => {
 }
 
 const importRemoteProject = async () => {
+  if (textResultsDownloaded.value === false) {
+    alert("Please download the text results.");
+    return;
+  }
   let newProjects:Project[] = [];
   projects.value.forEach(project => {
     if (project.info.name === remoteProject.value?.info.name) {
@@ -297,7 +301,7 @@ const importRemoteProject = async () => {
   await localForage.setItem("projects", JSON.stringify(newProjects));
 }
 
-const loadTextResultsFromZip = async () => {
+const loadTextResultsFromZip = async ():Promise<boolean> => {
   if (remoteProject.value) {
     const blob:Blob|null|undefined = await localForage.getItem(remoteProject.value.info.name+":results.zip");
     if (blob) {
@@ -332,9 +336,10 @@ const loadTextResultsFromZip = async () => {
           await localForage.setItem(remoteProject.value.info.name+":settings:"+engine,JSON.parse(settingsString));
         }
       }
-      
+      return true;
     }
   }
+  return false;
 }
 
 
