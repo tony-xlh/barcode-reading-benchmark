@@ -40,12 +40,17 @@
         </div>
       </div>
       <div class="col">
-        <div style="max-height:500px;overflow:auto;">
-          <div v-if="!dataURL">Downloading...</div>
+        <div>
+          <div style="text-align:right;">
+            <span v-if="!dataURL"> Downloading... </span>
+            <a href="javascript:void();" @click="downloadImage()">Save the image</a>
+          </div>
+        </div>
+        <div style="max-height:75vh;overflow:auto;">
           <svg
             :viewBox="viewBox"
-            class="overlay"
-            v-else-if="dataURL"
+            class="fade"
+            v-if="dataURL"
           >
             <image :href="dataURL"></image>
             <a v-if="showDetectionResults">
@@ -65,9 +70,6 @@
               </polygon>
             </a>
           </svg>
-        </div>
-        <div>
-          <a href="javascript:void();" @click="downloadImage()">Save the image</a>
         </div>
       </div>
     </div>
@@ -267,13 +269,18 @@ const deleteThisImage = async () => {
 }
 
 const downloadImage = () => {
-  const blob = dataURLtoBlob(dataURL.value);
-  const link = document.createElement('a')
-  link.href = URL.createObjectURL(blob);
-  link.download = imageName.value;
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
+  if (dataURL.value) {
+    const blob = dataURLtoBlob(dataURL.value);
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob);
+    link.download = imageName.value;
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }else{
+    alert("The image has not been downloaded.");
+  }
+  
 }
 
 </script>
@@ -318,5 +325,19 @@ pre {
 
 .incorrect {
   background: rgba(255, 0, 0, 0.5);
+}
+
+.fade {
+  animation-name: fadeIn;
+  animation-duration: 1.5s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0.4;
+  }
+  to {
+    opacity: 1;
+  }
 }
 </style>
