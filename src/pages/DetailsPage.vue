@@ -1,7 +1,7 @@
 <template>
   <div class="q-pa-md example-row-equal-width">
     <div class="row">
-      <div class="col-12 col-md">
+      <div class="col-12 col-md" style="padding-right:10px;">
         <div style="padding-bottom: 20px;">
           <q-select @update:model-value="selectedEngineChanged($event)" style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
         </div>
