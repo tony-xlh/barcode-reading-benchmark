@@ -41,9 +41,11 @@
       </div>
       <div class="col">
         <div style="max-height:500px;overflow:auto;">
+          <div v-if="!dataURL">Downloading...</div>
           <svg
             :viewBox="viewBox"
             class="overlay"
+            v-else-if="dataURL"
           >
             <image :href="dataURL"></image>
             <a v-if="showDetectionResults">
@@ -65,7 +67,7 @@
           </svg>
         </div>
         <div>
-          <a href="javascript:void();" @click="downloadImage()">Download</a>
+          <a href="javascript:void();" @click="downloadImage()">Save the image</a>
         </div>
       </div>
     </div>
@@ -80,7 +82,7 @@ import { BarcodeReader, BarcodeResult, DetectionResult } from "src/barcodeReader
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
+import { BlobtoDataURL, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 import { Project } from "src/project";
 import { useMeta } from "quasar";
@@ -122,6 +124,14 @@ const loadImage = async () => {
     img.onload = function(){
       viewBox.value= "0 0 "+img.width+" "+img.height;
       dataURL.value = imageDataURL;
+    }
+  }else{
+    const resp = await fetch ("./dataset/"+projectName.value+"/"+imageName.value);
+    const blob = await resp.blob();
+    if (blob.size>0) {
+      const convertedDataURL = await BlobtoDataURL(blob);
+      await localForage.setItem(projectName.value+":image:"+imageName.value,convertedDataURL);
+      loadImage();
     }
   }
 }

@@ -263,7 +263,7 @@ const downloadImages = async () => {
         const resp = await fetch ("./dataset/"+remoteProject.value.info.name+"/"+image);
         const blob = await resp.blob();
         if (blob.size>0) {
-          const dataURL = BlobtoDataURL(blob);
+          const dataURL = await BlobtoDataURL(blob);
           await localForage.setItem(remoteProject.value.info.name+":image:"+image,dataURL);
         }
       }
