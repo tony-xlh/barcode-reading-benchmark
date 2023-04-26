@@ -47,7 +47,7 @@
         </div>
         <div style="max-height:75vh;overflow:auto;">
           <svg
-            :viewBox="viewBox"
+            :viewBox="'0 0 '+imgWidth+' '+imgHeight"
             class="fade"
             v-if="dataURL"
           >
@@ -67,6 +67,12 @@
               >
                 <title>{{ groundTruth.attrib.Type + ": " + groundTruth.text }}</title>
               </polygon>
+              <text v-bind:key="'text'+index" v-for="(groundTruth,index) in groundTruthList"
+                :x="groundTruth.x1"
+                :y="groundTruth.y1"
+                :font-size="16 / (640 / imgWidth)"
+                class="barcodeTypeLabel"
+              > {{ groundTruth.attrib.Type }} </text>
             </a>
           </svg>
         </div>
@@ -92,7 +98,8 @@ const projectName = ref("");
 const imageName = ref("");
 const selectedEngine = ref("");
 const engines = ref([] as string[])
-const viewBox = ref("0 0 0 0")
+const imgWidth = ref(0);
+const imgHeight = ref(0);
 const dataURL = ref("");
 const barcodeResults = ref([] as BarcodeResult[]);
 const groundTruthList = ref([] as GroundTruth[]);
@@ -123,7 +130,8 @@ const loadImage = async () => {
     let img = new Image();
     img.src = imageDataURL;
     img.onload = function(){
-      viewBox.value= "0 0 "+img.width+" "+img.height;
+      imgWidth.value = img.width;
+      imgHeight.value = img.height;
       dataURL.value = imageDataURL;
     }
   }else{
@@ -338,5 +346,11 @@ pre {
   to {
     opacity: 1;
   }
+}
+
+.barcodeTypeLabel {
+  fill:white;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px black;
 }
 </style>
