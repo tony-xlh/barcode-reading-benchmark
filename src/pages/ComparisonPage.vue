@@ -12,10 +12,10 @@
         </div>
         <q-btn outline color="primary" label="Get comparison statistics" v-on:click="getStatistics()" />
         <div class="row" style="padding-top:1em;" v-if="Object.keys(readingRateOption).length > 0">
-          <div class="col">
+          <div class="col-12 col-md">
             <v-chart class="chart" :option="readingRateOption" />
           </div>
-          <div class="col">
+          <div class="col-12 col-md">
             <v-chart class="chart" :option="averageTimeOption" />
           </div>
         </div>
