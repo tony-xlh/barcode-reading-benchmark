@@ -40,11 +40,10 @@
         </div>
       </div>
       <div class="col-12 col-md">
-        <div>
-          <div style="text-align:right;">
-            <span v-if="!dataURL"> Downloading... </span>
-            <a href="javascript:void();" @click="downloadImage()">Save the image</a>
-          </div>
+        <div style="display:flex;">
+          <div v-if="!dataURL">Downloading... </div>
+          <div style="flex:1;"></div>
+          <div><a  href="javascript:void();" @click="downloadImage()">Save the image</a></div>
         </div>
         <div style="max-height:75vh;overflow:auto;">
           <svg
