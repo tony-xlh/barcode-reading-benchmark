@@ -16,7 +16,7 @@
         <div>
           <q-checkbox v-model="showGroundTruth" label="Show Ground Trurh" />
         </div>
-        <div class="row">
+        <div class="row results">
           <div class="col">
             Barcode Results:
             <q-list bordered class="rounded-borders">
@@ -43,7 +43,32 @@
         <div style="display:flex;">
           <div v-if="!dataURL">Downloading... </div>
           <div style="flex:1;"></div>
-          <div><a  href="javascript:void();" @click="downloadImage()">Save the image</a></div>
+          <div>
+            <q-btn-dropdown color="primary" label="Action">
+              <q-list>
+                <q-item clickable v-close-popup @click="downloadImage">
+                  <q-item-section>
+                    <q-item-label>Save the image</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="toggleAnnotationMode">
+                  <q-item-section>
+                    <q-item-label>{{ annotationMode? "Disable":"Enable" }} annotation</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="convertDetectedResultsToGroundTruth">
+                  <q-item-section>
+                    <q-item-label>Convert detected results to ground truth</q-item-label>
+                  </q-item-section>
+                </q-item>
+                <q-item clickable v-close-popup @click="saveModifiedGroundTruth">
+                  <q-item-section>
+                    <q-item-label>Save modified ground truth</q-item-label>
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-btn-dropdown>
+          </div>
         </div>
         <div style="max-height:75vh;overflow:auto;">
           <svg
@@ -89,7 +114,7 @@ import { BarcodeReader, BarcodeResult, DetectionResult } from "src/barcodeReader
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { BlobtoDataURL, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
+import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
 import { GroundTruth } from "src/definitions/definitions";
 import { Project } from "src/project";
 import { useMeta } from "quasar";
@@ -108,6 +133,7 @@ const showGroundTruth = ref(true);
 const saveDetectionResults = ref(false);
 const status = ref("");
 const incorrectDetectionResultIndex = ref([] as number[]);
+const annotationMode = ref(false);
 let reader: BarcodeReader;
 
 onMounted(() => {
@@ -292,15 +318,27 @@ const downloadImage = () => {
   }else{
     alert("The image has not been downloaded.");
   }
-  
+}
+
+const toggleAnnotationMode = () => {
+  annotationMode.value = !annotationMode.value;
+}
+
+const convertDetectedResultsToGroundTruth = () => {
+  groundTruthList.value = ConvertBarcodeResultsToGroundTruth(barcodeResults.value);
+}
+
+const saveModifiedGroundTruth = async () => {
+  await localForage.setItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt",JSON.stringify(groundTruthList.value));
+  alert("Saved");
 }
 
 </script>
 <style>
-.q-item {
+.results .q-item {
   padding: 0px;
 }
-.q-item__label {
+.results .q-item__label {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

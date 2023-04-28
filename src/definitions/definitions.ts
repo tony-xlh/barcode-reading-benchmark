@@ -46,6 +46,7 @@ export interface PerformanceMetrics {
   fileNumber: number;
   correctFilesNumber:number;
   barcodeNumber: number;
+  detectedFilesRate: number;
   accuracy:number;
   precision:number;
   averageTime:number;

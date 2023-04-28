@@ -397,3 +397,29 @@ export function sleep(time:number){
     setTimeout(resolve, time);
   });
 }
+
+export function ConvertBarcodeResultsToGroundTruth(barcodeResults:BarcodeResult[]):GroundTruth[] {
+  const listOfGroundTruth:GroundTruth[] = [];
+  for (let index = 0; index < barcodeResults.length; index++) {
+    const result = barcodeResults[index];
+    listOfGroundTruth.push(ConvertBarcodeResultToGroundTruth(result));
+  }
+  return listOfGroundTruth;
+}
+
+export function ConvertBarcodeResultToGroundTruth(result:BarcodeResult):GroundTruth {
+  const groundTruth:GroundTruth = {
+    text: result.barcodeText,
+    attrib:{Type:result.barcodeFormat},
+    value_attrib:{},
+    x1:result.x1,
+    x2:result.x2,
+    x3:result.x3,
+    x4:result.x4,
+    y1:result.y1,
+    y2:result.y2,
+    y3:result.y3,
+    y4:result.y4
+  }
+  return groundTruth;
+}
