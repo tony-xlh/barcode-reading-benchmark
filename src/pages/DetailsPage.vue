@@ -187,7 +187,7 @@ onMounted(() => {
     title: 'Barcode Reading Benchmark - '+ projectName.value + ' - ' + imageName.value,
   })
   loadImage();
-  loadBarcodeResultsAndGroundTruth();
+  loadBarcodeResultsAndGroundTruth(router.currentRoute.value.params.engine as string);
 });
 
 const loadImage = async () => {
@@ -222,10 +222,11 @@ const loadBarcodeResultsAndGroundTruth = async (engine?:string,detectionResult?:
     barcodeResults.value = detectionResult.results;
   }else{
     const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngineName+".json");
-    let detectionResult:DetectionResult;
     if (detectionResultString) {
       detectionResult = JSON.parse(detectionResultString);
-      barcodeResults.value = detectionResult.results;
+      if (detectionResult) {
+        barcodeResults.value = detectionResult.results;
+      }
     }else{
       barcodeResults.value = [];
     }
@@ -236,7 +237,6 @@ const loadBarcodeResultsAndGroundTruth = async (engine?:string,detectionResult?:
     parsedGroundTruth = JSON.parse(groundTruthString);
     groundTruthList.value = parsedGroundTruth;
   }
-
   if (detectionResult && groundTruthString) {
     findOutIncorrectDetectionResults(detectionResult.results,parsedGroundTruth);
   }
@@ -281,7 +281,6 @@ const decode = async () => {
 
 const updateBarcodeReaderSettings = async () => {
   const settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,reader.getSupportedSettings());
-  console.log(settings);
   await reader.setSupportedSettings(settings);
 }
 
@@ -298,7 +297,7 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
       }else {
         const points1 = getPointsFromBarcodeResultResult(barcodeResult);
         const points2 = getPointsFromGroundTruth(groundTruth);
-        IoU = intersectionOverUnion(points1,points2);
+        IoU = intersectionOverUnion(points1, points2);
       }
       if (IoU > 0) {
         if (groundTruth.text) {
