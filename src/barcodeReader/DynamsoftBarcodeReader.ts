@@ -3,7 +3,7 @@ import { BarcodeResult, DetectionResult } from "./BarcodeReader";
 import { DecimalToHex } from "./Shared";
 import Encoding from "encoding-japanese";
 
-BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.20/dist/";
+BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.2.13/dist/";
 
 let reader:BarcodeReader;
 export default class DynamsoftBarcodeReader {

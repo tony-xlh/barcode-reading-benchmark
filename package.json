@@ -15,7 +15,7 @@
   "dependencies": {
     "@quasar/extras": "^1.0.0",
     "@zxing/library": "^0.20.0",
-    "dynamsoft-javascript-barcode": "^9.6.20",
+    "dynamsoft-javascript-barcode": "^9.2.13",
     "echarts": "^5.4.2",
     "encoding-japanese": "^2.0.0",
     "jszip": "^3.10.1",
