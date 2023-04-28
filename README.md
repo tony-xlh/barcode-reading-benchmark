@@ -21,9 +21,9 @@ The following SDKs are included for testing:
 
 * Reading rate: `correctly detected barcodes / total barcodes`
 * Precision: `incorrectly detected barcodes / total barcodes`
-* Average time: `total time elapsed time / total files`
+* Average time: `total time elapsed / total files`
 
-## How to infer that a Barcode is Correctly Detected
+## How to Infer that a Barcode is Correctly Detected
 
 1. Check if there is a ground truth barcode which overlaps with the detected barcode using IoU (intersection of union).
 2. Check if the barcode text is correct. If the barcode content is in raw bytes, compare the binaries. Since 2D barcodes use Reed–Solomon error correction, it is okay if some of the binaries do not match with the ground truth's (based on edit distance).
