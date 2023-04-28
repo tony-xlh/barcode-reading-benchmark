@@ -76,6 +76,7 @@
             ref="svgRef"
             :class="'fade'+(annotationMode?' annotator':'')"
             v-on:contextmenu="onContextMenu($event)"
+            v-on:mousedown="onMouseDown($event)"
             v-if="dataURL"
           >
             <image :href="dataURL"></image>
@@ -101,6 +102,10 @@
                 class="barcodeTypeLabel"
               > {{ groundTruth.attrib.Type }} </text>
             </a>
+            <a v-if="annotationMode">
+              <circle v-bind:key="'point'+index" v-for="(point,index) in newGroundTruthPoints"
+                :cx="point.x" :cy="point.y" />
+            </a>
           </svg>
         </div>
       </div>
@@ -116,8 +121,8 @@ import { BarcodeReader, BarcodeResult, DetectionResult } from "src/barcodeReader
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
-import { GroundTruth } from "src/definitions/definitions";
+import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, getRectFromPoints, intersectionOverUnion, loadBarcodeReaderSettings, textCorrect } from "src/utils";
+import { GroundTruth, Point } from "src/definitions/definitions";
 import { Project } from "src/project";
 import { useMeta } from "quasar";
 const router = useRouter();
@@ -138,6 +143,7 @@ const incorrectDetectionResultIndex = ref([] as number[]);
 const annotationMode = ref(false);
 const svgRef = ref();
 let reader: BarcodeReader;
+const newGroundTruthPoints = ref([] as Point[]);
 
 onMounted(() => {
   projectName.value = router.currentRoute.value.params.name as string;
@@ -342,6 +348,59 @@ const onContextMenu = (event:any) => {
   return false;
 }
 
+const getPosition = (x:number,y:number) => {
+  let percent = 1.0;
+  percent = imgWidth.value/svgRef.value.clientWidth;
+  const point:Point = {
+    x:Math.floor(percent*x),
+    y:Math.floor(percent*y)
+  };
+  return point;
+}
+
+const onMouseDown = (event:any) => {
+  if (annotationMode.value) {
+    const points:Point[] = [];
+    newGroundTruthPoints.value.forEach(point => {
+      points.push(point)
+    });
+    if (event.button == 2){
+      event.preventDefault();
+      points.pop();
+    }else {
+      points.push(getPosition(event.offsetX,event.offsetY));
+      if (points.length >= 4){
+        createNewGroundTruthFromPoints(points);
+        return;
+      }
+    }
+    newGroundTruthPoints.value = points;
+  }
+}
+
+const createNewGroundTruthFromPoints = (points:Point[]) => {
+  const newListOfGroundTruth:GroundTruth[] = [];
+  const groundTruth:GroundTruth = {
+    x1:points[0].x,
+    x2:points[1].x,
+    x3:points[2].x,
+    x4:points[3].x,
+    y1:points[0].y,
+    y2:points[1].y,
+    y3:points[2].y,
+    y4:points[3].y,
+    text:"",
+    attrib:{Type:""},
+    value_attrib:{}
+  }
+  groundTruthList.value.forEach(item => {
+    newListOfGroundTruth.push(item);
+  });
+  newListOfGroundTruth.push(groundTruth);
+  groundTruthList.value = newListOfGroundTruth;
+  newGroundTruthPoints.value = [];
+}
+
 </script>
 <style>
 
@@ -409,5 +468,18 @@ pre {
   fill:white;
   font-weight: bold;
   text-shadow: 1px 1px 2px black;
+}
+
+circle{
+  r: 16;
+  fill: rgb(0, 255, 0);
+  stroke: rgb(255, 255, 255);
+  stroke-width: 4;
+}
+circle:hover{
+  r: 20;
+  fill: rgb(0, 255, 0);
+  stroke: rgb(255, 255, 255);
+  stroke-width: 4;
 }
 </style>
