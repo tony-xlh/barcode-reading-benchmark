@@ -73,7 +73,9 @@
         <div style="max-height:75vh;overflow:auto;">
           <svg
             :viewBox="'0 0 '+imgWidth+' '+imgHeight"
-            class="fade"
+            ref="svgRef"
+            :class="'fade'+(annotationMode?' annotator':'')"
+            v-on:contextmenu="onContextMenu($event)"
             v-if="dataURL"
           >
             <image :href="dataURL"></image>
@@ -134,6 +136,7 @@ const saveDetectionResults = ref(false);
 const status = ref("");
 const incorrectDetectionResultIndex = ref([] as number[]);
 const annotationMode = ref(false);
+const svgRef = ref();
 let reader: BarcodeReader;
 
 onMounted(() => {
@@ -333,8 +336,19 @@ const saveModifiedGroundTruth = async () => {
   alert("Saved");
 }
 
+const onContextMenu = (event:any) => {
+  console.log(event);
+  event.preventDefault();
+  return false;
+}
+
 </script>
 <style>
+
+.annotator {
+  cursor: crosshair;
+}
+
 .results .q-item {
   padding: 0px;
 }
