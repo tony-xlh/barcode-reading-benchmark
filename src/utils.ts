@@ -45,6 +45,7 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
   let totalBarcodes = 0;
   let totalBarcodesCorrectlyDetected = 0;
   let totalBarcodesMisDetected = 0;
+  let totalBarcodesDetected = 0;
   let totalElapsedTime = 0;
   let detectedFiles = 0;
   let totalCorrectFiles = 0;
@@ -78,6 +79,7 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
       detectedFiles = detectedFiles + 1;
       misdetected = detectionStatistics.misdetected.toString();
       totalBarcodes = totalBarcodes + groundTruthList.length;
+      totalBarcodesDetected = totalBarcodesDetected + detectionResult.results.length;
       totalBarcodesCorrectlyDetected = totalBarcodesCorrectlyDetected + detectionStatistics.correct;
       totalBarcodesMisDetected = totalBarcodesMisDetected + detectionStatistics.misdetected;
     }
@@ -97,7 +99,7 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
     newRows.push(row);
   }
   const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
-  const precision = parseFloat(((totalBarcodes - totalBarcodesMisDetected) / totalBarcodes * 100).toFixed(2));
+  const precision = parseFloat(((totalBarcodesDetected - totalBarcodesMisDetected) / totalBarcodesDetected * 100).toFixed(2));
   const performanceMetrics:PerformanceMetrics = {
     fileNumber: project.info.images.length,
     correctFilesNumber: totalCorrectFiles,
