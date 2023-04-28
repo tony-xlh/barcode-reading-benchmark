@@ -16,7 +16,14 @@
             <v-chart class="chart" :option="readingRateOption" />
           </div>
           <div class="col-12 col-md">
+            <v-chart class="chart" :option="precisionOption" />
+          </div>
+        </div>
+        <div class="row" style="padding-top:1em;" v-if="Object.keys(averageTimeOption).length > 0">
+          <div class="col-12 col-md">
             <v-chart class="chart" :option="averageTimeOption" />
+          </div>
+          <div class="col-12 col-md">
           </div>
         </div>
       </q-card-section>
@@ -78,6 +85,7 @@ use([
 
 const readingRateOption = ref({});
 const averageTimeOption = ref({});
+const precisionOption = ref({});
 
 const projectName = ref("");
 const engines = ref([] as {name:string,enabled:boolean}[])
@@ -133,7 +141,7 @@ const getStatistics = async () => {
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
   const readRates = getData(statisticsOfEngines,"accuracy");
   
-  const readingRateLabelOption = {
+  const percentLabelOption = {
     show: true,
     position: 'top',
     formatter: '{c}%',
@@ -165,7 +173,7 @@ const getStatistics = async () => {
     },
     xAxis: { type: 'category', data: sortedEngineNames },
     yAxis: { type: 'value' },
-    series: [{ label: readingRateLabelOption, data: readRates, type: 'bar' }]
+    series: [{ label: percentLabelOption, data: readRates, type: 'bar' }]
   };
   readingRateOption.value = optionForReadingRate;
 
@@ -206,6 +214,33 @@ const getStatistics = async () => {
     series: [{ label: averageTimeLabelOption, data: averageTimes, type: 'bar' }]
   };
   averageTimeOption.value = optionForAverageTime;
+
+  const precisions = getData(statisticsOfEngines,"precision");
+  const optionForPrecision = {
+    title: {
+      text: 'Precision',
+      x: 'center'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    toolbox: {
+      show: true,
+      orient: 'vertical',
+      left: 'right',
+      top: 'center',
+      feature: {
+        saveAsImage: { show: true }
+      }
+    },
+    xAxis: { type: 'category', data: sortedEngineNames },
+    yAxis: { type: 'value' },
+    series: [{ label: percentLabelOption, data: precisions, type: 'bar' }]
+  };
+  precisionOption.value = optionForPrecision
 }
 
 const calculateTableRows = (statisticsOfEngines:EngineStatistics[]) => {
