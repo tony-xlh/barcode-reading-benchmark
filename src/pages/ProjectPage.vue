@@ -109,6 +109,11 @@
                   <q-item-label>Clear</q-item-label>
                 </q-item-section>
               </q-item>
+              <q-item clickable v-close-popup @click="convertDetectedResultsToGroundTruth">
+                  <q-item-section>
+                    <q-item-label>Convert detected results to ground truth</q-item-label>
+                  </q-item-section>
+                </q-item>
             </q-list>
          </q-btn-dropdown>
         </template>
@@ -224,15 +229,15 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
+import { BarcodeReader, DetectionResult } from "src/barcodeReader/BarcodeReader";
 import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useMeta } from 'quasar'
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
+import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
 import JSZip from "jszip";
-import { PerformanceMetrics } from "src/definitions/definitions";
+import { GroundTruth, PerformanceMetrics } from "src/definitions/definitions";
 
 const columns = [
   {
@@ -611,6 +616,21 @@ const saveSettings = async () => {
 
 const updateBarcodeReaderSettings = async () => {
   await reader.setSupportedSettings(barcodeReaderSettings.value);
+}
+
+const convertDetectedResultsToGroundTruth = async () => {
+  const length = project.info.images.length;
+  for (let index = 0; index < length; index++) {
+    const imageName = project.info.images[index];
+    const detectionResultString:undefined|null|string = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
+    if (detectionResultString) {
+      const detectionResult:DetectionResult = JSON.parse(detectionResultString);
+      const groundTruthList:GroundTruth[] = ConvertBarcodeResultsToGroundTruth(detectionResult.results);
+      await localForage.setItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt",JSON.stringify(groundTruthList));
+    }
+  }
+  updateRows();
+  saveProjects();
 }
 
 </script>
