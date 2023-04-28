@@ -630,7 +630,6 @@ const convertDetectedResultsToGroundTruth = async () => {
     }
   }
   updateRows();
-  saveProjects();
 }
 
 </script>
