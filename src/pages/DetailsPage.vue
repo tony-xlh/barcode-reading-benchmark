@@ -92,6 +92,7 @@
               <polygon v-bind:key="'polygon'+index" v-for="(groundTruth,index) in groundTruthList"
                 :points="getPointsData(groundTruth)"
                 class="groundtruth-polygon"
+                v-on:mousedown="onGroundTruthMouseDown($event,index)"
               >
                 <title>{{ groundTruth.attrib.Type + ": " + groundTruth.text }}</title>
               </polygon>
@@ -112,6 +113,34 @@
     </div>
     <div class="row">
       <q-btn outline color="red" label="Delete this image" v-on:click="deleteThisImage" />
+    </div>
+    <div class="dialogs">
+      <q-dialog v-model="showGroundTruthEditor">
+        <q-card>
+          <q-card-section>
+            <div class="text-h6">Edit Ground Truth</div>
+          </q-card-section>
+          <q-card-section class="q-pt-none">
+            <div>
+              <div>
+                <label for="ground-truth-format">Format:</label>
+              </div>
+              <div>
+                <input type="text" id="'ground-truth-format" v-model="groundTruthList[selectedGroundTruthIndex].attrib.Type"/>
+              </div>
+              <div>
+                <label for="ground-truth-text">Text:</label>
+              </div>
+              <div>
+                <textarea id="'ground-truth-text" v-model="groundTruthList[selectedGroundTruthIndex].text"/>
+              </div>
+            </div>
+          </q-card-section>
+          <q-card-actions align="right">
+            <q-btn flat v-close-popup color="primary" label="Close"/>
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
     </div>
   </div>
 </template>
@@ -142,8 +171,10 @@ const status = ref("");
 const incorrectDetectionResultIndex = ref([] as number[]);
 const annotationMode = ref(false);
 const svgRef = ref();
-let reader: BarcodeReader;
 const newGroundTruthPoints = ref([] as Point[]);
+const showGroundTruthEditor = ref(false);
+const selectedGroundTruthIndex = ref(-1);
+let reader: BarcodeReader;
 
 onMounted(() => {
   projectName.value = router.currentRoute.value.params.name as string;
@@ -343,7 +374,6 @@ const saveModifiedGroundTruth = async () => {
 }
 
 const onContextMenu = (event:any) => {
-  console.log(event);
   event.preventDefault();
   return false;
 }
@@ -357,6 +387,14 @@ const getPosition = (x:number,y:number) => {
   };
   return point;
 }
+
+const onGroundTruthMouseDown = (event:MouseEvent,index:number) => {
+  if (annotationMode.value) {
+    event.stopPropagation();
+    selectedGroundTruthIndex.value = index;
+    showGroundTruthEditor.value = true;
+  }
+} 
 
 const onMouseDown = (event:any) => {
   if (annotationMode.value) {
@@ -400,7 +438,6 @@ const createNewGroundTruthFromPoints = (points:Point[]) => {
   groundTruthList.value = newListOfGroundTruth;
   newGroundTruthPoints.value = [];
 }
-
 </script>
 <style>
 
