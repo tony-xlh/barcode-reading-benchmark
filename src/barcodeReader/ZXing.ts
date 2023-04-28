@@ -34,6 +34,7 @@ export default class ZXing {
       elapsedTime = Date.now() - startTime; 
     } catch (error) {
       console.log(error);
+      elapsedTime = Date.now() - startTime; 
     }
     if (result) {
       results.push(this.wrapResult(result));
