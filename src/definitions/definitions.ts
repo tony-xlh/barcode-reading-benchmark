@@ -8,6 +8,7 @@ export interface GroundTruth {
   y2:number;
   y3:number;
   y4:number;
+  hasLocation?: boolean;
   attrib:Attrib;
   value_attrib:ValueAttrib;
 }

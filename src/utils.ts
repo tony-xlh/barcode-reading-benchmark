@@ -159,9 +159,14 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
     const barcodeResult = barcodeResultList[i];
     for (let j = 0; j < groundTruthList.length; j++) {
       const groundTruth = groundTruthList[j];
-      const points1 = getPointsFromBarcodeResultResult(barcodeResult);
-      const points2 = getPointsFromGroundTruth(groundTruth);
-      const IoU = intersectionOverUnion(points1,points2);
+      let IoU;
+      if (groundTruth.hasLocation === false) {
+        IoU = 1.0;
+      }else{
+        const points1 = getPointsFromBarcodeResultResult(barcodeResult);
+        const points2 = getPointsFromGroundTruth(groundTruth);
+        IoU = intersectionOverUnion(points1,points2);
+      }
       if (IoU > 0) {
         if (groundTruth.text) {
           if (textCorrect(groundTruth,barcodeResult)) {
