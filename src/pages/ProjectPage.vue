@@ -66,6 +66,9 @@
               Correctly detected files: {{ statistics.correctFilesNumber }}
             </div>
             <div>
+              Rate of detected files: {{ statistics.detectedFilesRate }}%
+            </div>
+            <div>
               Detected barcodes:  {{  parseInt((statistics.accuracy / 100 * statistics.barcodeNumber).toString()) }}
             </div>
             <div>

@@ -48,6 +48,7 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
   let totalBarcodesDetected = 0;
   let totalElapsedTime = 0;
   let detectedFiles = 0;
+  let detectedFilesWithResults = 0;
   let totalCorrectFiles = 0;
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
@@ -71,10 +72,21 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
       elapsedTime = detectionResult.elapsedTime.toString();
       totalElapsedTime = totalElapsedTime + detectionResult.elapsedTime;
       const detectionStatistics = calculateDetectionStatistics(detectionResult.results,groundTruthList);
-      if (detectionStatistics.correct === detectionStatistics.groundTruth) {
-        correct = "true";
+      if (detectionStatistics.groundTruth != 0) {
+        if (detectionStatistics.correct === detectionStatistics.groundTruth) {
+          correct = "true";
+        }else{
+          correct = "false";
+        }
       }else{
-        correct = "false";
+        if (detectionResult.results.length > 0) {
+          correct = "true";
+        }else{
+          correct = "false";
+        }
+      }
+      if (detectionResult.results.length>0) {
+        detectedFilesWithResults = detectedFilesWithResults + 1;
       }
       detectedFiles = detectedFiles + 1;
       misdetected = detectionStatistics.misdetected.toString();
@@ -100,12 +112,14 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
   }
   const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
   const precision = parseFloat(((totalBarcodesDetected - totalBarcodesMisDetected) / totalBarcodesDetected * 100).toFixed(2));
+  const detectedFilesRate = parseFloat((detectedFilesWithResults / project.info.images.length * 100).toFixed(2));
   const performanceMetrics:PerformanceMetrics = {
     fileNumber: project.info.images.length,
     correctFilesNumber: totalCorrectFiles,
     barcodeNumber: totalBarcodes,
     accuracy: accuracy,
     precision: precision,
+    detectedFilesRate: detectedFilesRate,
     averageTime: parseFloat((totalElapsedTime / detectedFiles).toFixed(2))
   }
   const engineStatistics:EngineStatistics = {
