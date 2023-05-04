@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md" style="width: 100%">
-    <q-select style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
+    <q-select @update:model-value="selectedEngineChanged($event)" style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
     <div>
       <q-btn outline color="primary" :label="scanning?'Stop Scanning':'Start Scanning'" v-on:click="toggleScanning" />
       <span style="padding-left:10px;">{{ status }}</span>
@@ -114,6 +114,13 @@ const updateScannedResults = (detectionResult:DetectionResult) => {
     }
     scannedResults.value = text;
   }
+}
+
+const selectedEngineChanged = (engine:string) => {
+  if (interval && camera.isOpen()) {
+    stopProcessingLoop();
+    startProcessingLoop();
+  }  
 }
 
 </script>
