@@ -85,8 +85,8 @@ const startProcessingLoop = () => {
 }
 
 const stopProcessingLoop = () => {
-  processing = false;
   clearInterval(interval);
+  processing = false;
 }
 
 const decode = async () => {
@@ -109,7 +109,9 @@ const decode = async () => {
     const cvs = camera.getFrame().toCanvas();
     const detectionResult = await reader.detect(cvs);
     status.value = detectionResult.elapsedTime + "ms";
-    updateScannedResults(detectionResult);
+    if (reader.getEngine() === selectedEngine.value) {
+      updateScannedResults(detectionResult);
+    }
     processing = false;
   }
 }
@@ -133,7 +135,8 @@ const selectedEngineChanged = (engine:string) => {
   if (interval && camera.isOpen()) {
     stopProcessingLoop();
     startProcessingLoop();
-  }  
+  }
+  scannedResults.value = "";
 }
 
 </script>
