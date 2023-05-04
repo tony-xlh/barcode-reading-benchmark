@@ -83,9 +83,6 @@
           <div>
             <a href="javascript:void();" @click="goToComparisonPage()">Go to comparison page</a>
           </div>
-          <div>
-            <a href="javascript:void();" @click="goToLiveScannerPage()">Go to live scanner page</a>
-          </div>
         </div>
       </q-card-section>
       <q-separator></q-separator>
@@ -115,10 +112,15 @@
                 </q-item-section>
               </q-item>
               <q-item clickable v-close-popup @click="convertDetectedResultsToGroundTruth">
-                  <q-item-section>
-                    <q-item-label>Convert detected results to ground truth</q-item-label>
-                  </q-item-section>
-                </q-item>
+                <q-item-section>
+                  <q-item-label>Convert detected results to ground truth</q-item-label>
+                </q-item-section>
+              </q-item>
+              <q-item clickable v-close-popup @click="goToLiveScannerPage">
+                <q-item-section>
+                  <q-item-label>Go to live scanner</q-item-label>
+                </q-item-section>
+              </q-item>
             </q-list>
          </q-btn-dropdown>
         </template>
