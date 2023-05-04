@@ -79,8 +79,13 @@
             </div>
           </div>
         </div>
-        <div style="padding-top:1em;">
-          <a href="javascript:void();" @click="goToComparisonPage()">Go to comparison page</a>
+        <div style="padding-top:1em;line-height: 2em;">
+          <div>
+            <a href="javascript:void();" @click="goToComparisonPage()">Go to comparison page</a>
+          </div>
+          <div>
+            <a href="javascript:void();" @click="goToLiveScannerPage()">Go to live scanner page</a>
+          </div>
         </div>
       </q-card-section>
       <q-separator></q-separator>
@@ -565,6 +570,12 @@ const selectedEngineChanged = (engine:string) => {
 
 const goToComparisonPage = () => {
   const href = "/project/"+encodeURIComponent(projectName.value)+"/comparison";
+  const routeUrl = router.resolve(href);
+  window.open(routeUrl.href,'_blank');
+}
+
+const goToLiveScannerPage = () => {
+  const href = "/project/"+encodeURIComponent(projectName.value)+"/livescanner";
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
 }
