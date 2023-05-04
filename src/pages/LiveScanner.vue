@@ -21,23 +21,31 @@ import { BarcodeReader, DetectionResult } from "src/barcodeReader/BarcodeReader"
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { CameraEnhancer } from 'dynamsoft-camera-enhancer';
+import { loadBarcodeReaderSettings } from 'src/utils';
 const selectedEngine = ref("");
 const engines = ref([] as string[])
 const router = useRouter();
 const status = ref("");
 const scanning = ref(false);
 const scannedResults = ref();
+const projectName = ref("");
 let processing = false;
 let reader: BarcodeReader;
 let camera: CameraEnhancer;
 let interval: any;
 
 onMounted(async () => {
+  projectName.value = router.currentRoute.value.params.name as string;
   const supportedEngines = BarcodeReader.getEngines();
   engines.value = supportedEngines;
   selectedEngine.value = supportedEngines[0];
   initDCE();
 });
+
+const updateBarcodeReaderSettings = async () => {
+  const settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,reader.getSupportedSettings());
+  await reader.setSupportedSettings(settings);
+}
 
 const toggleScanning = async () => {
   stopProcessingLoop();
@@ -95,6 +103,7 @@ const decode = async () => {
     if (needInitialization) {
       status.value = "Initializing Barcode Reader...";
       reader = await BarcodeReader.createInstance(selectedEngine.value);
+      await updateBarcodeReaderSettings();
       status.value = "";
     }
     const cvs = camera.getFrame().toCanvas();
