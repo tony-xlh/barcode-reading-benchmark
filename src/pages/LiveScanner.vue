@@ -119,7 +119,11 @@ const updateScannedResults = (detectionResult:DetectionResult) => {
     let text = "";
     for (let index = 0; index < detectionResult.results.length; index++) {
       const result = detectionResult.results[index];
-      text = text + (index+1) + ". " + result.barcodeFormat + ": " + result.barcodeText + "\n";
+      text = text + (index+1) + ". " + result.barcodeFormat + ": " + result.barcodeText;
+      if (result.confidence) {
+        text = text + ", confidence: "+result.confidence;
+      }
+      text = text + "\n";
     }
     scannedResults.value = text;
   }
