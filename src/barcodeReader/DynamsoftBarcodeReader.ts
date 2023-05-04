@@ -11,6 +11,7 @@ export default class DynamsoftBarcodeReader {
   async init() : Promise<void> {
     if (!reader) {
       reader = await BarcodeReader.createInstance();
+      await reader.updateRuntimeSettings('balance');
     }
   }
 

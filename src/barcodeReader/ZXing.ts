@@ -25,7 +25,13 @@ export default class ZXing {
     if (typeof(image) === "string") {
       image = await this.loadImageFromDataURL(image);
     }
-    const binaryBitmap = this.createBinaryBitmap(image as HTMLVisualMediaElement);
+    let binaryBitmap;
+    if (image instanceof HTMLCanvasElement) {
+      binaryBitmap = this.createBinaryBitmapFromCanvas(image);
+    }else{
+      binaryBitmap = this.createBinaryBitmap(image as HTMLVisualMediaElement);
+    }
+    
     const results = [];
     let result;
     let elapsedTime = 0;
@@ -124,9 +130,14 @@ export default class ZXing {
     this.canvas.width  = width;
     this.canvas.height = height;
     ctx!.drawImage(mediaElement, 0, 0, width, height);
-    const luminanceSource = new HTMLCanvasElementLuminanceSource(this.canvas);
+    return this.createBinaryBitmapFromCanvas(this.canvas);
+  }
+
+  createBinaryBitmapFromCanvas(cvs: HTMLCanvasElement):BinaryBitmap {
+    const luminanceSource = new HTMLCanvasElementLuminanceSource(cvs);
     const hybridBinarizer = new HybridBinarizer(luminanceSource);
-    return new BinaryBitmap(hybridBinarizer);
+    const bitmap = new BinaryBitmap(hybridBinarizer);
+    return bitmap;
   }
 
   getSupportedSettings():string[] {
