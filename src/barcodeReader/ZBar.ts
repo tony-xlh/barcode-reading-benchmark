@@ -2,6 +2,7 @@ import { Point, Rect } from "src/definitions/definitions";
 import { BarcodeResult, DetectionResult } from "./BarcodeReader";
 import { getRectFromPoints } from "src/utils";
 import { DecimalToHex } from "./Shared";
+import { CameraEnhancer, DCEFrame } from "dynamsoft-camera-enhancer";
 
 export default class ZBar {
   private canvas!:HTMLCanvasElement;
@@ -14,17 +15,19 @@ export default class ZBar {
     this.reader = (window as any)["zbarWasm"];
   }
 
-  async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement) : Promise<DetectionResult> {
+  async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement|DCEFrame) : Promise<DetectionResult> {
     const startTime = Date.now();
-    if (image instanceof HTMLCanvasElement) {
-      image = image.toDataURL(); 
-    }
     if (typeof(image) === "string") {
       image = await this.loadImageFromDataURL(image);
+    } else if (CameraEnhancer.isDCEFrame(image)) {
+      image = await this.loadImageFromDataURL((image as DCEFrame).toCanvas().toDataURL());
+    } else if (image instanceof HTMLCanvasElement) {
+      image = await this.loadImageFromDataURL(image.toDataURL());
     }
+    const imageData = this.getImageData(image as any);
     let elapsedTime = 0;
     const results:BarcodeResult[] = [];
-    const imageData = this.getImageData(image as any);
+    
     if (imageData) {
       const symbols = await this.reader.scanImageData(imageData);
       elapsedTime = Date.now() - startTime; 
@@ -89,6 +92,12 @@ export default class ZBar {
     this.canvas.height = height;
     ctx?.drawImage(mediaElement, 0, 0, width, height);
     return ctx?.getImageData(0, 0, width, height);
+  }
+
+  getImageDataFromCanvas(canvas:HTMLCanvasElement) {
+    const ctx = this.canvas.getContext("2d");
+    ctx?.drawImage(canvas, 0, 0, canvas.width, canvas.height);
+    return ctx?.getImageData(0, 0, canvas.width, canvas.height);
   }
 
   loadImageFromDataURL(dataURL:string):Promise<HTMLImageElement> {

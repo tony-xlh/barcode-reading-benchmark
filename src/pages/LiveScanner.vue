@@ -43,7 +43,21 @@ onMounted(async () => {
 });
 
 const updateBarcodeReaderSettings = async () => {
-  const settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,reader.getSupportedSettings());
+  let settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,reader.getSupportedSettings());
+  if (selectedEngine.value === "Dynamsoft") {
+    let hasDBRTemplate = false;
+    for (let index = 0; index < settings.length; index++) {
+      const setting = settings[index];
+      if (setting.name === "template") {
+        if (setting.value) {
+          hasDBRTemplate = true;
+        }
+      }
+    }
+    if (hasDBRTemplate === false) {
+      settings.push({name:"template",value:"speed"});
+    }
+  }
   await reader.setSupportedSettings(settings);
 }
 
@@ -106,8 +120,8 @@ const decode = async () => {
       await updateBarcodeReaderSettings();
       status.value = "";
     }
-    const cvs = camera.getFrame().toCanvas();
-    const detectionResult = await reader.detect(cvs);
+    const frame = camera.getFrame();
+    const detectionResult = await reader.detect(frame);
     status.value = detectionResult.elapsedTime + "ms";
     if (reader.getEngine() === selectedEngine.value) {
       updateScannedResults(detectionResult);

@@ -3,6 +3,7 @@ import { MultiFormatReader, BarcodeFormat, RGBLuminanceSource, BinaryBitmap, Hyb
 import { DecimalToHex } from "./Shared";
 import { Point, Rect } from "src/definitions/definitions";
 import { getRectFromPoints } from "src/utils";
+import { CameraEnhancer, DCEFrame } from "dynamsoft-camera-enhancer";
 
 export default class ZXing {
   private reader!:MultiFormatReader;
@@ -20,7 +21,7 @@ export default class ZXing {
     }
   }
 
-  async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement) : Promise<DetectionResult> {
+  async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement|DCEFrame) : Promise<DetectionResult> {
     const startTime = Date.now();
     if (typeof(image) === "string") {
       image = await this.loadImageFromDataURL(image);
@@ -28,7 +29,9 @@ export default class ZXing {
     let binaryBitmap;
     if (image instanceof HTMLCanvasElement) {
       binaryBitmap = this.createBinaryBitmapFromCanvas(image);
-    }else{
+    } else if (CameraEnhancer.isDCEFrame(image)) {
+      binaryBitmap = this.createBinaryBitmapFromCanvas((image as DCEFrame).toCanvas());
+    } else {
       binaryBitmap = this.createBinaryBitmap(image as HTMLVisualMediaElement);
     }
     

@@ -2,6 +2,7 @@ import { BarcodeReader, EnumBarcodeFormat, TextResult } from "dynamsoft-javascri
 import { BarcodeResult, DetectionResult } from "./BarcodeReader";
 import { DecimalToHex } from "./Shared";
 import Encoding from "encoding-japanese";
+import { DCEFrame } from "dynamsoft-camera-enhancer";
 
 BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.2.13/dist/";
 
@@ -15,7 +16,7 @@ export default class DynamsoftBarcodeReader {
     }
   }
 
-  async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement) : Promise<DetectionResult> {
+  async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement|DCEFrame) : Promise<DetectionResult> {
     if (!reader) {
       throw new Error("Dynamsoft Barcode Reader has not been initialized.");
     }
@@ -73,9 +74,14 @@ export default class DynamsoftBarcodeReader {
   }
 
   async updateRuntimeSettings(template:string){
-    console.log("Using template: "+template);
     if (template) {
-      await reader.initRuntimeSettingsWithString(template);
+      if (template.indexOf("{") != -1) { //json template
+        console.log("Using JSON template: "+template);
+        await reader.initRuntimeSettingsWithString(template);
+      }else{ //built-in template names
+        console.log("Using built-in template: "+template);
+        await reader.updateRuntimeSettings(template);
+      }
     }else{
       await reader.resetRuntimeSettings();
     }

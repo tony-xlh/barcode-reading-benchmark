@@ -1,3 +1,4 @@
+import { DCEFrame } from "dynamsoft-camera-enhancer";
 import DynamsoftBarcodeReader from "./DynamsoftBarcodeReader";
 import ZBar from "./ZBar";
 import ZXing from "./ZXing";
@@ -32,7 +33,7 @@ export class BarcodeReader {
     await this.reader.init();
   }
 
-  detect(image:ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement): Promise<DetectionResult> {
+  detect(image:ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement|DCEFrame): Promise<DetectionResult> {
     return this.reader.detect(image);
   }
 
