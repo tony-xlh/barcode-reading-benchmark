@@ -23,6 +23,7 @@
           </q-item-section>
         </q-item>
       </q-list>
+      <div>{{ status }}</div>
     </div>
     <div class="dialogs">
       <q-dialog v-model="newProject">
@@ -123,6 +124,7 @@ const remoteImageFilesProgress = ref(0.0);
 const remoteImageFilesProgressLabel = ref("");
 const textResultsDownloaded = ref(false);
 const downloadingStatus = ref("");
+const status = ref("");
 let selectedIndex = -1;
 let remoteProject = ref(null as null|Project);
 onMounted(async () => {
@@ -285,6 +287,7 @@ const importRemoteProject = async () => {
     alert("Please download the text results.");
     return;
   }
+  status.value = "Importing...";
   let newProjects:Project[] = [];
   projects.value.forEach(project => {
     if (project.info.name === remoteProject.value?.info.name) {
@@ -299,6 +302,7 @@ const importRemoteProject = async () => {
   }
   projects.value = newProjects;
   await localForage.setItem("projects", JSON.stringify(newProjects));
+  status.value = "";
 }
 
 const loadTextResultsFromZip = async ():Promise<boolean> => {
