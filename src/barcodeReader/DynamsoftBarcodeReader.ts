@@ -4,7 +4,7 @@ import { DecimalToHex } from "./Shared";
 import Encoding from "encoding-japanese";
 import { DCEFrame } from "dynamsoft-camera-enhancer";
 
-BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.2.13/dist/";
+BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barcode@9.6.20/dist/";
 
 let reader:BarcodeReader;
 export default class DynamsoftBarcodeReader {
