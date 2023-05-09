@@ -1,1 +1,172 @@
 // app global css in SCSS form
+@font-face {
+  font-family: myriad-pro;
+  src: local('☺'),url(./assets/font-face/MyriadPro-Cond.ttf) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: Oswald-Regular;
+  src: local('☺'),url(./assets/font-face/Oswald-Regular.ttf) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: Oswald-Bold;
+  src: local('☺'),url(./assets/font-face/Oswald-Bold.ttf) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: Oswald-ExtraLight;
+  src: local('☺'),url(./assets/font-face/Oswald-ExtraLight.ttf) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: Oswald-Light;
+  src: local('☺'),url(./assets/font-face/Oswald-Light.ttf) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: Oswald-SemiBold;
+  src: local('☺'),url(./assets/font-face/Oswald-SemiBold.ttf) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: Oswald-Medium;
+  src: local('☺'),url(./assets/font-face/Oswald-Medium.ttf) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: OpenSans-Light;
+  src: url(./assets/font-face/OpenSans-Light.eot?);
+  src: local('☺'),url(./assets/font-face/OpenSans-Light.eot?#iefix) format("rembedded-opentype"),url(./assets/font-face/OpenSans-Light.woff) format("woff"),url(./assets/font-face/OpenSans-Light.ttf) format("truetype"),url(./assets/font-face/OpenSans-Light.svg#webfontOTINA1xY) format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: OpenSans-Regular;
+  src: url(./assets/font-face/OpenSans-Regular.eot?);
+  src: local('☺'),url(./assets/font-face/OpenSans-Regular.eot?#iefix) format("rembedded-opentype"),url(./assets/font-face/OpenSans-Regular.woff) format("woff"),url(./assets/font-face/OpenSans-Regular.ttf) format("truetype"),url(./assets/font-face/OpenSans-Regular.svg#webfontOTINA1xY) format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+@font-face {
+  font-family: OpenSans-Semibold;
+  src: url(./assets/font-face/OpenSans-Semibold.eot?);
+  src: local('☺'),url(./assets/font-face/OpenSans-Semibold.eot?#iefix) format("rembedded-opentype"),url(./assets/font-face/OpenSans-Semibold.woff) format("woff"),url(./assets/font-face/OpenSans-Semibold.ttf) format("truetype"),url(./assets/font-face/OpenSans-Semibold.svg#webfontOTINA1xY) format("svg");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap
+}
+
+body {
+  font-family: OpenSans-Regular;
+}
+
+.fontOswald {
+  font-family: Oswald-Regular;
+  font-weight: 400;
+}
+
+.fontOswaldLight {
+  font-family: Oswald-Light;
+  font-weight: normal;
+}
+
+label {
+  font-weight: bold;
+  @extend .fontOswaldLight;
+}
+
+
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: #444;
+  font-family: Oswald;
+  font-weight: normal;
+}
+
+strong {
+  color: #444;
+  font-weight: 400;
+  font-family: 'OpenSans-Semibold';
+}
+
+.h1,
+h1 {
+  font-size: 30px;
+  font-size: 3rem;
+  line-height: 42px;
+}
+
+.h2,
+h2 {
+  font-size: 24px;
+  font-size: 2.4rem;
+  line-height: 36px;
+}
+
+.h3,
+h3 {
+  font-size: 18px;
+  font-size: 1.8rem;
+  line-height: 27px;
+}
+
+.h4,
+h4 {
+  font-size: 16px;
+  font-size: 1.6rem;
+  line-height: 26px;
+}
+
+.h4,
+.h5,
+h4,
+h5 {
+  font-family: OpenSans-Semibold;
+}
+
+.h5,
+h5 {
+  font-size: 14px;
+  font-size: 1.4rem;
+  line-height: 24px;
+}
+
+select {
+  border-radius: 0px;
+}
+
+
