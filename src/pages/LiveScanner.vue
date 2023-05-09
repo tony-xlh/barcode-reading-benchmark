@@ -1,6 +1,15 @@
 <template>
   <div class="q-pa-md" style="width: 100%">
-    <q-select @update:model-value="selectedEngineChanged($event)" style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
+    <div>
+      <label style="font-size: 16px;">Engines:</label>
+    </div>
+    <div class="row" style="padding-bottom: 20px;">
+      <select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngine">
+        <option v-for="engine in engines" :value="engine" v-bind:key="engine">
+          {{ engine }}
+        </option>
+      </select>
+    </div>
     <div>
       <q-btn outline color="primary" :label="scanning?'Stop Scanning':'Start Scanning'" v-on:click="toggleScanning" />
       <span style="padding-left:10px;">{{ status }}</span>

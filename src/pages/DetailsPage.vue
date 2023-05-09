@@ -2,8 +2,15 @@
   <div class="q-pa-md example-row-equal-width">
     <div class="row">
       <div class="col-12 col-md" style="padding-right:10px;">
-        <div style="padding-bottom: 20px;">
-          <q-select @update:model-value="selectedEngineChanged($event)" style="max-width: 300px" v-model="selectedEngine" :options="engines" label="Engine" />
+        <div>
+          <label style="font-size: 16px;">Engines:</label>
+        </div>
+        <div class="row" style="padding-bottom: 20px;">
+          <select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngine">
+            <option v-for="engine in engines" :value="engine" v-bind:key="engine">
+              {{ engine }}
+            </option>
+          </select>
         </div>
         <div>
           <q-btn outline color="primary" label="Decode" v-on:click="decode" />
