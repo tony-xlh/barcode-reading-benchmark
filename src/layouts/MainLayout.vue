@@ -24,8 +24,8 @@ const goHome = () => {
 <style scoped>
 
 .q-toolbar {
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 .toolbar-container {
   flex:1;
