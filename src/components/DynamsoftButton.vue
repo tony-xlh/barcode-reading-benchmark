@@ -33,6 +33,7 @@ const getClassName = () => {
   color: #fff;
   text-align: center;
   border: 2px solid #fe8e14;
+  cursor: pointer;
 }
 
 .orangeBgBtn:hover {
