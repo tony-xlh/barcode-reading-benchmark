@@ -5,10 +5,12 @@
         <div class="main">
           <h2>Barcode Reading Benchmark</h2>
           <div v-for="(project,index) in projects" class="project-list-item" v-bind:key="project.info.name">
-            <div style="font-weight: bold;">
+            <div class="project-name" >
               {{ project.info.name }}
             </div>
-            <div class="flex-container"></div>
+            <div class="flex-container">
+              {{ (project.isRemote && project.info.images.length === 0) ? "remote project" : getLocalTime(project.info.creationTimestamp) }}
+            </div>
             <dynamsoft-button style="margin-right:1em;" label="Open" @click="openSelected(index)"/>
             <dynamsoft-button style="color:black;border-color:black;background-color: #fff;" label="Manage" @click="showManageDialog(index)"/>
           </div>
@@ -31,7 +33,7 @@
           <div class="text-h6">New project</div>
         </q-card-section>
         <q-card-section>
-          <q-input outlined v-model="projectName" label="Project Name" />
+          <q-input outlined v-model="projectName" label="Project Name"/>
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" color="primary" v-close-popup />
@@ -393,6 +395,12 @@ const loadTextResultsFromZip = async (projectObj:Project):Promise<boolean> => {
 
 </script>
 <style scoped>
+
+.project-name {
+  width: 150px;
+  font-weight: bold;
+}
+
 h2 {
   align-self: center;
 }
@@ -422,6 +430,7 @@ h2 {
 
 .flex-container {
   flex: 1;
+  text-align: center;
 }
 
 .full {
