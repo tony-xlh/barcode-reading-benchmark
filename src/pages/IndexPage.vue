@@ -202,6 +202,10 @@ const deleteSelected = async () => {
       newProjects.push(project);
     }else{
       await removeProjectFiles(project);
+      if (project.isRemote) {
+        project.info.images = [];
+        newProjects.push(project);
+      }
     }
   }
   projects.value = newProjects;
