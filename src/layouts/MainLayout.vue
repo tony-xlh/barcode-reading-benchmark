@@ -1,10 +1,9 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar>
-        <q-toolbar-title>
-          Barcode Reading Benchmark
-        </q-toolbar-title>
+      <q-toolbar class="bg-grey-9 text-white">
+        <a class="ds-logo" href="https://www.dynamsoft.com"></a>
+        <div class="toolbar-container"></div>
         <q-btn flat round color="white" icon="home" @click="goHome()" />
       </q-toolbar>
     </q-header>
@@ -21,3 +20,19 @@ const goHome = () => {
   router.push("/");
 }
 </script>
+
+<style scoped>
+
+.q-toolbar {
+  padding-left: 30px;
+  padding-right: 30px;
+}
+.toolbar-container {
+  flex:1;
+}
+.ds-logo {
+  width: 145px;
+  height: 35px;
+  background: url(/assets/img-icon/logo-dynamsoft-white.svg) no-repeat 0;
+}
+</style>
