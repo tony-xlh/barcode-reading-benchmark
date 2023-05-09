@@ -182,9 +182,11 @@ const saveProjects = async () => {
 
 const openSelected = async (index:number) => {
   let projectObj = projects.value[index];
-  const newProjectObj = await loadProjectManifestIfNeeded(projectObj);
-  if (newProjectObj) {
-    projectObj = newProjectObj;
+  if (projectObj.isRemote) {
+    const newProjectObj = await loadProjectManifestIfNeeded(projectObj);
+    if (newProjectObj) {
+      projectObj = newProjectObj;
+    }
   }
   await importRemoteProjectIfNeeded(projectObj);
   router.push("/project/"+encodeURIComponent(projects.value[index].info.name));
