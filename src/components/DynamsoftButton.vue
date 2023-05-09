@@ -3,7 +3,6 @@ const props = defineProps(['label','outline'])
 defineEmits(['click'])
 
 const getClassName = () => {
-  console.log(props);
   if (props.outline === '') {
     return 'outline textUpperCase fontOswald orangeBgBtn';
   }else{
