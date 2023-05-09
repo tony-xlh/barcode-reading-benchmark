@@ -325,21 +325,22 @@ export function getRectFromPoints(points:Point[]) : Rect {
 export const removeProjectFiles = async (project:Project) => {
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
-    localForage.removeItem(project.info.name+":image:"+imageName);
-    localForage.removeItem(project.info.name+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
+    await localForage.removeItem(project.info.name+":image:"+imageName);
+    await localForage.removeItem(project.info.name+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
   }
   const detectionResultFileNamesList:undefined|null|string[] = await localForage.getItem(project.info.name+":detectionResultFileNamesList");
   if (detectionResultFileNamesList) {
     for (let index = 0; index < detectionResultFileNamesList.length; index++) {
       const filename = detectionResultFileNamesList[index];
-      localForage.removeItem(project.info.name+":detectionResult:"+filename);  
+      await localForage.removeItem(project.info.name+":detectionResult:"+filename);  
     }
   }
   const engines = BarcodeReader.getEngines();
   for (let index = 0; index < engines.length; index++) {
     const engine = engines[index];
-    localForage.removeItem(project.info.name+":settings:"+engine);
+    await localForage.removeItem(project.info.name+":settings:"+engine);
   }
+  await localForage.removeItem(project.info.name+":detectionResultFileNamesList");
   project.info.images = [];
 }
 
