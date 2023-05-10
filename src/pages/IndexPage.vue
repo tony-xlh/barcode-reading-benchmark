@@ -401,7 +401,7 @@ const loadTextResultsFromZip = async (projectObj:Project):Promise<boolean> => {
 <style scoped>
 
 .project-name {
-  width: 150px;
+  width: 4em;
   font-weight: bold;
 }
 
@@ -418,11 +418,23 @@ h2 {
   padding-right: 2em;
 }
 
+@media screen and (max-device-width: 600px){
+  h2 {
+    text-align: center;
+  }
+  .q-page {
+    padding-left: 1em;
+    padding-right: 1em;
+  }
+
+}
+
 .project-list-item {
   background: #F5F5F5;
   padding: 2em;
   width: 100%;
   display: flex;
+  overflow: auto;
   margin-bottom: 1em;
   align-items: center;
 }
@@ -435,6 +447,7 @@ h2 {
 .flex-container {
   flex: 1;
   text-align: center;
+  padding: 5px;
 }
 
 .full {
