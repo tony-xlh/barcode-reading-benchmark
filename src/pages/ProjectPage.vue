@@ -105,12 +105,14 @@
         <div style="margin-top:2em;margin-bottom:2em;">
           <q-table
             title="Images"
+            color="black"
+            table-header-style="background:#f5f5f5;"
             :rows="rows"
             :columns="columns"
             row-key="name"
           >
             <template v-slot:top-right>
-              <q-btn-dropdown unelevated color="orange" label="Action">
+              <q-btn-dropdown unelevated color="black" label="Action">
                 <q-list>
                   <q-item clickable v-close-popup @click="showLocalFilesDialog">
                     <q-item-section>
@@ -744,4 +746,7 @@ const convertDetectedResultsToGroundTruth = async () => {
   padding-left: 2em;
 }
 
+.q-table__top {
+  background: #eeeeee;
+}
 </style>
