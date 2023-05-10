@@ -47,7 +47,7 @@ const getClassName = () => {
 .secondaryBtn {
   display: inline-block;
   background-color: transparent;
-  color: #fff;
+  color: #fe8e14;
   text-align: center;
   cursor: pointer;
 }
