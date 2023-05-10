@@ -1,7 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar class="bg-grey-9 text-white">
+      <q-toolbar class="bg-black text-white">
         <a class="ds-logo" href="https://www.dynamsoft.com"></a>
         <div class="toolbar-container"></div>
         <q-btn flat round color="white" icon="home" @click="goHome()" />
