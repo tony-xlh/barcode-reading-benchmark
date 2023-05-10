@@ -48,7 +48,7 @@
                       show-value
                       font-size="12px"
                       :value="statistics.accuracy"
-                      size="50px"
+                      size="60px"
                       :thickness="0.22"
                       color="orange"
                       track-color="grey-3"
@@ -63,7 +63,7 @@
                     show-value
                     font-size="12px"
                     :value="statistics.precision"
-                    size="50px"
+                    size="60px"
                     :thickness="0.22"
                     color="orange"
                     track-color="grey-3"
