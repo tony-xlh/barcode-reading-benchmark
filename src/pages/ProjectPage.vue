@@ -588,8 +588,7 @@ const selectedEngineChanged = (engine:string) => {
 
 const goToComparisonPage = () => {
   const href = "/project/"+encodeURIComponent(projectName.value)+"/comparison";
-  const routeUrl = router.resolve(href);
-  window.open(routeUrl.href,'_blank');
+  router.push(href);
 }
 
 const goToLiveScannerPage = () => {
