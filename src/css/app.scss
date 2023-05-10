@@ -86,15 +86,12 @@ body {
   font-family: OpenSans-Regular;
 }
 
-.fontOswald {
-  font-family: Oswald-Regular;
-  font-weight: 400;
-}
-
-.fontOswaldLight {
-  font-family: Oswald-Light;
-  font-weight: normal;
-}
+.fontOswald { font-family: Oswald-Regular;font-weight: 400; }
+.fontOswaldBold { font-family: Oswald-Bold; font-weight: normal; }
+.fontOswaldExtraLight { font-family: Oswald-ExtraLight; font-weight: normal; }
+.fontOswaldLight { font-family: Oswald-Light; font-weight: normal; }
+.fontOswaldMedium { font-family: Oswald-Medium; font-weight: normal; }
+.fontOswaldSemiBold { font-family: Oswald-SemiBold; font-weight: normal; }
 
 label {
   font-weight: bold;
