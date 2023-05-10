@@ -3,15 +3,16 @@
     <div class="full">
       <div class="header">
         <div class="text-h6 fontOswald">{{projectName}}</div>
-        <dynamsoft-button style="margin-left:15px;" secondary label="Go to Comparison Page" @click="goToComparisonPage"/>
-        <div class="flex-container"></div>
+        <div class="flex-container">
+          <dynamsoft-button style="margin-left:15px;" secondary label="Go to Comparison Page" @click="goToComparisonPage"/>
+        </div>
         <dynamsoft-button outline style="color:black;border-color:black;background-color: #fff;" label="Export" @click="exportProject"/>
       </div>
       <div class="container">
-        <div class="row">
-          <div class="col-8 statistics">
+        <div class="overview">
+          <div class="statistics">
             <div class="row">
-              <div class="col statistics-values">
+              <div class="col-12 col-md statistics-values">
                 <div>
                   <div class="statistics-name">Total files: </div>
                   <div class="statistics-value">{{ statistics.fileNumber }}</div>
@@ -40,8 +41,8 @@
                   <div class="statistics-value">{{statistics.averageTime}}</div>
                 </div>
               </div>
-              <div class="col">
-                <div class="row statistics-charts">
+              <div class="col-12 col-md statistics-charts">
+                <div class="row">
                   <div class="col statistics-chart">
                     Accuracy:
                     <q-circular-progress
@@ -77,7 +78,7 @@
               </div>
             </div>
           </div>
-          <div class="col-4 decoding">
+          <div class="decoding">
             <div>
               <label style="font-size: 16px;">Engines:</label>
             </div>
@@ -705,6 +706,16 @@ const convertDetectedResultsToGroundTruth = async () => {
   cursor: pointer;
 }
 
+.statistics {
+  flex-grow: 1;
+  flex-basis: 66%;
+}
+
+.decoding {
+  flex-grow: 1;
+  flex-basis: 34%;
+}
+
 .statistics-name {
   width:70%;
   text-align: right;
@@ -722,6 +733,7 @@ const convertDetectedResultsToGroundTruth = async () => {
 .statistics-values {
   padding:1em;
   height: 100%;
+  width: 100%;
   text-align: center;
   background: #EEEEEE;
 }
@@ -729,6 +741,7 @@ const convertDetectedResultsToGroundTruth = async () => {
 .statistics-charts {
   padding:1em;
   height: 100%;
+  width: 100%;
   display: flex;
   background: #F5F5F5;
   align-items: center;
@@ -746,7 +759,18 @@ const convertDetectedResultsToGroundTruth = async () => {
   padding-left: 2em;
 }
 
+@media screen and (max-device-width: 600px){
+  .decoding {
+    padding-left: 0px;
+  }
+}
+
 .q-table__top {
   background: #eeeeee;
+}
+
+.overview {
+  display: flex;
+  flex-wrap: wrap;
 }
 </style>
