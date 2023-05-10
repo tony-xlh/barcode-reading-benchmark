@@ -1,175 +1,180 @@
 <template>
-  <q-page class="row justify-evenly">
-    <q-card flat bordered class="overview-card" style="width:100%;">
-      <q-card-section>
+  <q-page>
+    <div class="full">
+      <div class="header">
         <div class="text-h6 fontOswald">{{projectName}}</div>
-      </q-card-section>
-      <q-separator></q-separator>
-      <q-card-section>
-        <div>
-          <label style="font-size: 16px;">Engines:</label>
-        </div>
-        <div class="row" style="padding-bottom: 20px;">
-          <select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngine">
-            <option v-for="engine in engines" :value="engine" v-bind:key="engine">
-              {{ engine }}
-            </option>
-          </select>
-          <q-btn flat round color="primary" icon="settings" @click="showSettingsModal()" />
-        </div>
-        <div class="row" style="align-items: center;">
-          <q-btn outline color="primary" :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode" />
-          <q-checkbox  style="padding-left: 10px;" left-label v-model="skipDetected" label="Skip Detected" />
-          <div v-if="decoding" style="width:100px;padding-left: 20px;">
-            <q-linear-progress size="25px" :value="progress" color="blue">
-            <div class="absolute-full flex flex-center">
-              <q-badge color="white" text-color="black" :label="progressLabel" />
-            </div>
-            </q-linear-progress>
-          </div>
-        </div>
-        <div>
-          Statistics: 
-          <div class="row">
-            <div>
-              Accuracy:
-              <q-circular-progress
-                show-value
-                font-size="12px"
-                :value="statistics.accuracy"
-                size="50px"
-                :thickness="0.22"
-                color="teal"
-                track-color="grey-3"
-                class="q-ma-md"
-              >
-                {{ statistics.accuracy }}%
-              </q-circular-progress>
-            </div>
-            <div>
-              Precision:
-              <q-circular-progress
-                show-value
-                font-size="12px"
-                :value="statistics.precision"
-                size="50px"
-                :thickness="0.22"
-                color="teal"
-                track-color="grey-3"
-                class="q-ma-md"
-              >
-                {{ statistics.precision }}%
-              </q-circular-progress>
-            </div>
-          </div>
-          <div>
-            <div>
-              Total files: {{ statistics.fileNumber }}
-            </div>
-            <div>
-              Total barcodes: {{ statistics.barcodeNumber }}
-            </div>
-            <div>
-              Correctly detected files: {{ statistics.correctFilesNumber }}
-            </div>
-            <div>
-              Rate of detected files: {{ statistics.detectedFilesRate }}%
-            </div>
-            <div>
-              Detected barcodes:  {{  parseInt((statistics.accuracy / 100 * statistics.barcodeNumber).toString()) }}
-            </div>
-            <div>
-              Misdetected barcodes:  {{ parseInt(((1 - statistics.precision / 100) * statistics.barcodeNumber).toString()) }}
-            </div>
-            <div>
-              Average time (ms): {{statistics.averageTime}}
+        <dynamsoft-button style="margin-left:15px;" secondary label="Go to Comparison Page" @click="goToComparisonPage"/>
+        <div class="flex-container"></div>
+        <dynamsoft-button outline style="color:black;border-color:black;background-color: #fff;" label="Export" @click="exportProject"/>
+      </div>
+      <div class="container">
+        <div class="row">
+          <div class="col-8 statistics">
+            <div class="row">
+              <div class="col statistics-values">
+                <div>
+                  <div class="statistics-name">Total files: </div>
+                  <div class="statistics-value">{{ statistics.fileNumber }}</div>
+                </div>
+                <div>
+                  <div class="statistics-name">Total barcodes: </div><div class="statistics-value">{{ statistics.barcodeNumber }}</div>
+                </div>
+                <div>
+                  <div class="statistics-name">Correctly detected files: </div>
+                  <div class="statistics-value">{{ statistics.correctFilesNumber }}</div>
+                </div>
+                <div>
+                  <div class="statistics-name">Rate of detected files: </div>
+                  <div class="statistics-value">{{ statistics.detectedFilesRate }}%</div>
+                </div>
+                <div>
+                  <div class="statistics-name">Detected barcodes:  </div>
+                  <div class="statistics-value">{{  parseInt((statistics.accuracy / 100 * statistics.barcodeNumber).toString()) }}</div>
+                </div>
+                <div>
+                  <div class="statistics-name">Misdetected barcodes:  </div>
+                  <div class="statistics-value">{{ parseInt(((1 - statistics.precision / 100) * statistics.barcodeNumber).toString()) }}</div>
+                </div>
+                <div>
+                  <div class="statistics-name">Average time (ms): </div>
+                  <div class="statistics-value">{{statistics.averageTime}}</div>
+                </div>
+              </div>
+              <div class="col">
+                <div class="row statistics-charts">
+                  <div class="col statistics-chart">
+                    Accuracy:
+                    <q-circular-progress
+                      show-value
+                      font-size="12px"
+                      :value="statistics.accuracy"
+                      size="50px"
+                      :thickness="0.22"
+                      color="orange"
+                      track-color="grey-3"
+                      class="q-ma-md"
+                    >
+                      {{ statistics.accuracy }}%
+                    </q-circular-progress>
+                  </div>
+                  <div class="col statistics-chart">
+                  Precision:
+                  <q-circular-progress
+                    show-value
+                    font-size="12px"
+                    :value="statistics.precision"
+                    size="50px"
+                    :thickness="0.22"
+                    color="orange"
+                    track-color="grey-3"
+                    class="q-ma-md"
+                  >
+                    {{ statistics.precision }}%
+                  </q-circular-progress>
+                </div>
+                </div>
+               
+              </div>
             </div>
           </div>
-        </div>
-        <div style="padding-top:1em;line-height: 2em;">
-          <div>
-            <a href="javascript:void();" @click="goToComparisonPage()">Go to comparison page</a>
+          <div class="col-4 decoding">
+            <div>
+              <label style="font-size: 16px;">Engines:</label>
+            </div>
+            <div class="row" style="padding-bottom: 20px;">
+              <select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngine">
+                <option v-for="engine in engines" :value="engine" v-bind:key="engine">
+                  {{ engine }}
+                </option>
+              </select>
+              <q-btn flat round color="black" icon="settings" @click="showSettingsModal()" />
+            </div>
+            <div class="row" style="align-items: center;">
+              <dynamsoft-button :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode"></dynamsoft-button>
+              <q-checkbox color="orange" style="padding-left: 10px;" left-label v-model="skipDetected" label="Skip Detected" />
+            </div>
+            <div v-if="decoding" style="width:100px;">
+              <q-linear-progress size="25px" :value="progress" color="orange">
+              <div class="absolute-full flex flex-center">
+                <q-badge color="white" text-color="black" :label="progressLabel" />
+              </div>
+              </q-linear-progress>
+            </div>
           </div>
         </div>
-      </q-card-section>
-      <q-separator></q-separator>
-      <q-card-section>
-      <q-table
-        title="Images"
-        :rows="rows"
-        :columns="columns"
-        row-key="name"
-      >
-        <template v-slot:top-right>
-          <q-btn-dropdown color="primary" label="Action">
-            <q-list>
-              <q-item clickable v-close-popup @click="showLocalFilesDialog">
-                <q-item-section>
-                  <q-item-label>Add local files</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item clickable v-close-popup @click="exportProject">
-                <q-item-section>
-                  <q-item-label>Export</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item clickable v-close-popup @click="clearProject">
-                <q-item-section>
-                  <q-item-label>Clear</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item clickable v-close-popup @click="convertDetectedResultsToGroundTruth">
-                <q-item-section>
-                  <q-item-label>Convert detected results to ground truth</q-item-label>
-                </q-item-section>
-              </q-item>
-              <q-item clickable v-close-popup @click="goToLiveScannerPage">
-                <q-item-section>
-                  <q-item-label>Go to live scanner</q-item-label>
-                </q-item-section>
-              </q-item>
-            </q-list>
-         </q-btn-dropdown>
-        </template>
-        <template v-slot:body="props">
-          <q-tr :props="props">
-            <q-td key="number" :props="props">
-              {{ props.row.number }}
-            </q-td>
-            <q-td key="name" :props="props" @click="nameClicked(props.row.filename)">
-              <div class="filename">
-                {{ props.row.filename }}
-              </div>
-            </q-td>
-            <q-td key="detectedText" :props="props">
-              <div class="text">
-                {{ props.row.detectedText }}
-              </div>
-            </q-td>
-            <q-td key="groundTruth" :props="props">
-              <div class="text">
-                {{ props.row.groundTruth }}
-              </div>
-            </q-td>
-            <q-td key="barcodeFormat" :props="props">
-              <div class="text">
-                {{ props.row.barcodeFormat }}
-              </div>
-            </q-td>
-            <q-td key="time" :props="props">
-              {{ props.row.time }}
-            </q-td>
-            <q-td key="correct" :props="props">
-              {{ props.row.correct }}
-            </q-td>
-            <q-td key="misdetected" :props="props">
-              {{ props.row.misdetected }}
-            </q-td>
-          </q-tr>
-        </template>
-      </q-table>
-      </q-card-section>
-    </q-card>
+        <div style="margin-top:2em;margin-bottom:2em;">
+          <q-table
+            title="Images"
+            :rows="rows"
+            :columns="columns"
+            row-key="name"
+          >
+            <template v-slot:top-right>
+              <q-btn-dropdown unelevated color="orange" label="Action">
+                <q-list>
+                  <q-item clickable v-close-popup @click="showLocalFilesDialog">
+                    <q-item-section>
+                      <q-item-label>Add local files</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="clearProject">
+                    <q-item-section>
+                      <q-item-label>Clear</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="convertDetectedResultsToGroundTruth">
+                    <q-item-section>
+                      <q-item-label>Convert detected results to ground truth</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                  <q-item clickable v-close-popup @click="goToLiveScannerPage">
+                    <q-item-section>
+                      <q-item-label>Go to live scanner</q-item-label>
+                    </q-item-section>
+                  </q-item>
+                </q-list>
+            </q-btn-dropdown>
+            </template>
+            <template v-slot:body="props">
+              <q-tr :props="props">
+                <q-td key="number" :props="props">
+                  {{ props.row.number }}
+                </q-td>
+                <q-td key="name" :props="props" @click="nameClicked(props.row.filename)">
+                  <div class="filename">
+                    {{ props.row.filename }}
+                  </div>
+                </q-td>
+                <q-td key="detectedText" :props="props">
+                  <div class="text">
+                    {{ props.row.detectedText }}
+                  </div>
+                </q-td>
+                <q-td key="groundTruth" :props="props">
+                  <div class="text">
+                    {{ props.row.groundTruth }}
+                  </div>
+                </q-td>
+                <q-td key="barcodeFormat" :props="props">
+                  <div class="text">
+                    {{ props.row.barcodeFormat }}
+                  </div>
+                </q-td>
+                <q-td key="time" :props="props">
+                  {{ props.row.time }}
+                </q-td>
+                <q-td key="correct" :props="props">
+                  {{ props.row.correct }}
+                </q-td>
+                <q-td key="misdetected" :props="props">
+                  {{ props.row.misdetected }}
+                </q-td>
+              </q-tr>
+            </template>
+          </q-table>
+        </div>
+      </div>
+    </div>
     <div class="dialogs">
       <q-dialog v-model="addAction">
         <q-card>
@@ -252,6 +257,7 @@ import localForage from "localforage";
 import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
 import JSZip from "jszip";
 import { GroundTruth, PerformanceMetrics } from "src/definitions/definitions";
+import DynamsoftButton from "src/components/DynamsoftButton.vue";
 
 const columns = [
   {
@@ -655,6 +661,36 @@ const convertDetectedResultsToGroundTruth = async () => {
 </script>
 
 <style>
+.full {
+  width:100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 1024px;
+  padding-left: 30px;
+  padding-right: 30px;
+}
+
+.header {
+  display: flex;
+  width: 100%;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  padding-left: 30px;
+  padding-right: 30px;
+  background: #F5F5F5;
+  margin-bottom: 2em;
+  align-items: center;
+}
+
+.flex-container {
+  flex: 1;
+}
+
 .text {
   max-width: 150px;
   max-height: 150px;
@@ -666,4 +702,46 @@ const convertDetectedResultsToGroundTruth = async () => {
   text-decoration: underline;
   cursor: pointer;
 }
+
+.statistics-name {
+  width:70%;
+  text-align: right;
+  display: inline-block;
+}
+
+.statistics-value {
+  display: inline-block;
+  width:calc(30% - 10px);
+  text-align: left;
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+.statistics-values {
+  padding:1em;
+  height: 100%;
+  text-align: center;
+  background: #EEEEEE;
+}
+
+.statistics-charts {
+  padding:1em;
+  height: 100%;
+  display: flex;
+  background: #F5F5F5;
+  align-items: center;
+  justify-content: center;
+}
+
+.statistics-chart {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.decoding {
+  padding-left: 2em;
+}
+
 </style>
