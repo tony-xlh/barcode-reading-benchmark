@@ -1,53 +1,55 @@
 <template>
-  <q-page class="row justify-evenly">
-    <q-card flat bordered class="overview-card" style="width:100%;">
-      <q-card-section>
-        <div class="text-h6">{{projectName}}</div>
-      </q-card-section>
-      <q-separator></q-separator>
-      <q-card-section>
+  <q-page>
+    <div class="full">
+      <div class="header">
+        <div class="text-h6 fontOswald">{{projectName}}</div>
+        <dynamsoft-button style="margin-left:15px;" secondary label="Go Back" @click="goBack"/>
+      </div>
+      <div class="container">
+        <div class="controls">
+          <div style="margin-right: 5px;">
+            Engines:
+          </div>
+          <div class="engines">
+            <q-checkbox color="orange" v-model="engine.enabled" :label="engine.name" v-for="engine in engines" v-bind:key="engine.name"/>
+          </div>
+          <dynamsoft-button label="Get comparison statistics" v-on:click="getStatistics()" />
+        </div>
         <div>
-          Engines:
-          <q-checkbox v-model="engine.enabled" :label="engine.name" v-for="engine in engines" v-bind:key="engine.name"/>
-        </div>
-        <q-btn outline color="primary" label="Get comparison statistics" v-on:click="getStatistics()" />
-        <div class="row" style="padding-top:1em;" v-if="Object.keys(readingRateOption).length > 0">
-          <div class="col-12 col-md">
-            <v-chart class="chart" :option="readingRateOption" />
+          <div class="charts" style="padding-top:1em;" v-if="Object.keys(readingRateOption).length > 0">
+            <div class="chart-container">
+              <v-chart class="chart" :option="readingRateOption" />
+            </div>
+            <div class="chart-container">
+              <v-chart class="chart" :option="precisionOption" />
+            </div>
+            <div class="chart-container">
+              <v-chart class="chart" :option="averageTimeOption" />
+            </div>
           </div>
-          <div class="col-12 col-md">
-            <v-chart class="chart" :option="precisionOption" />
+          <div v-if="tableRows.length > 0">
+            <q-markup-table>
+              <thead>
+                <tr style="background:#eeeeee;">
+                  <th class="text-left">No.</th>
+                  <th class="text-left">Filename</th>
+                  <th class="text-left" v-for="engine in engines" v-bind:key="engine.name">{{ engine.name }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in tableRows" v-bind:key="row.number">
+                  <td>{{ row.number }}</td>
+                  <td><a href="javascript:void();" @click="goToDetailsPage(row.filename)"> {{ row.filename }} </a></td>
+                  <td class="text-left" v-for="engine in engines" v-bind:key="'detected-'+engine.name">
+                    {{ (row.detectedEngines.indexOf(engine.name) != -1) ? '✓' : '✗' }}
+                  </td>
+                </tr>
+              </tbody>
+            </q-markup-table>
           </div>
-        </div>
-        <div class="row" style="padding-top:1em;" v-if="Object.keys(averageTimeOption).length > 0">
-          <div class="col-12 col-md">
-            <v-chart class="chart" :option="averageTimeOption" />
-          </div>
-          <div class="col-12 col-md">
-          </div>
-        </div>
-      </q-card-section>
-      <q-card-section v-if="tableRows.length > 0">
-        <q-markup-table>
-          <thead>
-            <tr>
-              <th class="text-left">No.</th>
-              <th class="text-left">Filename</th>
-              <th class="text-left">Detected engines</th>
-              <th class="text-left">Failed engines</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in tableRows" v-bind:key="row.number">
-              <td>{{ row.number }}</td>
-              <td><a href="javascript:void();" @click="goToDetailsPage(row.filename)"> {{ row.filename }} </a></td>
-              <td>{{ row.detectedEngines.join(", ") }}</td>
-              <td>{{ row.failedEngines.join(", ") }}</td>
-            </tr>
-          </tbody>
-        </q-markup-table>
-      </q-card-section>
-    </q-card>
+        </div>        
+      </div>
+    </div>
   </q-page>
 </template>
 
@@ -71,6 +73,7 @@ import VChart from "vue-echarts";
 import { EngineStatistics } from "src/definitions/definitions";
 import { calculateEngineStatistics } from "src/utils";
 import { useMeta } from "quasar";
+import DynamsoftButton from "src/components/DynamsoftButton.vue";
 
 use([
   SVGRenderer,
@@ -306,10 +309,58 @@ const goToDetailsPage = (name:string) => {
   window.open(routeUrl.href,'_blank');
 }
 
+const goBack = () => {
+  router.push("/project/"+encodeURIComponent(projectName.value));
+}
+
 
 </script>
 <style scoped>
+.full {
+  width:100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  padding-left: 30px;
+  padding-right: 30px;
+  padding-bottom: 30px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.engines {
+  background: #f5f5f5;
+  padding: 5px 15px;
+  margin-right: 5px;
+}
+
+.charts {
+  display:flex;
+  flex-wrap: wrap;
+}
+
 .chart {
   height: 400px;
 }
+
+.chart-container {
+  flex-grow: 1;
+  flex-basis: 33%;
+}
+
+@media screen and (max-device-width: 600px){
+  .chart-container {
+    flex-basis: 100%;
+  }
+}
+
 </style>

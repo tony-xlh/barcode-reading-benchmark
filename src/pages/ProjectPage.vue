@@ -678,18 +678,6 @@ const convertDetectedResultsToGroundTruth = async () => {
   padding-right: 30px;
 }
 
-.header {
-  display: flex;
-  width: 100%;
-  padding-top: 15px;
-  padding-bottom: 15px;
-  padding-left: 30px;
-  padding-right: 30px;
-  background: #F5F5F5;
-  margin-bottom: 2em;
-  align-items: center;
-}
-
 .flex-container {
   flex: 1;
 }
