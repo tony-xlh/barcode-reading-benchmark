@@ -56,10 +56,13 @@ const getClassName = () => {
   color: #fea543;
 }
 
-.primaryBtn:hover {
-  box-shadow: -4px 4px 0 0 #000;
-  transform: translate(4px,-4px);
+@media(any-hover:hover){
+  .primaryBtn:hover {
+    box-shadow: -4px 4px 0 0 #000;
+    transform: translate(4px,-4px);
+  }
 }
+
 .outline {
   color: #fe8e14;
   border-color: #fe8e14;
