@@ -3,7 +3,7 @@ const props = defineProps(['secondary','label','outline'])
 defineEmits(['click'])
 
 const getClassName = () => {
-  let classNames = ['textUpperCase'];
+  let classNames = ['textUpperCase','dynamsoft-button'];
   if (props.secondary === '') {
     classNames.push('secondaryBtn');
     classNames.push('fontOswaldMedium');

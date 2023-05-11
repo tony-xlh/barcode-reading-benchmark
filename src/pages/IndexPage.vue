@@ -11,8 +11,10 @@
             <div class="flex-container">
               {{ (project.isRemote && project.info.images.length === 0) ? "remote project" : getLocalTime(project.info.creationTimestamp) }}
             </div>
-            <dynamsoft-button style="margin-right:1em;" label="Open" @click="openSelected(index)"/>
-            <dynamsoft-button style="color:black;border-color:black;background-color: #fff;" label="Manage" @click="showManageDialog(index)"/>
+            <div class="buttons">
+              <dynamsoft-button label="Open" @click="openSelected(index)"/>
+              <dynamsoft-button style="margin-left:5px;color:black;border-color:black;background-color: #fff;" label="Manage" @click="showManageDialog(index)"/>
+            </div>
           </div>
         </div>
         <div>
@@ -405,9 +407,8 @@ const loadTextResultsFromZip = async (projectObj:Project):Promise<boolean> => {
 <style scoped>
 
 .project-name {
-  width: 4em;
+  width: 100px;
   font-weight: bold;
-  word-break: break-all;
 }
 
 h2 {
@@ -460,6 +461,17 @@ h2 {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.buttons .dynamsoft-button {
+  flex-grow: 0;
+  flex-basis: 50px;
 }
 
 </style>
