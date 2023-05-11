@@ -183,6 +183,10 @@ const saveProjects = async () => {
 }
 
 const openSelected = async (index:number) => {
+  if (status.value != "") {
+    alert("Please wait for the current operation.");
+    return;
+  }
   let projectObj = projects.value[index];
   if (projectObj.isRemote) {
     const newProjectObj = await loadProjectManifestIfNeeded(projectObj);
