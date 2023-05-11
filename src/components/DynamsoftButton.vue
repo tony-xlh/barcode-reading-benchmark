@@ -20,8 +20,7 @@ const getClassName = () => {
 
 <template>
   <a 
-    :class="getClassName()" 
-    style="transition:ease-in 0.2s all"
+    :class="getClassName()"
     @click="$emit('click', $event.target.value)"
   >
     {{ label }}
@@ -42,6 +41,7 @@ const getClassName = () => {
   text-align: center;
   border: 2px solid #fe8e14;
   cursor: pointer;
+  transition: ease-in 0.2s all
 }
 
 .secondaryBtn {
@@ -52,15 +52,22 @@ const getClassName = () => {
   cursor: pointer;
 }
 
-.secondaryBtn:hover {
-  color: #fea543;
-}
-
 @media(any-hover:hover){
   .primaryBtn:hover {
     box-shadow: -4px 4px 0 0 #000;
     transform: translate(4px,-4px);
   }
+  .secondaryBtn:hover {
+    color: #fea543;
+  }
+}
+
+.primaryBtn:active {
+  color: #fea543;
+}
+
+.secondaryBtn:active {
+  color: #fea543;
 }
 
 .outline {
