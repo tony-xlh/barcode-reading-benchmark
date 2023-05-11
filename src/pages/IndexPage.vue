@@ -407,6 +407,7 @@ const loadTextResultsFromZip = async (projectObj:Project):Promise<boolean> => {
 .project-name {
   width: 4em;
   font-weight: bold;
+  word-break: break-all;
 }
 
 h2 {
