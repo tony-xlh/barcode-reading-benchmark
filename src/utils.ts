@@ -341,6 +341,7 @@ export const removeProjectFiles = async (project:Project) => {
     await localForage.removeItem(project.info.name+":settings:"+engine);
   }
   await localForage.removeItem(project.info.name+":detectionResultFileNamesList");
+  await localForage.removeItem(project.info.name+":results.zip");
   project.info.images = [];
 }
 
