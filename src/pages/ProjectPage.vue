@@ -672,7 +672,6 @@ const convertDetectedResultsToGroundTruth = async () => {
 
 .container {
   width: 100%;
-  max-width: 1024px;
   padding-left: 30px;
   padding-right: 30px;
 }

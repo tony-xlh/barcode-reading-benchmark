@@ -441,7 +441,7 @@ h2 {
 
 .container {
   width: 100%;
-  max-width: 667px;
+  max-width: 1024px;
 }
 
 .flex-container {

@@ -325,7 +325,6 @@ const goBack = () => {
 
 .container {
   width: 100%;
-  max-width: 1280px;
   padding-left: 30px;
   padding-right: 30px;
   padding-bottom: 30px;
