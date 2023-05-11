@@ -13,19 +13,19 @@
           </select>
         </div>
         <div>
-          <q-btn outline color="primary" label="Decode" v-on:click="decode" />
+          <dynamsoft-button label="Decode" v-on:click="decode"></dynamsoft-button>
           <q-checkbox v-model="saveDetectionResults" label="Save Detection Results" />
           <span style="padding-left:10px;">{{ status }}</span>
         </div>
         <div>
-          <q-checkbox v-model="showDetectionResults" label="Show Detection Results" />
-        </div>
-        <div>
-          <q-checkbox v-model="showGroundTruth" label="Show Ground Trurh" />
+          <q-checkbox style="margin-right:5px;" color="orange" v-model="showDetectionResults" label="Show Detection Results" />
+          <q-checkbox color="orange" v-model="showGroundTruth" label="Show Ground Trurh" />
         </div>
         <div class="row results">
-          <div class="col">
-            Barcode Results:
+          <div class="col list">
+            <div class="list-header">
+              Barcode Results:
+            </div>
             <q-list bordered class="rounded-borders">
               <q-expansion-item :class="(incorrectDetectionResultIndex.indexOf(index) != -1)?'incorrect':'correct'" v-for="(barcodeResult,index) in barcodeResults" switch-toggle-side dense-toggle :label="index.toString()+': '+barcodeResult.barcodeText" v-bind:key="index">
                 <pre>
@@ -34,8 +34,10 @@
               </q-expansion-item>
             </q-list>
           </div>
-          <div class="col">
-            Ground Truth:
+          <div class="col list">
+            <div class="list-header">
+              Ground Truth:
+            </div>
             <q-list bordered class="rounded-borders">
               <q-expansion-item v-for="(groundTruth,index) in groundTruthList" switch-toggle-side dense-toggle :label="index.toString()+': '+groundTruth.text" v-bind:key="index">
                 <pre>
@@ -51,7 +53,7 @@
           <div v-if="!dataURL">Downloading... </div>
           <div style="flex:1;"></div>
           <div>
-            <q-btn-dropdown color="primary" label="Action">
+            <q-btn-dropdown color="black" label="Action">
               <q-list>
                 <q-item clickable v-close-popup @click="downloadImage">
                   <q-item-section>
@@ -525,5 +527,14 @@ circle:hover{
   fill: rgb(0, 255, 0);
   stroke: rgb(255, 255, 255);
   stroke-width: 4;
+}
+
+.list-header {
+  padding:10px;
+  background: #eeeeee;
+}
+
+.list {
+  margin-right:10px;
 }
 </style>
