@@ -161,6 +161,7 @@ import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFi
 import { GroundTruth, Point } from "src/definitions/definitions";
 import { Project } from "src/project";
 import { useMeta } from "quasar";
+import DynamsoftButton from "src/components/DynamsoftButton.vue";
 const router = useRouter();
 const projectName = ref("");
 const imageName = ref("");

@@ -11,7 +11,7 @@
       </select>
     </div>
     <div>
-      <q-btn outline color="primary" :label="scanning?'Stop Scanning':'Start Scanning'" v-on:click="toggleScanning" />
+      <dynamsoft-button :label="scanning?'Stop Scanning':'Start Scanning'" @click="toggleScanning"/>
       <span style="padding-left:10px;">{{ status }}</span>
     </div>
     <div id="results">
@@ -31,6 +31,7 @@ import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { CameraEnhancer } from 'dynamsoft-camera-enhancer';
 import { loadBarcodeReaderSettings } from 'src/utils';
+import DynamsoftButton from "src/components/DynamsoftButton.vue";
 const selectedEngine = ref("");
 const engines = ref([] as string[])
 const router = useRouter();
