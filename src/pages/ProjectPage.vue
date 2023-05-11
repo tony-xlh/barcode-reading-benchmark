@@ -83,12 +83,12 @@
               <label style="font-size: 16px;">Engines:</label>
             </div>
             <div class="row" style="padding-bottom: 20px;">
-              <select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngine">
+              <select style="min-width: 200px; height:45px;" @update:model-value="selectedEngineChanged($event)" v-model="selectedEngine">
                 <option v-for="engine in engines" :value="engine" v-bind:key="engine">
                   {{ engine }}
                 </option>
               </select>
-              <q-btn flat round color="black" icon="settings" @click="showSettingsModal()" />
+              <q-btn style="height:45px;" v-if="selectedEngine === 'Dynamsoft'" flat round color="black" icon="settings" @click="showSettingsModal()" />
             </div>
             <div class="row" style="align-items: center;">
               <dynamsoft-button :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode"></dynamsoft-button>
