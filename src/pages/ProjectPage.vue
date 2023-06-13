@@ -621,6 +621,10 @@ const reinitializeReaderIfNeeded = async () => {
   if (needInitialization) {
     progressLabel.value = "Initializing...";
     reader = await BarcodeReader.createInstance(selectedEngine.value);
+    const settingsItems = reader.getSupportedSettings();
+    if (settingsItems.length>0) {
+      await loadSettings(settingsItems);
+    }
     progressLabel.value = "";
   }
 }
