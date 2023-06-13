@@ -183,7 +183,7 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
         const points2 = getPointsFromGroundTruth(groundTruth);
         IoU = intersectionOverUnion(points1,points2);
       }
-      if (IoU > 0) {
+      if (IoU > 0.05) {
         if (groundTruth.text) {
           if (textCorrect(groundTruth,barcodeResult)) {
             correct = correct + 1;

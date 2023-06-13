@@ -309,7 +309,8 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
         const points2 = getPointsFromGroundTruth(groundTruth);
         IoU = intersectionOverUnion(points1, points2);
       }
-      if (IoU > 0) {
+      if (IoU > 0.05) {
+        //console.log(IoU);
         if (groundTruth.text) {
           if (!textCorrect(groundTruth,barcodeResult)) {
             index.push(i);
