@@ -61,6 +61,28 @@ export default class HTTPBarcodeReader {
     })
   }
 
+  getEngines():Promise<string[]>{
+    const pThis = this;
+    return new Promise(function(resolve,reject){
+      const xhr = new XMLHttpRequest();
+      const URL = pThis.settings["URL"] ?? "http://localhost:8888";
+      xhr.open('GET', URL+'/getEngines');
+      xhr.onreadystatechange = function(){
+        if(xhr.readyState === 4){
+          console.log(xhr.responseText);
+          const engines = JSON.parse(xhr.responseText);
+          resolve(engines);
+        }
+      }
+      xhr.onerror = function(){
+        console.log("error");
+        reject("error");
+      }
+      xhr.send();
+    });
+    
+  }
+
   drawImageOrVideo(source:HTMLImageElement|HTMLVideoElement){
     const ctx = this.canvas.getContext("2d");
     if (source instanceof HTMLImageElement) { 
