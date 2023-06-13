@@ -274,6 +274,7 @@ const decode = async () => {
     reader = await BarcodeReader.createInstance(selectedEngine.value);
     status.value = "";
   }
+  console.log(selectedEngine.value);
   await updateBarcodeReaderSettings();
   const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName.value);
   if (dataURL) {

@@ -4,7 +4,7 @@ import { DetectionResult } from "./BarcodeReader";
 export default class HTTPBarcodeReader {
   private settings:any;
   private canvas!:HTMLCanvasElement;
-  private engine:string = "";
+  private engine = "";
   async init() : Promise<void> {
     if (!this.canvas) {
       this.canvas = document.createElement("canvas");
@@ -33,21 +33,22 @@ export default class HTTPBarcodeReader {
     } else if (image instanceof HTMLVideoElement) {
       base64 = this.getBase64FromVideo(image as HTMLVideoElement);
     }
-    let results = await this.fetchDetectionResults(base64);
+    const results = await this.fetchDetectionResults(base64);
     return results;
   }
 
   fetchDetectionResults(base64:string):Promise<DetectionResult>{
-    let pThis = this;
+    const pThis = this;
     return new Promise(function(resolve,reject){
-      let payload = {engine:pThis.engine,base64:base64};
-      let xhr = new XMLHttpRequest();
-      xhr.open('POST', '/readBarcodes');
+      const payload = {engine:pThis.engine,base64:base64};
+      const xhr = new XMLHttpRequest();
+      const URL = pThis.settings["URL"] ?? "http://localhost:8888";
+      xhr.open('POST', URL+'/readBarcodes');
       xhr.setRequestHeader('content-type', 'application/json'); 
       xhr.onreadystatechange = function(){
         if(xhr.readyState === 4){
           console.log(xhr.responseText);
-          let response:DetectionResult = JSON.parse(xhr.responseText);
+          const response:DetectionResult = JSON.parse(xhr.responseText);
           resolve(response);
         }
       }
@@ -61,7 +62,7 @@ export default class HTTPBarcodeReader {
   }
 
   drawImageOrVideo(source:HTMLImageElement|HTMLVideoElement){
-    let ctx = this.canvas.getContext("2d");
+    const ctx = this.canvas.getContext("2d");
     if (source instanceof HTMLImageElement) { 
       this.canvas.width = source.naturalWidth;
       this.canvas.height = source.naturalHeight;
@@ -90,8 +91,9 @@ export default class HTTPBarcodeReader {
     return dataURL.substring(dataURL.indexOf(",")+1,dataURL.length);
   }
 
+
   getSupportedSettings():string[] {
-    return [];
+    return ["URL"];
   }
 
   async setSupportedSettings(settings:any):Promise<void> {

@@ -27,9 +27,11 @@ export class BarcodeReader {
       this.reader = new DynamsoftBarcodeReader();
     }else if (this.engine === "ZBar") {
       this.reader = new ZBar();
-    }
-    else {
+    }else if (this.engine === "ZXing"){
       this.reader = new ZXing();
+    }else{
+      this.reader = new HTTPBarcodeReader();
+      //this.reader.setEngine(this.engine);
     }
     await this.reader.init();
   }
