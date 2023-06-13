@@ -22,6 +22,11 @@ const routes: RouteRecordRaw[] = [
     children: [{ path: '', component: () => import('pages/ComparisonPage.vue') }],
   },
   {
+    path: '/project/:name/settings',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/SettingsPage.vue') }],
+  },
+  {
     path: '/project/:name/livescanner',
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('pages/LiveScanner.vue') }],

@@ -14,3 +14,7 @@ export interface ProjectInfo {
   creationTimestamp:number;
   images:string[];
 }
+
+export interface ProjectSettings {
+  enabledEngines:string[];
+}

@@ -2,10 +2,11 @@ import { DCEFrame } from "dynamsoft-camera-enhancer";
 import DynamsoftBarcodeReader from "./DynamsoftBarcodeReader";
 import ZBar from "./ZBar";
 import ZXing from "./ZXing";
+import HTTPBarcodeReader from "./HTTPBarcodeReader";
 
 export class BarcodeReader {
   private engine = "Dynamsoft";
-  private reader!: DynamsoftBarcodeReader|ZXing|ZBar;
+  private reader!: DynamsoftBarcodeReader|ZXing|ZBar|HTTPBarcodeReader;
   static async createInstance(engine:string):Promise<BarcodeReader> {
     const reader = new BarcodeReader();
     reader.setEngine(engine);
@@ -38,7 +39,7 @@ export class BarcodeReader {
   }
 
   static getEngines():string[] {
-    return ["Dynamsoft","ZXing","ZBar"];
+    return ["Dynamsoft","ZXing","ZBar","HTTPBarcodeReader"];
   }
 
   getSupportedSettings():string[] {

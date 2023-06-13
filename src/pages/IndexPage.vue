@@ -75,6 +75,7 @@
           </div>
         </q-card-section>
         <q-card-actions align="right">
+          <q-btn flat v-close-popup color="primary" label="Settings" v-on:click="goToSettingsPage"/>
           <q-btn v-if="selectedProject?.isRemote" flat v-close-popup color="primary" label="Import results" v-on:click="importTextResultsOfSelected"/>
           <q-btn flat v-close-popup color="primary" label="Delete" v-on:click="deleteSelected"/>
           <q-btn flat v-close-popup color="primary" label="Close"/>
@@ -216,6 +217,14 @@ const deleteSelected = async () => {
   }
   projects.value = newProjects;
   saveProjects();
+}
+
+const goToSettingsPage = () => {
+  if (selectedProject.value) {
+    const href = "/project/"+encodeURIComponent(selectedProject.value.info.name)+"/settings";
+    const routeUrl = router.resolve(href);
+    window.open(routeUrl.href,'_blank');
+  }
 }
 
 const importTextResultsOfSelected = async () => {
