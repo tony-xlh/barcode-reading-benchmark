@@ -193,7 +193,7 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
         }else{
           correct = correct + 1;
         }
-        continue;
+        break;
       }
     }
   }

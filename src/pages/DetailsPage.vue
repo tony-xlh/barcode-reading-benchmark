@@ -318,7 +318,7 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
             hasCorrectResult = true;
           }
         }
-        continue;
+        break;
       }
       if (j === groundTruthList.length - 1 && hasCorrectResult === false) {
         index.push(i);
