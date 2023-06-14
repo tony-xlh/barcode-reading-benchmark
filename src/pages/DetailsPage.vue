@@ -159,7 +159,7 @@ import { BarcodeReader, BarcodeReaderConfig, BarcodeResult, DetectionResult } fr
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, getRectFromPoints, intersectionOverUnion, loadBarcodeReaderSettings, loadProjectBarcodeReaderConfigs, textCorrect } from "src/utils";
+import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, getRectFromPoints, intersectionOverUnion, loadProjectBarcodeReaderConfigs, textCorrect } from "src/utils";
 import { GroundTruth, Point } from "src/definitions/definitions";
 import { Project } from "src/project";
 import { useMeta } from "quasar";
