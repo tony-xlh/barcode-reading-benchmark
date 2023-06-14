@@ -25,6 +25,8 @@
               </q-item-section>
               <q-item-section top side>
                 <div class="text-grey-8 q-gutter-xs">
+                  <q-btn class="gt-xs" size="12px" flat dense round icon="arrow_upward" v-on:click="moveUp(index)" />
+                  <q-btn class="gt-xs" size="12px" flat dense round icon="arrow_downward" v-on:click="moveDown(index)" />
                   <q-btn class="gt-xs" size="12px" flat dense round icon="delete" v-on:click="deleteConfig(index)" />
                   <q-btn class="gt-xs" size="12px" flat dense round icon="settings" v-on:click="showSettingsModal(index,config.engine)" />
                 </div>
@@ -74,6 +76,7 @@ import { useRouter } from "vue-router";
 import { BarcodeReader, BarcodeReaderConfig, Setting } from "src/barcodeReader/BarcodeReader";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
 import localForage from "localforage";
+import { moveItemUp, moveItemDown } from "src/utils"
 
 const projectName = ref("");
 const router = useRouter();
@@ -118,6 +121,18 @@ const addConfig = () => {
       settings:[]
     }
   configs.push(config);
+  barcodeReaderConfigs.value = configs;
+}
+
+const moveUp = (index:number) => {
+  const configs = barcodeReaderConfigs.value;
+  moveItemUp(configs,index);
+  barcodeReaderConfigs.value = configs;
+}
+
+const moveDown = (index:number) => {
+  const configs = barcodeReaderConfigs.value;
+  moveItemDown(configs,index);
   barcodeReaderConfigs.value = configs;
 }
 

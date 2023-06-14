@@ -425,3 +425,23 @@ export function ConvertBarcodeResultToGroundTruth(result:BarcodeResult):GroundTr
   }
   return groundTruth;
 }
+
+export function moveItemUp(arr:any[], index:number) {
+  if (index <= 0 || index > arr.length - 1) { //out of bounds
+    return arr;
+  }else{
+    const item = arr.splice(index,1)[0]; //delete the item
+    arr.splice(index - 1,0,item); //add the item
+    return arr;
+  }
+}
+
+export function moveItemDown(arr:any[], index:number) {
+  if (index < 0 || index + 1 > arr.length - 1) { //out of bounds
+    return arr;
+  }else{
+    const item = arr.splice(index,1)[0]; //delete the item
+    arr.splice(index + 1,0,item); //add the item
+    return arr;
+  }
+}
