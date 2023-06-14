@@ -217,6 +217,7 @@ export function textCorrect(groundTruth:GroundTruth,barcodeResult:BarcodeResult)
   }else{
     let groundTruthText = groundTruth.text;
     let barcodeText = barcodeResult.barcodeText;
+    groundTruthText = groundTruthText.replace(/\u001d/g,""); // remove all GS head.
     barcodeText = barcodeText.replace(/\u001d/g,""); // remove all GS head.
     if (barcodeResult.barcodeFormat.toLowerCase().indexOf("upc") != -1 && groundTruth.attrib.Type.toLowerCase().indexOf("ean") != -1) {
       if (barcodeText != groundTruthText) {
