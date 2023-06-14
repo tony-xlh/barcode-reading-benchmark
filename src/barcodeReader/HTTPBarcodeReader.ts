@@ -4,19 +4,10 @@ import { DetectionResult } from "./BarcodeReader";
 export default class HTTPBarcodeReader {
   private settings:any;
   private canvas!:HTMLCanvasElement;
-  private engine = "";
   async init() : Promise<void> {
     if (!this.canvas) {
       this.canvas = document.createElement("canvas");
     }
-  }
-
-  setEngine(engine:string) {
-    this.engine = engine;
-  }
-
-  getEngine() {
-    return this.engine;
   }
 
   async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement|DCEFrame) : Promise<DetectionResult> {
@@ -40,7 +31,8 @@ export default class HTTPBarcodeReader {
   fetchDetectionResults(base64:string):Promise<DetectionResult>{
     const pThis = this;
     return new Promise(function(resolve,reject){
-      const payload = {engine:pThis.engine,base64:base64};
+      const engine = pThis.settings["Engine"] ?? ""
+      const payload = {engine:engine,base64:base64};
       const xhr = new XMLHttpRequest();
       const URL = pThis.settings["URL"] ?? "http://localhost:8888";
       xhr.open('POST', URL+'/readBarcodes');
@@ -115,7 +107,7 @@ export default class HTTPBarcodeReader {
 
 
   getSupportedSettings():string[] {
-    return ["URL"];
+    return ["URL","Engine"];
   }
 
   async setSupportedSettings(settings:any):Promise<void> {

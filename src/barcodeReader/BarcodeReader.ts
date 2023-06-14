@@ -31,7 +31,6 @@ export class BarcodeReader {
       this.reader = new ZXing();
     }else{
       this.reader = new HTTPBarcodeReader();
-      //this.reader.setEngine(this.engine);
     }
     await this.reader.init();
   }
