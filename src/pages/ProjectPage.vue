@@ -235,7 +235,7 @@ import { onMounted, ref } from "vue";
 import { useMeta } from 'quasar'
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, loadProjectBarcodeReaderConfigs, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
+import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadProjectBarcodeReaderConfigs, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
 import JSZip from "jszip";
 import { GroundTruth, PerformanceMetrics } from "src/definitions/definitions";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
@@ -310,8 +310,6 @@ const selectedEngineDisplayName = ref("");
 const barcodeReaderConfigs = ref([] as BarcodeReaderConfig[]);
 const addAction = ref(false);
 const exportAction = ref(false);
-const showSettings = ref(false);
-const barcodeReaderSettings = ref([] as Setting[]);
 const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
@@ -362,7 +360,6 @@ const decode = async () => {
     decoding.value = true;
     hasToStop = false;
     await reinitializeReaderIfNeeded();
-    await updateBarcodeReaderSettings();
     const length = project.info.images.length;
     progress.value = 0.0;
     progressLabel.value = "0/"+length;
@@ -597,21 +594,14 @@ const reinitializeReaderIfNeeded = async () => {
     if (needInitialization) {
       progressLabel.value = "Initializing...";
       reader = await BarcodeReader.createInstance(selectedBarcodeReaderConfig.engine);
-      const settingsItems = BarcodeReader.getSupportedSettings(selectedBarcodeReaderConfig.engine);
-      if (settingsItems.length>0) {
-        await loadSettings(selectedBarcodeReaderConfig);
-      }
+      await updateBarcodeReaderSettings(selectedBarcodeReaderConfig);
       progressLabel.value = "";
     }
   }
 }
 
-const loadSettings = async (config:BarcodeReaderConfig) => {
-  barcodeReaderSettings.value = config.settings;
-}
-
-const updateBarcodeReaderSettings = async () => {
-  await reader.setSupportedSettings(barcodeReaderSettings.value);
+const updateBarcodeReaderSettings = async (config:BarcodeReaderConfig) => {
+  await reader.setSupportedSettings(config.settings);
 }
 
 const convertDetectedResultsToGroundTruth = async () => {
