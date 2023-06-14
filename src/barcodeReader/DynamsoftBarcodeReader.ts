@@ -48,7 +48,7 @@ export default class DynamsoftBarcodeReader {
       }
     }
 
-    barcodeText = barcodeText.replace(/\u001d/g,""); // remove all GS head.
+    //barcodeText = barcodeText.replace(/\u001d/g,""); // remove all GS head.
 
     return { 
       barcodeFormat: result.barcodeFormatString, 
