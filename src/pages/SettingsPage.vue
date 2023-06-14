@@ -76,7 +76,7 @@ import { useRouter } from "vue-router";
 import { BarcodeReader, BarcodeReaderConfig, Setting } from "src/barcodeReader/BarcodeReader";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
 import localForage from "localforage";
-import { moveItemUp, moveItemDown } from "src/utils"
+import { moveItemUp, moveItemDown, defaultBarcodeReaderConfigs, loadProjectBarcodeReaderConfigs } from "src/utils"
 
 const projectName = ref("");
 const router = useRouter();
@@ -91,26 +91,12 @@ onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
   supportedEngines.value = BarcodeReader.getEngines();
   console.log(projectName.value);
-  const configs:undefined|null|BarcodeReaderConfig[] = await localForage.getItem(projectName.value+":configuration");
-  if (configs) {
-    barcodeReaderConfigs.value = configs;
-  }else{
-    createDefaultConfigs();
-  }
+  const configs = await loadProjectBarcodeReaderConfigs(router.currentRoute.value.params.name as string);
+  barcodeReaderConfigs.value = configs;
 });
 
 const createDefaultConfigs = () => {
-  const engines = BarcodeReader.getEngines();
-  const configs:BarcodeReaderConfig[] = [];
-  for (const engine of engines) {
-    const config:BarcodeReaderConfig = {
-      engine:engine,
-      displayName:engine,
-      settings:[]
-    }
-    configs.push(config);
-  }
-  barcodeReaderConfigs.value = configs;
+  barcodeReaderConfigs.value = defaultBarcodeReaderConfigs();
 }
 
 const addConfig = () => {

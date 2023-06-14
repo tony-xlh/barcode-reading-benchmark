@@ -1,4 +1,4 @@
-import { BarcodeReader, BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
+import { BarcodeReader, BarcodeReaderConfig, BarcodeResult, DetectionResult } from "./barcodeReader/BarcodeReader";
 import { DetectionStatistics, EngineDataTableRow, GroundTruth, PerformanceMetrics, Point, EngineStatistics, Rect } from "./definitions/definitions";
 import leven from 'leven';
 import { Project } from "./project";
@@ -392,6 +392,29 @@ export const loadBarcodeReaderSettings = async (projectName:string,engine:string
     items.push(item);
   }
   return items;
+}
+
+export async function loadProjectBarcodeReaderConfigs(projectName:string){
+  const configs:undefined|null|BarcodeReaderConfig[] = await localForage.getItem(projectName+":configuration");
+  if (configs) {
+    return configs;
+  }else{
+    return defaultBarcodeReaderConfigs();
+  }
+}
+
+export function defaultBarcodeReaderConfigs() {
+  const engines = BarcodeReader.getEngines();
+  const configs:BarcodeReaderConfig[] = [];
+  for (const engine of engines) {
+    const config:BarcodeReaderConfig = {
+      engine:engine,
+      displayName:engine,
+      settings:[]
+    }
+    configs.push(config);
+  }
+  return configs;
 }
 
 export function sleep(time:number){
