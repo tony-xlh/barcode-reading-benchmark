@@ -125,15 +125,11 @@ const addConfig = () => {
 }
 
 const moveUp = (index:number) => {
-  const configs = barcodeReaderConfigs.value;
-  moveItemUp(configs,index);
-  barcodeReaderConfigs.value = configs;
+  moveItemUp(barcodeReaderConfigs.value,index);
 }
 
 const moveDown = (index:number) => {
-  const configs = barcodeReaderConfigs.value;
-  moveItemDown(configs,index);
-  barcodeReaderConfigs.value = configs;
+  moveItemDown(barcodeReaderConfigs.value,index);
 }
 
 const deleteConfig = (index:number) => {
