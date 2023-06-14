@@ -291,7 +291,7 @@ const decode = async () => {
 }
 
 const updateBarcodeReaderSettings = async () => {
-  const settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,reader.getSupportedSettings());
+  const settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,BarcodeReader.getSupportedSettings(selectedEngine.value));
   await reader.setSupportedSettings(settings);
 }
 

@@ -1,4 +1,4 @@
-import { BarcodeResult, DetectionResult } from "./BarcodeReader";
+import { BarcodeResult, DetectionResult, Setting, SettingDef } from "./BarcodeReader";
 import { MultiFormatReader, BarcodeFormat, RGBLuminanceSource, BinaryBitmap, HybridBinarizer, HTMLVisualMediaElement, HTMLCanvasElementLuminanceSource, Result, ResultPoint, DecodeHintType } from '@zxing/library';
 import { DecimalToHex } from "./Shared";
 import { Point, Rect } from "src/definitions/definitions";
@@ -8,7 +8,7 @@ import { CameraEnhancer, DCEFrame } from "dynamsoft-camera-enhancer";
 export default class ZXing {
   private reader!:MultiFormatReader;
   private canvas!:HTMLCanvasElement;
-  private settings:any;
+  private settings:Setting[] = [];
   async init() : Promise<void> {
     if (!this.reader) {
       //const hints:Map<DecodeHintType, any> = new Map<DecodeHintType, any>();
@@ -143,11 +143,19 @@ export default class ZXing {
     return bitmap;
   }
 
-  getSupportedSettings():string[] {
+  static getSupportedSettings():SettingDef[] {
     return [];
   }
 
-  async setSupportedSettings(settings:any):Promise<void> {
+  static getDefaultSettings():any {
+    return {};
+  }
+
+  static getSettingOptions(key:string,settings:Setting[]):string[] {
+    return [];
+  }
+
+  async setSettings(settings:any):Promise<void> {
     this.settings = settings;
   }
 }

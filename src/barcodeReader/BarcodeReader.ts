@@ -43,12 +43,45 @@ export class BarcodeReader {
     return ["Dynamsoft","ZXing","ZBar","HTTPBarcodeReader"];
   }
 
-  getSupportedSettings():string[] {
-    return this.reader.getSupportedSettings();
+  static getSupportedSettings(engine:string):SettingDef[] {
+    if (engine === "Dynamsoft") {
+      return DynamsoftBarcodeReader.getSupportedSettings();
+    }else if (engine === "ZBar") {
+      return ZBar.getSupportedSettings();
+    }else if (engine === "ZXing"){
+      return ZXing.getSupportedSettings();
+    }else{
+      return HTTPBarcodeReader.getSupportedSettings();
+    }
   }
 
-  async setSupportedSettings(settings:any):Promise<void> {
-    return this.reader.setSupportedSettings(settings);
+  static getDefaultSettings(engine:string):any {
+    if (engine === "Dynamsoft") {
+      return DynamsoftBarcodeReader.getDefaultSettings();
+    }else if (engine === "ZBar") {
+      return ZBar.getDefaultSettings();
+    }else if (engine === "ZXing"){
+      return ZXing.getDefaultSettings();
+    }else{
+      return HTTPBarcodeReader.getDefaultSettings();
+    }
+  }
+
+  static async getSettingOptions(engine:string,key:string,settings:Setting[]):Promise<string[]> {
+    if (engine === "Dynamsoft") {
+      return DynamsoftBarcodeReader.getSettingOptions(key,settings);
+    }else if (engine === "ZBar") {
+      return ZBar.getSettingOptions(key,settings);
+    }else if (engine === "ZXing"){
+      return ZXing.getSettingOptions(key,settings);
+    }else{
+      const options = await HTTPBarcodeReader.getSettingOptions(key,settings);
+      return options;
+    }
+  }
+
+  async setSupportedSettings(settings:Setting[]):Promise<void> {
+    return this.reader.setSettings(settings);
   }
 }
 
@@ -75,5 +108,16 @@ export interface BarcodeResult {
 export interface BarcodeReaderConfig {
   engine:string;
   displayName:string;
-  settings:any;
+  settings:Setting[];
+}
+
+export interface Setting {
+  name:string;
+  value:string;
+  type?:"string"|"select";
+}
+
+export interface SettingDef {
+  name: string;
+  type:"string"|"select";
 }

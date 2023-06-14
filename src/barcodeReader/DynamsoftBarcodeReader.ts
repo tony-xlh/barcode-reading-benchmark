@@ -1,5 +1,5 @@
 import { BarcodeReader, EnumBarcodeFormat, TextResult } from "dynamsoft-javascript-barcode";
-import { BarcodeResult, DetectionResult } from "./BarcodeReader";
+import { BarcodeResult, DetectionResult, Setting, SettingDef } from "./BarcodeReader";
 import { DecimalToHex } from "./Shared";
 import Encoding from "encoding-japanese";
 import { DCEFrame } from "dynamsoft-camera-enhancer";
@@ -8,7 +8,7 @@ BarcodeReader.engineResourcePath = "https://unpkg.com/dynamsoft-javascript-barco
 
 let reader:BarcodeReader;
 export default class DynamsoftBarcodeReader {
-  private settings:any;
+  private settings:Setting[] = [];
   async init() : Promise<void> {
     if (!reader) {
       reader = await BarcodeReader.createInstance();
@@ -90,11 +90,19 @@ export default class DynamsoftBarcodeReader {
     
   }
 
-  getSupportedSettings():string[] {
-    return ["template"];
+  static getSupportedSettings():SettingDef[] {
+    return [{name:"template",type:"string"}];
   }
 
-  async setSupportedSettings(settings:any):Promise<void> {
+  static getDefaultSettings():any {
+    return {};
+  }
+
+  static getSettingOptions(key:string,settings:Setting[]):string[] {
+    return [];
+  }
+
+  async setSettings(settings:Setting[]):Promise<void> {
     this.settings = settings;
     for (let index = 0; index < settings.length; index++) {
       const setting = settings[index];

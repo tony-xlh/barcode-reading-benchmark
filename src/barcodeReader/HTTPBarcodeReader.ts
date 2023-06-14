@@ -1,8 +1,9 @@
 import { CameraEnhancer, DCEFrame } from "dynamsoft-camera-enhancer";
-import { DetectionResult } from "./BarcodeReader";
+import { DetectionResult, Setting, SettingDef } from "./BarcodeReader";
+import { getSetting } from "./Shared";
 
 export default class HTTPBarcodeReader {
-  private settings:any;
+  private settings:Setting[] = [];
   private canvas!:HTMLCanvasElement;
   async init() : Promise<void> {
     if (!this.canvas) {
@@ -31,10 +32,10 @@ export default class HTTPBarcodeReader {
   fetchDetectionResults(base64:string):Promise<DetectionResult>{
     const pThis = this;
     return new Promise(function(resolve,reject){
-      const engine = pThis.settings["Engine"] ?? ""
+      const engine = getSetting("Engine",pThis.settings) ?? ""
       const payload = {engine:engine,base64:base64};
       const xhr = new XMLHttpRequest();
-      const URL = pThis.settings["URL"] ?? "http://localhost:8888";
+      const URL = getSetting("URL",pThis.settings) ?? "http://localhost:8888";
       xhr.open('POST', URL+'/readBarcodes');
       xhr.setRequestHeader('content-type', 'application/json'); 
       xhr.onreadystatechange = function(){
@@ -53,11 +54,10 @@ export default class HTTPBarcodeReader {
     })
   }
 
-  getEngines():Promise<string[]>{
-    const pThis = this;
+  static getEngines(settings:Setting[]):Promise<string[]>{
     return new Promise(function(resolve,reject){
       const xhr = new XMLHttpRequest();
-      const URL = pThis.settings["URL"] ?? "http://localhost:8888";
+      const URL = getSetting("URL",settings) ?? "http://localhost:8888";
       xhr.open('GET', URL+'/getEngines');
       xhr.onreadystatechange = function(){
         if(xhr.readyState === 4){
@@ -72,7 +72,6 @@ export default class HTTPBarcodeReader {
       }
       xhr.send();
     });
-    
   }
 
   drawImageOrVideo(source:HTMLImageElement|HTMLVideoElement){
@@ -106,11 +105,26 @@ export default class HTTPBarcodeReader {
   }
 
 
-  getSupportedSettings():string[] {
-    return ["URL","Engine"];
+  static getSupportedSettings():SettingDef[] {
+    return [{name:"URL",type:"string"},{name:"Engine",type:"select"}];
   }
 
-  async setSupportedSettings(settings:any):Promise<void> {
+  static getDefaultSettings():any {
+    return {"URL":"http://localhost:8888","Engine":""};
+  }
+
+  static async getSettingOptions(key:string,settings:Setting[]):Promise<string[]> {
+    console.log("getSettingOptions");
+    console.log(key);
+    console.log(settings);
+    if (key === "Engine") {
+      const engines = await this.getEngines(settings);
+      return engines;
+    }
+    return [];
+  }
+
+  async setSettings(settings:any):Promise<void> {
     this.settings = settings;
   }
 }

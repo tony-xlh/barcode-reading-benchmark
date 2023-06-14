@@ -599,7 +599,7 @@ const goToLiveScannerPage = () => {
 
 const showSettingsModal = async () => {
   await reinitializeReaderIfNeeded();
-  const settingsItems = reader.getSupportedSettings();
+  const settingsItems = BarcodeReader.getSupportedSettings(selectedEngine.value);
   if (settingsItems.length>0) {
     console.log(settingsItems);
     showSettings.value = true;
@@ -621,7 +621,7 @@ const reinitializeReaderIfNeeded = async () => {
   if (needInitialization) {
     progressLabel.value = "Initializing...";
     reader = await BarcodeReader.createInstance(selectedEngine.value);
-    const settingsItems = reader.getSupportedSettings();
+    const settingsItems = BarcodeReader.getSupportedSettings(selectedEngine.value);
     if (settingsItems.length>0) {
       await loadSettings(settingsItems);
     }
