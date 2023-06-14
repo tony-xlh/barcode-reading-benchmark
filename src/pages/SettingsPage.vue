@@ -126,7 +126,7 @@ const deleteConfig = (index:number) => {
 
 const save = async () => {
   const configs:BarcodeReaderConfig[] = JSON.parse(JSON.stringify(barcodeReaderConfigs.value));
-  await localForage.setItem(projectName.value+":configuration",configs);
+  await localForage.setItem(projectName.value+":settings",configs);
   alert("Saved");
 }
 

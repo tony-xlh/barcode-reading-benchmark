@@ -335,11 +335,7 @@ export const removeProjectFiles = async (project:Project) => {
       await localForage.removeItem(project.info.name+":detectionResult:"+filename);  
     }
   }
-  const engines = BarcodeReader.getEngines();
-  for (let index = 0; index < engines.length; index++) {
-    const engine = engines[index];
-    await localForage.removeItem(project.info.name+":settings:"+engine);
-  }
+  await localForage.removeItem(project.info.name+":settings");
   await localForage.removeItem(project.info.name+":detectionResultFileNamesList");
   await localForage.removeItem(project.info.name+":results.zip");
   project.info.images = [];
@@ -372,7 +368,7 @@ export function BlobtoDataURL(blob:Blob):Promise<string> {
 }
 
 export async function loadProjectBarcodeReaderConfigs(projectName:string){
-  const configs:undefined|null|BarcodeReaderConfig[] = await localForage.getItem(projectName+":configuration");
+  const configs:undefined|null|BarcodeReaderConfig[] = await localForage.getItem(projectName+":settings");
   if (configs) {
     return configs;
   }else{

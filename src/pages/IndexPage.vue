@@ -398,14 +398,12 @@ const loadTextResultsFromZip = async (projectObj:Project):Promise<boolean> => {
         await localForage.setItem(key,groundTruthString);
       }
     }
-    const engines = BarcodeReader.getEngines();
-    for (let index = 0; index < engines.length; index++) {
-      const engine = engines[index];
-      const settingsString = await zip.file(engine+"_settings.json")?.async("string");
-      if (settingsString) {
-        await localForage.setItem(projectObj.info.name+":settings:"+engine,JSON.parse(settingsString));
-      }
+
+    const settingsString = await zip.file("settings.json")?.async("string");
+    if (settingsString) {
+      await localForage.setItem(projectObj.info.name+":settings",JSON.parse(settingsString));
     }
+
     return true;
   }
   return false;
