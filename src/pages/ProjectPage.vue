@@ -356,10 +356,12 @@ const updateRows = async (displayName?:string) => {
 }
 
 const decode = async () => {
-  if (decoding.value === false) {
+  let selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
+  if (decoding.value === false && selectedBarcodeReaderConfig) {
     decoding.value = true;
     hasToStop = false;
     await reinitializeReaderIfNeeded();
+    await updateBarcodeReaderSettings(selectedBarcodeReaderConfig);
     const length = project.info.images.length;
     progress.value = 0.0;
     progressLabel.value = "0/"+length;
@@ -594,13 +596,14 @@ const reinitializeReaderIfNeeded = async () => {
     if (needInitialization) {
       progressLabel.value = "Initializing...";
       reader = await BarcodeReader.createInstance(selectedBarcodeReaderConfig.engine);
-      await updateBarcodeReaderSettings(selectedBarcodeReaderConfig);
       progressLabel.value = "";
     }
   }
 }
 
 const updateBarcodeReaderSettings = async (config:BarcodeReaderConfig) => {
+  console.log("updateBarcodeReaderSettings");
+  console.log(config);
   await reader.setSupportedSettings(config.settings);
 }
 
