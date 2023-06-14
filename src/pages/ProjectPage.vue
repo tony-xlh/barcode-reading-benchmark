@@ -83,12 +83,11 @@
               <label style="font-size: 16px;">Engines:</label>
             </div>
             <div class="row" style="padding-bottom: 20px;">
-              <select style="min-width: 200px; height:45px;" @update:model-value="selectedEngineChanged($event)" v-model="selectedEngine">
-                <option v-for="engine in engines" :value="engine" v-bind:key="engine">
-                  {{ engine }}
+              <select style="min-width: 200px; height:45px;" @update:model-value="selectedEngineChanged($event)" v-model="selectedEngineDisplayName">
+                <option v-for="config in barcodeReaderConfigs" :value="config.displayName" v-bind:key="config.displayName">
+                  {{ config.displayName }}
                 </option>
               </select>
-              <q-btn style="height:45px;" v-if="selectedEngine === 'Dynamsoft'" flat round color="black" icon="settings" @click="showSettingsModal()" />
             </div>
             <div class="row" style="align-items: center;">
               <dynamsoft-button :label="decoding ? 'Stop Decoding':'Start Decoding'" v-on:click="decode"></dynamsoft-button>
@@ -225,39 +224,18 @@
           </q-card-actions>
         </q-card>
       </q-dialog>
-      <q-dialog v-model="showSettings">
-        <q-card>
-          <q-card-section>
-            <div class="text-h6">Settings</div>
-          </q-card-section>
-          <q-card-section class="q-pt-none">
-            <div v-for="setting in barcodeReaderSettings" v-bind:key="setting.name">
-              <div>
-                <label for="'settings-' + setting.name">{{ setting.name + ":" }}</label>
-              </div>
-              <div>
-                <textarea :id="'settings-' + setting.name" v-model="setting.value"/>
-              </div>
-            </div>
-          </q-card-section>
-          <q-card-actions align="right">
-            <q-btn flat v-close-popup color="primary" label="Save" @click="saveSettings()"/>
-            <q-btn flat v-close-popup color="primary" label="Close"/>
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
     </div>
   </q-page>
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader, DetectionResult } from "src/barcodeReader/BarcodeReader";
+import { BarcodeReader, BarcodeReaderConfig, DetectionResult, Setting } from "src/barcodeReader/BarcodeReader";
 import { Project } from "src/project.js";
 import { onMounted, ref } from "vue";
 import { useMeta } from 'quasar'
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
+import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadBarcodeReaderSettings, loadProjectBarcodeReaderConfigs, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
 import JSZip from "jszip";
 import { GroundTruth, PerformanceMetrics } from "src/definitions/definitions";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
@@ -326,14 +304,14 @@ const columns = [
 let reader: BarcodeReader;
 let project:Project;
 const rows = ref([] as any[]);
-const engines = ref([] as string[])
 const router = useRouter();
 const projectName = ref("");
-const selectedEngine = ref("");
+const selectedEngineDisplayName = ref("");
+const barcodeReaderConfigs = ref([] as BarcodeReaderConfig[]);
 const addAction = ref(false);
 const exportAction = ref(false);
 const showSettings = ref(false);
-const barcodeReaderSettings = ref([] as any[]);
+const barcodeReaderSettings = ref([] as Setting[]);
 const progress = ref(0.5);
 const progressLabel = ref("");
 const decoding = ref(false);
@@ -348,10 +326,10 @@ let projects:Project[] = [];
 onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
   const savedProjects = await localForage.getItem("projects");
-  const supportedEngines = BarcodeReader.getEngines();
-  engines.value = supportedEngines;
-  if (supportedEngines.length>0) {
-    selectedEngine.value = supportedEngines[0];
+  const configs = await loadProjectBarcodeReaderConfigs(router.currentRoute.value.params.name as string);
+  barcodeReaderConfigs.value = configs;
+  if (configs.length>0) {
+    selectedEngineDisplayName.value = configs[0].displayName;
   }
   useMeta({
     // sets document title
@@ -369,9 +347,9 @@ onMounted(async () => {
   }
 });
 
-const updateRows = async (engine?:string) => {
+const updateRows = async (displayName?:string) => {
   if (project) {
-    const engineStatistics = await calculateEngineStatistics(project,engine ?? selectedEngine.value);
+    const engineStatistics = await calculateEngineStatistics(project,displayName ?? selectedEngineDisplayName.value);
     statistics.value = engineStatistics.metrics;
     if (engineStatistics.rows) {
       rows.value = engineStatistics.rows;
@@ -380,7 +358,6 @@ const updateRows = async (engine?:string) => {
 }
 
 const decode = async () => {
-  console.log(selectedEngine.value);
   if (decoding.value === false) {
     decoding.value = true;
     hasToStop = false;
@@ -400,7 +377,7 @@ const decode = async () => {
       }
       const imageName = project.info.images[index];
       if (skipDetected.value) {
-        let detectedResult = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
+        let detectedResult = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json");
         if (detectedResult) {
           continue;
         }
@@ -409,11 +386,11 @@ const decode = async () => {
       if (dataURL) {
         let decodingResult = await reader.detect(dataURL);
         console.log(decodingResult);
-        const fileName = getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json";
+        const fileName = getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json";
         if (detectionResultFileNamesList.indexOf(fileName) === -1) {
           detectionResultFileNamesList.push(fileName);
         }
-        await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json",JSON.stringify(decodingResult));
+        await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json",JSON.stringify(decodingResult));
       }
       progress.value = parseFloat(((index + 1) / length).toFixed(2));
       progressLabel.value = (index+1)+"/"+length;
@@ -567,23 +544,17 @@ const downloadTextResults = async () => {
 };
 
 const addSettingsFileToZip = async (zip:JSZip) => {
-  for (let index = 0; index < engines.value.length; index++) {
-    const engine = engines.value[index];
-    const settings = await localForage.getItem(projectName.value+":settings:"+engine);
-    if (settings) {
-      zip.file(engine+"_settings.json", JSON.stringify(settings));
-    }
-  }
+  zip.file("settings.json", JSON.stringify(barcodeReaderConfigs.value));
 }
 
 const nameClicked = (name:string) => {
-  const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngine.value;
+  const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngineDisplayName.value;
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
 }
 
-const selectedEngineChanged = (engine:string) => {
-  updateRows(engine);
+const selectedEngineChanged = (displayName:string) => {
+  updateRows(displayName);
 }
 
 const goToComparisonPage = () => {
@@ -597,53 +568,46 @@ const goToLiveScannerPage = () => {
   window.open(routeUrl.href,'_blank');
 }
 
-const showSettingsModal = async () => {
-  await reinitializeReaderIfNeeded();
-  const settingsItems = BarcodeReader.getSupportedSettings(selectedEngine.value);
-  if (settingsItems.length>0) {
-    console.log(settingsItems);
-    showSettings.value = true;
-    loadSettings(settingsItems);
+const getSelectedBarcodeReaderConfig = (displayName?:string) => {
+  let name;
+  if (displayName) {
+    name = displayName;
   }else{
-    alert("This engine does not have settings.");
+    name = selectedEngineDisplayName.value;
   }
+  for (const config of barcodeReaderConfigs.value) {
+    if (config.displayName === name) {
+      return config;
+    }
+  }
+  return undefined;
 }
 
 const reinitializeReaderIfNeeded = async () => {
-  let needInitialization = false;
-  if (!reader) {
-    needInitialization = true;
-  }else{
-    if (reader.getEngine() != selectedEngine.value) {
+  let selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
+  if (selectedBarcodeReaderConfig) {
+    let needInitialization = false;
+    if (!reader) {
       needInitialization = true;
+    }else{
+      if (reader.getEngine() != selectedBarcodeReaderConfig.engine) {
+        needInitialization = true;
+      }
     }
-  }
-  if (needInitialization) {
-    progressLabel.value = "Initializing...";
-    reader = await BarcodeReader.createInstance(selectedEngine.value);
-    const settingsItems = BarcodeReader.getSupportedSettings(selectedEngine.value);
-    if (settingsItems.length>0) {
-      await loadSettings(settingsItems);
+    if (needInitialization) {
+      progressLabel.value = "Initializing...";
+      reader = await BarcodeReader.createInstance(selectedBarcodeReaderConfig.engine);
+      const settingsItems = BarcodeReader.getSupportedSettings(selectedBarcodeReaderConfig.engine);
+      if (settingsItems.length>0) {
+        await loadSettings(selectedBarcodeReaderConfig);
+      }
+      progressLabel.value = "";
     }
-    progressLabel.value = "";
   }
 }
 
-const loadSettings = async (settingsItems:string[]) => {
-  const items = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,settingsItems);
-  barcodeReaderSettings.value = items;
-}
-
-const saveSettings = async () => {
-  const settings = [];
-  for (let index = 0; index < barcodeReaderSettings.value.length; index++) {
-    const setting = barcodeReaderSettings.value[index];
-    const item:any = {};
-    item.name = setting.name;
-    item.value = setting.value;
-    settings.push(item);
-  }
-  await localForage.setItem(projectName.value+":settings:"+selectedEngine.value,settings);
+const loadSettings = async (config:BarcodeReaderConfig) => {
+  barcodeReaderSettings.value = config.settings;
 }
 
 const updateBarcodeReaderSettings = async () => {
@@ -654,7 +618,7 @@ const convertDetectedResultsToGroundTruth = async () => {
   const length = project.info.images.length;
   for (let index = 0; index < length; index++) {
     const imageName = project.info.images[index];
-    const detectionResultString:undefined|null|string = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngine.value+".json");
+    const detectionResultString:undefined|null|string = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json");
     if (detectionResultString) {
       const detectionResult:DetectionResult = JSON.parse(detectionResultString);
       const groundTruthList:GroundTruth[] = ConvertBarcodeResultsToGroundTruth(detectionResult.results);
