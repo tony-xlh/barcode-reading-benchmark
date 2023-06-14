@@ -71,3 +71,9 @@ export interface BarcodeResult {
   y3:number;
   y4:number;
 }
+
+export interface BarcodeReaderConfig {
+  engine:string;
+  displayName:string;
+  settings:any;
+}
