@@ -360,7 +360,7 @@ onMounted(async () => {
     if (project.isRemote) {
       const results:any = await localForage.getItem(project.info.name+":results.zip");
       const imported = await textResultsImported(project);
-      if (!results || !imported) {
+      if (!results || !imported || project.info.images.length === 0) {
         await downloadProjectFilesIfNeeded();
       }
     }
@@ -658,9 +658,12 @@ const downloadProjectFilesIfNeeded = async () => {
       await localForage.setItem(name+":results.zip",blob);
     }
     await loadTextResultsFromZip(projectObj);
-    let savedProjects:undefined|null|Project[] = await localForage.getItem("projects");
-    if (!savedProjects) {
-      savedProjects = [] as Project[];
+    let savedProjects:Project[];
+    let savedString:undefined|null|string = await localForage.getItem("projects");
+    if (savedString) {
+      savedProjects = JSON.parse(savedString);
+    }else{
+      savedProjects = [];
     }
     let newProjects:Project[] = [];
     let added = false;
