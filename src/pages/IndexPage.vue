@@ -90,10 +90,9 @@ import { Project } from "src/project";
 import localForage from "localforage";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
-import { removeProjectFiles, BlobtoDataURL, getFilenameWithoutExtension } from "src/utils";
-import JSZip from "jszip";
-import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
+import { removeProjectFiles, BlobtoDataURL } from "src/utils";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
+import { loadTextResultsFromZip, textResultsImported } from "src/projectUtils";
 
 const newProject = ref(false);
 const projectName = ref("");
@@ -334,6 +333,7 @@ const updateRemoteProjectProgress = (index:number) => {
 }
 
 const importRemoteProjectIfNeeded = async (projectObj:Project) => {
+  console.log(projectObj);
   if (projectObj.isRemote) {
     const results:any = await localForage.getItem(projectObj.info.name+":results.zip");
     if (!results) {
@@ -360,53 +360,6 @@ const importRemoteProjectIfNeeded = async (projectObj:Project) => {
     }
     status.value = "";
   }
-}
-
-const textResultsImported = async (projectObj:Project) => {
-  const name = projectObj.info.name;
-  const result = await localForage.getItem(name+":detectionResultFileNamesList");
-  if (result) {
-    return true;
-  }
-  return false;
-}
-
-const loadTextResultsFromZip = async (projectObj:Project):Promise<boolean> => {
-
-  const blob:Blob|null|undefined = await localForage.getItem(projectObj.info.name+":results.zip");
-  if (blob) {
-    const zip = new JSZip();
-    await zip.loadAsync(blob);
-    const detectionResultFileNamesListString = await zip.file("detection_result_filenames.json")?.async("string");
-    if (detectionResultFileNamesListString) {
-      const detectionResultFileNamesList:string[] = JSON.parse(detectionResultFileNamesListString);
-      for (let index = 0; index < detectionResultFileNamesList.length; index++) {
-        const detectionResultFileName = detectionResultFileNamesList[index];
-        const detectionResultString:string|undefined = await zip.file(detectionResultFileName)?.async("string");
-        if (detectionResultString) {
-          await localForage.setItem(projectObj.info.name+":detectionResult:"+detectionResultFileName,detectionResultString);
-        }
-      }
-      await localForage.setItem(projectObj.info.name+":detectionResultFileNamesList",detectionResultFileNamesList);
-    }
-    for (let index = 0; index < projectObj.info.images.length; index++) {
-      const imageName = projectObj.info.images[index];
-      const groundTruthName = getFilenameWithoutExtension(imageName)+".txt";
-      const key = projectObj.info.name+":groundTruth:"+groundTruthName;
-      const groundTruthString:string|undefined = await zip.file(groundTruthName)?.async("string");
-      if (groundTruthString) {
-        await localForage.setItem(key,groundTruthString);
-      }
-    }
-
-    const settingsString = await zip.file("settings.json")?.async("string");
-    if (settingsString) {
-      await localForage.setItem(projectObj.info.name+":settings",JSON.parse(settingsString));
-    }
-
-    return true;
-  }
-  return false;
 }
 
 
