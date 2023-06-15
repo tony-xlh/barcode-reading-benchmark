@@ -4,9 +4,9 @@
       <label style="font-size: 16px;">Engines:</label>
     </div>
     <div class="row" style="padding-bottom: 20px;">
-      <select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngine">
-        <option v-for="engine in engines" :value="engine" v-bind:key="engine">
-          {{ engine }}
+      <select @update:model-value="selectedEngineChanged($event)" style="min-width: 200px" v-model="selectedEngineDisplayName">
+        <option v-for="config in barcodeReaderConfigs" :value="config.displayName" v-bind:key="config.displayName">
+          {{ config.displayName }}
         </option>
       </select>
     </div>
@@ -26,14 +26,14 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader, DetectionResult } from "src/barcodeReader/BarcodeReader";
+import { BarcodeReader, BarcodeReaderConfig, DetectionResult } from "src/barcodeReader/BarcodeReader";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { CameraEnhancer } from 'dynamsoft-camera-enhancer';
-import { loadBarcodeReaderSettings } from 'src/utils';
+import { loadProjectBarcodeReaderConfigs } from 'src/utils';
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
-const selectedEngine = ref("");
-const engines = ref([] as string[])
+const selectedEngineDisplayName = ref("");
+const barcodeReaderConfigs = ref([] as BarcodeReaderConfig[]);
 const router = useRouter();
 const status = ref("");
 const scanning = ref(false);
@@ -46,29 +46,47 @@ let interval: any;
 
 onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
-  const supportedEngines = BarcodeReader.getEngines();
-  engines.value = supportedEngines;
-  selectedEngine.value = supportedEngines[0];
+  const configs = await loadProjectBarcodeReaderConfigs(router.currentRoute.value.params.name as string);
+  barcodeReaderConfigs.value = configs;
+  selectedEngineDisplayName.value = configs[0].displayName;
   initDCE();
 });
 
-const updateBarcodeReaderSettings = async () => {
-  let settings = await loadBarcodeReaderSettings(projectName.value,selectedEngine.value,reader.getSupportedSettings());
-  if (selectedEngine.value === "Dynamsoft") {
-    let hasDBRTemplate = false;
-    for (let index = 0; index < settings.length; index++) {
-      const setting = settings[index];
-      if (setting.name === "template") {
-        if (setting.value) {
-          hasDBRTemplate = true;
+const updateBarcodeReaderSettings = async (displayName:string) => {
+  let settings = getSelectedBarcodeReaderConfig(displayName)?.settings;
+  if (settings) {
+    if (selectedEngineDisplayName.value === "Dynamsoft") {
+      let hasDBRTemplate = false;
+      for (let index = 0; index < settings.length; index++) {
+        const setting = settings[index];
+        if (setting.name === "template") {
+          if (setting.value) {
+            hasDBRTemplate = true;
+          }
         }
       }
+      if (hasDBRTemplate === false) {
+        settings.push({name:"template",value:"speed"});
+      }
     }
-    if (hasDBRTemplate === false) {
-      settings.push({name:"template",value:"speed"});
+    console.log(settings);
+    await reader.setSupportedSettings(settings);
+  }
+}
+
+const getSelectedBarcodeReaderConfig = (displayName?:string) => {
+  let name;
+  if (displayName) {
+    name = displayName;
+  }else{
+    name = selectedEngineDisplayName.value;
+  }
+  for (const config of barcodeReaderConfigs.value) {
+    if (config.displayName === name) {
+      return config;
     }
   }
-  await reader.setSupportedSettings(settings);
+  return undefined;
 }
 
 const toggleScanning = async () => {
@@ -88,7 +106,8 @@ const toggleScanning = async () => {
   scanning.value = false;
 }
 
-const onPlayed = () => {
+const onPlayed = async () => {
+  await reinitializeReaderIfNeeded(selectedEngineDisplayName.value);
   startProcessingLoop();
 }
 
@@ -103,7 +122,7 @@ const initDCE = async () => {
   status.value = "";
 }
 
-const startProcessingLoop = () => {
+const startProcessingLoop = async () => {
   stopProcessingLoop();
   interval = setInterval(decode,200);
 }
@@ -113,27 +132,34 @@ const stopProcessingLoop = () => {
   processing = false;
 }
 
-const decode = async () => {
-  if (camera && processing === false) {
-    processing = true;
+const reinitializeReaderIfNeeded = async (displayName:string) => {
+  const selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig(displayName);
+  if (selectedBarcodeReaderConfig) {
     let needInitialization = false;
     if (!reader) {
       needInitialization = true;
     }else{
-      if (reader.getEngine() != selectedEngine.value) {
+      if (reader.getEngine() != selectedBarcodeReaderConfig.engine) {
         needInitialization = true;
       }
     }
     if (needInitialization) {
       status.value = "Initializing Barcode Reader...";
-      reader = await BarcodeReader.createInstance(selectedEngine.value);
-      await updateBarcodeReaderSettings();
+      reader = await BarcodeReader.createInstance(selectedBarcodeReaderConfig.engine);
       status.value = "";
     }
+    await updateBarcodeReaderSettings(displayName);
+  }
+}
+
+const decode = async () => {
+  const selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
+  if (camera && processing === false && selectedBarcodeReaderConfig) {
+    processing = true;
     const frame = camera.getFrame();
     const detectionResult = await reader.detect(frame);
     status.value = detectionResult.elapsedTime + "ms";
-    if (reader.getEngine() === selectedEngine.value) {
+    if (reader.getEngine() === selectedBarcodeReaderConfig.engine) {
       updateScannedResults(detectionResult);
     }
     processing = false;
@@ -155,8 +181,10 @@ const updateScannedResults = (detectionResult:DetectionResult) => {
   }
 }
 
-const selectedEngineChanged = (engine:string) => {
+const selectedEngineChanged = async (engine:string) => {
+  console.log(engine);
   if (interval && camera.isOpen()) {
+    await reinitializeReaderIfNeeded(engine);
     stopProcessingLoop();
     startProcessingLoop();
   }
