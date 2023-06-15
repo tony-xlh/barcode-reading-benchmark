@@ -159,7 +159,7 @@ import { BarcodeReader, BarcodeReaderConfig, BarcodeResult, DetectionResult } fr
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import localForage from "localforage";
-import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, getRectFromPoints, intersectionOverUnion, loadProjectBarcodeReaderConfigs, textCorrect } from "src/utils";
+import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, getRectFromPoints, intersectionOverUnion, loadProjectBarcodeReaderConfigs, overlappingPercent, textCorrect } from "src/utils";
 import { GroundTruth, Point } from "src/definitions/definitions";
 import { Project } from "src/project";
 import { useMeta } from "quasar";
@@ -324,16 +324,18 @@ const findOutIncorrectDetectionResults = (barcodeResultList:BarcodeResult[],grou
     let hasCorrectResult = false;
     for (let j = 0; j < groundTruthList.length; j++) {
       const groundTruth = groundTruthList[j];
-      let IoU;
+      //let IoU;
+      let percent;
       if (groundTruth.hasLocation === false) {
-        IoU = 1.0;
+        percent = 1.0;
       }else {
         const points1 = getPointsFromBarcodeResultResult(barcodeResult);
         const points2 = getPointsFromGroundTruth(groundTruth);
-        IoU = intersectionOverUnion(points1, points2);
+        //IoU = intersectionOverUnion(points1, points2);
+        percent = overlappingPercent(points1,points2);
       }
-      if (IoU > 0.05) {
-        //console.log(IoU);
+
+      if (percent > 0.20) {
         if (groundTruth.text) {
           if (!textCorrect(groundTruth,barcodeResult)) {
             index.push(i);

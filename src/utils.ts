@@ -175,15 +175,18 @@ export const calculateDetectionStatistics = (barcodeResultList:BarcodeResult[],g
     const barcodeResult = barcodeResultList[i];
     for (let j = 0; j < groundTruthList.length; j++) {
       const groundTruth = groundTruthList[j];
-      let IoU;
+      //let IoU;
+      let percent;
       if (groundTruth.hasLocation === false) {
-        IoU = 1.0;
+        //IoU = 1.0;
+        percent = 1.0;
       }else{
         const points1 = getPointsFromBarcodeResultResult(barcodeResult);
         const points2 = getPointsFromGroundTruth(groundTruth);
-        IoU = intersectionOverUnion(points1,points2);
+        //IoU = intersectionOverUnion(points1,points2);
+        percent = overlappingPercent(points1,points2);
       }
-      if (IoU > 0.05) {
+      if (percent > 0.20) {
         if (groundTruth.text) {
           if (textCorrect(groundTruth,barcodeResult)) {
             correct = correct + 1;
@@ -274,6 +277,41 @@ export function intersectionOverUnion(pts1:Point[] ,pts2:Point[]) : number {
   return rectIntersectionOverUnion(rect1, rect2);
 }
 
+export function overlappingPercent(pts1:Point[] ,pts2:Point[]) : number {
+  const rect1 = getRectFromPoints(pts1);
+  const rect2 = getRectFromPoints(pts2);
+
+  let leftRect;
+  let rightRect;
+  if (rect1.left<rect2.left) {
+    leftRect = rect1;
+    rightRect = rect2;
+  }else{
+    leftRect = rect2;
+    rightRect = rect1;
+  }
+  let upperRect;
+  let lowerRect;
+  if (rect1.top<rect2.top) {
+    upperRect = rect1;
+    lowerRect = rect2;
+  }else{
+    upperRect = rect2;
+    lowerRect = rect1;
+  }
+  if (leftRect.right > rightRect.left && upperRect.bottom>lowerRect.top) {
+    const overlappedX = Math.min(leftRect.right,rightRect.right) - rightRect.left;
+    const overlappedY = Math.min(upperRect.bottom,lowerRect.bottom) - lowerRect.top;
+    const overlappedArea = overlappedX * overlappedY;
+    const area1 = rect1.width * rect1.height;
+    const area2 = rect2.width * rect2.height;
+    const smallerArea = Math.min(area1,area2);
+    return overlappedArea/smallerArea;
+  }else{
+    return 0;
+  }
+}
+
 function rectIntersectionOverUnion(rect1:Rect, rect2:Rect) : number {
   const leftColumnMax = Math.max(rect1.left, rect2.left);
   const rightColumnMin = Math.min(rect1.right,rect2.right);
@@ -308,6 +346,13 @@ export function getRectFromPoints(points:Point[]) : Rect {
       right = Math.max(point.x,right);
       bottom = Math.max(point.y,bottom);
     });
+
+    if (left === right) {
+      right = right + 1;
+    }
+    if (top === bottom) {
+      bottom = bottom + 1;
+    }
 
     const r:Rect = {
       left: left,
