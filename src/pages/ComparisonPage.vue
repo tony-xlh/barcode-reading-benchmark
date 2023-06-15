@@ -11,7 +11,7 @@
             Engines:
           </div>
           <div class="engines">
-            <q-checkbox color="orange" v-model="engine.enabled" :label="engine.name" v-for="engine in engines" v-bind:key="engine.name"/>
+            <q-checkbox color="orange" v-model="engine.enabled" :label="engine.displayName" v-for="engine in engines" v-bind:key="engine.displayName"/>
           </div>
           <dynamsoft-button label="Get comparison statistics" v-on:click="getStatistics()" />
         </div>
@@ -33,15 +33,15 @@
                 <tr style="background:#eeeeee;">
                   <th class="text-left">No.</th>
                   <th class="text-left">Filename</th>
-                  <th class="text-left" v-for="engine in engines" v-bind:key="engine.name">{{ engine.name }}</th>
+                  <th class="text-left" v-for="engine in engines" v-bind:key="engine.displayName">{{ engine.displayName }}</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="row in tableRows" v-bind:key="row.number">
                   <td>{{ row.number }}</td>
                   <td><a href="javascript:void();" @click="goToDetailsPage(row.filename)"> {{ row.filename }} </a></td>
-                  <td class="text-left" v-for="engine in engines" v-bind:key="'detected-'+engine.name">
-                    {{ (row.detectedEngines.indexOf(engine.name) != -1) ? '✓' : '✗' }}
+                  <td class="text-left" v-for="engine in engines" v-bind:key="'detected-'+engine.displayName">
+                    {{ (row.detectedEngines.indexOf(engine.displayName) != -1) ? '✓' : '✗' }}
                   </td>
                 </tr>
               </tbody>
@@ -54,7 +54,6 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader } from "src/barcodeReader/BarcodeReader";
 import { Project } from "src/project";
 import { onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
@@ -71,7 +70,7 @@ import {
 } from "echarts/components";
 import VChart from "vue-echarts";
 import { EngineStatistics } from "src/definitions/definitions";
-import { calculateEngineStatistics } from "src/utils";
+import { calculateEngineStatistics, loadProjectBarcodeReaderConfigs } from "src/utils";
 import { useMeta } from "quasar";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
 
@@ -91,7 +90,7 @@ const averageTimeOption = ref({});
 const precisionOption = ref({});
 
 const projectName = ref("");
-const engines = ref([] as {name:string,enabled:boolean}[])
+const engines = ref([] as {displayName:string,enabled:boolean}[])
 const router = useRouter();
 const tableRows = ref([] as tableRow[]);
 let project:Project;
@@ -105,11 +104,11 @@ interface tableRow {
 
 onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
-  const supportedEngines = BarcodeReader.getEngines();
+  const configs = await loadProjectBarcodeReaderConfigs(router.currentRoute.value.params.name as string);
   const enginesList = [];
-  for (let index = 0; index < supportedEngines.length; index++) {
-    const engine = supportedEngines[index];
-    const item = {name:engine,enabled:true};
+  for (let index = 0; index < configs.length; index++) {
+    const config = configs[index];
+    const item = {displayName:config.displayName,enabled:true};
     enginesList.push(item);
   }
   engines.value = enginesList;
@@ -279,7 +278,7 @@ const getSelectedEngines = () => {
   for (let index = 0; index < engines.value.length; index++) {
     const engine = engines.value[index];
     if (engine.enabled) {
-      selectedEngines.push(engine.name);
+      selectedEngines.push(engine.displayName);
     }
   }
   return selectedEngines;
