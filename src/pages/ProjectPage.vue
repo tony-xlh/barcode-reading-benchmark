@@ -224,6 +224,16 @@
           </q-card-actions>
         </q-card>
       </q-dialog>
+      <q-dialog v-model="showDownloadDialog" persistent transition-show="scale" transition-hide="scale">
+        <q-card style="width: 300px">
+          <q-card-section>
+            <div class="text-h6">Downloading project data...</div>
+          </q-card-section>
+          <q-card-section class="q-pt-none">
+            Please wait for a while.
+          </q-card-section>
+        </q-card>
+      </q-dialog>
     </div>
   </q-page>
 </template>
@@ -239,6 +249,7 @@ import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLt
 import JSZip from "jszip";
 import { GroundTruth, PerformanceMetrics } from "src/definitions/definitions";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
+import { loadTextResultsFromZip, textResultsImported } from "src/projectUtils";
 
 const columns = [
   {
@@ -315,6 +326,7 @@ const progressLabel = ref("");
 const decoding = ref(false);
 const skipDetected = ref(true);
 const statistics = ref({fileNumber:0,correctFilesNumber:0,barcodeNumber:0,accuracy:0,precision:0,averageTime:0} as PerformanceMetrics);
+const showDownloadDialog = ref(false);
 let hasToStop = false;
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
@@ -338,11 +350,22 @@ onMounted(async () => {
     for (let index = 0; index < projects.length; index++) {
       if (projects[index].info.name === projectName.value) {
         project = projects[index];
-        updateRows();
-        return;
+        break;
       }
     }
   }
+  if (!project) {
+    await downloadProjectFilesIfNeeded();
+  }else{
+    if (project.isRemote) {
+      const results:any = await localForage.getItem(project.info.name+":results.zip");
+      const imported = await textResultsImported(project);
+      if (!results || !imported) {
+        await downloadProjectFilesIfNeeded();
+      }
+    }
+  }
+  updateRows();
 });
 
 const updateRows = async (displayName?:string) => {
@@ -619,6 +642,46 @@ const convertDetectedResultsToGroundTruth = async () => {
     }
   }
   updateRows();
+}
+
+const downloadProjectFilesIfNeeded = async () => {
+  showDownloadDialog.value = true;
+  const name = projectName.value;
+  try {
+    const resp = await fetch("./dataset/"+name+"/project_manifest.json");
+    const text = await resp.text();
+    const projectObj = JSON.parse(text);
+    projectObj.isRemote = true;
+    const resultsResp = await fetch ("./dataset/"+name+"/results.zip");
+    const blob = await resultsResp.blob();
+    if (blob.size>0) {
+      await localForage.setItem(name+":results.zip",blob);
+    }
+    await loadTextResultsFromZip(projectObj);
+    let savedProjects:undefined|null|Project[] = await localForage.getItem("projects");
+    if (!savedProjects) {
+      savedProjects = [] as Project[];
+    }
+    let newProjects:Project[] = [];
+    let added = false;
+    for (let index = 0; index < savedProjects.length; index++) {
+      const p = savedProjects[index];
+      if (p.info.name === projectObj.info.name) {
+        newProjects.push(projectObj); //the projectObj is newer than the object stored in the value
+        added = true;
+      }else{
+        newProjects.push(p);
+      }
+    }
+    if (added === false) {
+      newProjects.push(projectObj);
+    }
+    await localForage.setItem("projects", JSON.stringify(newProjects));
+    project = projectObj;
+  } catch (error) {
+    console.log(error);
+  }
+  showDownloadDialog.value = false;
 }
 
 </script>
