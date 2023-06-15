@@ -346,19 +346,13 @@ const goBack = () => {
   flex-wrap: wrap;
 }
 
-.chart {
-  height: 400px;
-}
-
 .chart-container {
   flex-grow: 1;
-  flex-basis: 33%;
+  flex-basis: 100%;
 }
 
-@media screen and (max-device-width: 600px){
-  .chart-container {
-    flex-basis: 100%;
-  }
+.chart {
+  height: 400px;
 }
 
 </style>
