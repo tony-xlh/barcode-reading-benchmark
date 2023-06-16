@@ -90,11 +90,11 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
       }
       detectedFiles = detectedFiles + 1;
       misdetected = detectionStatistics.misdetected.toString();
-      totalBarcodes = totalBarcodes + groundTruthList.length;
       totalBarcodesDetected = totalBarcodesDetected + detectionResult.results.length;
       totalBarcodesCorrectlyDetected = totalBarcodesCorrectlyDetected + detectionStatistics.correct;
       totalBarcodesMisDetected = totalBarcodesMisDetected + detectionStatistics.misdetected;
     }
+    totalBarcodes = totalBarcodes + groundTruthList.length;
     if (correct === "true") {
       totalCorrectFiles = totalCorrectFiles + 1;
     }
