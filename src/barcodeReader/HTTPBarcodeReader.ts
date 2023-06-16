@@ -1,6 +1,6 @@
 import { CameraEnhancer, DCEFrame } from "dynamsoft-camera-enhancer";
 import { DetectionResult, Setting, SettingDef } from "./BarcodeReader";
-import { getSetting } from "./Shared";
+import { DecimalToHex, getSetting } from "./Shared";
 
 export default class HTTPBarcodeReader {
   private settings:Setting[] = [];
@@ -42,6 +42,11 @@ export default class HTTPBarcodeReader {
         if(xhr.readyState === 4){
           console.log(xhr.responseText);
           const response:DetectionResult = JSON.parse(xhr.responseText);
+          for (const result of response.results) {
+            if (result.barcodeBytes) {
+              result.barcodeBytes = pThis.convertBase64BytesToNumbers(result.barcodeBytes);
+            }
+          }
           resolve(response);
         }
       }
@@ -52,6 +57,22 @@ export default class HTTPBarcodeReader {
       console.log(payload);
       xhr.send(JSON.stringify(payload));
     })
+  }
+
+  convertBase64BytesToNumbers(base64:string){
+    console.log(base64);
+    const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+    console.log(bytes);
+    return this.getBinary(bytes);
+  }
+
+  getBinary(bytes:Uint8Array){
+    let joined = "";
+    for (let index = 0; index < bytes.length; index++) {
+      const byte = bytes[index];
+      joined = joined + DecimalToHex(byte.toString());
+    }
+    return joined;
   }
 
   static getEngines(settings:Setting[]):Promise<string[]>{
