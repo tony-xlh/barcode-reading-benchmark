@@ -335,12 +335,8 @@ let projects:Project[] = [];
       
 onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
+  await loadConfigs(router.currentRoute.value.params.name as string);
   const savedProjects = await localForage.getItem("projects");
-  const configs = await loadProjectBarcodeReaderConfigs(router.currentRoute.value.params.name as string);
-  barcodeReaderConfigs.value = configs;
-  if (configs.length>0) {
-    selectedEngineDisplayName.value = configs[0].displayName;
-  }
   useMeta({
     // sets document title
     title: 'Barcode Reading Benchmark - '+ projectName.value,
@@ -367,6 +363,14 @@ onMounted(async () => {
   }
   updateRows();
 });
+
+const loadConfigs = async (projectName:string) => {
+  const configs = await loadProjectBarcodeReaderConfigs(projectName);
+  barcodeReaderConfigs.value = configs;
+  if (configs.length>0) {
+    selectedEngineDisplayName.value = configs[0].displayName;
+  }
+}
 
 const updateRows = async (displayName?:string) => {
   if (project) {
@@ -681,6 +685,7 @@ const downloadProjectFilesIfNeeded = async () => {
     }
     await localForage.setItem("projects", JSON.stringify(newProjects));
     project = projectObj;
+    await loadConfigs(name);
   } catch (error) {
     console.log(error);
   }
