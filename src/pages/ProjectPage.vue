@@ -254,6 +254,7 @@ import JSZip from "jszip";
 import { GroundTruth, PerformanceMetrics } from "src/definitions/definitions";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
 import { loadTextResultsFromZip, textResultsImported } from "src/projectUtils";
+import { base64Decode } from "encoding-japanese";
 
 const columns = [
   {
@@ -477,11 +478,77 @@ const addFilesToProject = async () => {
       project.info.images.push(file.name);
     }
     await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+    await addFilesToProjectFromZip();
     updateRows();
     saveProjects();
     alert("added");
     addAction.value = false;
   }
+}
+
+const addFilesToProjectFromZip = async () => {
+  if (project && zipFile) {
+    const buffer = await zipFile.arrayBuffer();
+    const zip = new JSZip();
+    await zip.loadAsync(buffer);
+    const files = zip.files;
+    const filenames = Object.keys(files);
+    
+    const groundTruthList = [];
+    const imageList = [];
+    const detectionResultList = [];
+    for (let index = 0; index < filenames.length; index++) {
+      const filename = filenames[index];
+      const lowerCase = filename.toLowerCase();
+      const file = files[filename];
+      if (file.dir === false) {
+        if (lowerCase.endsWith(".jpg") || lowerCase.endsWith(".jpeg") || lowerCase.endsWith(".png") || lowerCase.endsWith(".bmp")) {
+          imageList.push(file);
+        }else if (lowerCase.endsWith(".txt")) {
+          groundTruthList.push(file);
+        }else if (lowerCase.endsWith(".json")) {
+          detectionResultList.push(file);
+        } 
+      }
+    }
+    for (let index = 0; index < groundTruthList.length; index++) {
+      const file = groundTruthList[index];
+      const content = await file.async("string");
+      await localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
+    }
+    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+    if (!detectionResultFileNamesList) {
+      detectionResultFileNamesList = [];
+    }
+    for (let index = 0; index < detectionResultList.length; index++) {
+      const file = detectionResultList[index];
+      const content = await file.async("string");
+      if (detectionResultFileNamesList.indexOf(file.name) === -1) {
+        detectionResultFileNamesList.push(file.name);
+      }
+      await localForage.setItem(projectName.value+":detectionResult:"+file.name,content);
+    }
+    for (let index = 0; index < imageList.length; index++) {
+      const file = imageList[index];
+      const base64 = await file.async("base64");
+      const dataURL = addDataURLHead(base64,file.name);
+      await localForage.setItem(projectName.value+":image:"+file.name,dataURL);
+      project.info.images.push(file.name);
+    }
+    await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+  }
+}
+
+const addDataURLHead = (base64:string,filename:string) => {
+  const lowCase = filename.toLowerCase();
+  if (lowCase.endsWith(".jpg") || lowCase.endsWith(".jpeg")) {
+    return "data:image/jpeg;base64,"+base64;
+  }else if (lowCase.endsWith(".bmp")) {
+    return "data:image/bmp;base64,"+base64;
+  }else if (lowCase.endsWith(".bmp")) { 
+    return "data:image/png;base64,"+base64;
+  }
+  return "data:image/jpeg;base64,"+base64;
 }
 
 const saveProjects = async () => {
