@@ -196,6 +196,10 @@
               <input type="file" id="groundTruthFiles" multiple="true" v-on:change="loadGroundTruthFiles($event);" accept=".txt" />
               <label for="imageFiles">Ground truth files.</label>
             </div>
+            <div>
+              <input type="file" id="zipFile" v-on:change="loadZip($event);" accept=".zip" />
+              <label for="zipFile">Zip with images and text results.</label>
+            </div>
           </q-card-section>
           <q-card-actions align="right">
             <q-btn flat color="primary" label="Add to project" v-on:click="addFilesToProject" />
@@ -331,6 +335,7 @@ let hasToStop = false;
 let imageFiles:File[] = [];
 let detectionResultFiles:File[] = [];
 let groundTruthFiles:File[] = [];
+let zipFile:File|undefined;
 let projects:Project[] = [];
       
 onMounted(async () => {
@@ -442,6 +447,10 @@ const loadGroundTruthFiles = (e:any) => {
   groundTruthFiles = e.target.files;
 }
 
+const loadZip = (e:any) => {
+  zipFile = e.target.files[0];
+}
+
 const addFilesToProject = async () => {
   if (project) {
     for (let index = 0; index < groundTruthFiles.length; index++) {
@@ -484,7 +493,15 @@ const saveProjects = async () => {
 }
 
 const showLocalFilesDialog = () => {
+  resetFiles();
   addAction.value = true;
+}
+
+const resetFiles = () => {
+  zipFile = undefined;
+  imageFiles = [];
+  detectionResultFiles = [];
+  groundTruthFiles = [];
 }
 
 const clearProject = async () => {
@@ -525,6 +542,7 @@ const downloadImagesAsZip = async () => {
       zip.file(imageName, blob);
     }
   }
+  
   zip.generateAsync({type:"blob"}).then(function(content) {
     const link = document.createElement('a')
     link.href = URL.createObjectURL(content);
