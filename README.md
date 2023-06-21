@@ -27,7 +27,7 @@ Extra SDKs are supported via HTTP using [Barcode-Reader-Aggregator](https://gith
 
 ## How to Infer that a Barcode is Correctly Detected
 
-1. Check if there is a ground truth barcode which overlaps with the detected barcode using IoU (intersection of union).
+1. Check if there is a ground truth barcode which overlaps with the detected barcode using overlapped percent. (the area of the intersection / the area of the ground truth or the detected result which has a smaller area).
 2. Check if the barcode text is correct. If the barcode content is in raw bytes, compare the binaries. Since 2D barcodes use Reed–Solomon error correction, it is okay if some of the binaries do not match with the ground truth's (based on edit distance).
 
 ## Dive into Formats
