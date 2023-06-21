@@ -39,7 +39,7 @@ export const readFileAsText = async (file:File):Promise<string> => {
   });
 }
 
-export const calculateEngineStatistics = async (project:Project,engine:string) => {
+export const calculateEngineStatistics = async (project:Project,engine:string,category?:string) => {
   const projectName = project.info.name;
   const newRows = [];
   let totalBarcodes = 0;
@@ -52,6 +52,12 @@ export const calculateEngineStatistics = async (project:Project,engine:string) =
   let totalCorrectFiles = 0;
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
+    if (category) {
+      if (imageName.split("/")[0] != category) {
+        continue;
+      }
+    }
+    
     let joinedGroundTruth = "";
     let groundTruthList:GroundTruth[] = [];
     const groundTruthString:string|null|undefined = await localForage.getItem(projectName+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
