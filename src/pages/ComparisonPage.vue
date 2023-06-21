@@ -13,10 +13,10 @@
           <div class="engines options">
             <q-checkbox color="orange" v-model="engine.enabled" :label="engine.displayName" v-for="engine in engines" v-bind:key="engine.displayName"/>
           </div>
-          <div style="margin-right: 5px;">
+          <div style="margin-right: 5px;" v-if="categories.length>0">
             Categories:
           </div>
-          <div class="categories options">
+          <div class="categories options" v-if="categories.length>0">
             <q-checkbox color="orange" v-model="category.enabled" :label="category.displayName" v-for="category in categories" v-bind:key="category.displayName"/>
           </div>
           <dynamsoft-button label="Get comparison statistics" v-on:click="getStatistics()" />
