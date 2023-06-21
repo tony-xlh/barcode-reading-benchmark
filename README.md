@@ -8,6 +8,8 @@ The following SDKs are included for testing:
 * [ZBar.wasm](https://github.com/undecaf/zbar-wasm)
 * [ZXing-js](https://github.com/zxing-js/library)
 
+Extra SDKs are supported via HTTP using [Barcode-Reader-Aggregator](https://github.com/tony-xlh/Barcode-Reader-Aggregator).
+
 [Online demo](https://tony-xlh.github.io/barcode-dataset/benchmark/)
 
 ## Features
