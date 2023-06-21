@@ -10,8 +10,14 @@
           <div style="margin-right: 5px;">
             Engines:
           </div>
-          <div class="engines">
+          <div class="engines options">
             <q-checkbox color="orange" v-model="engine.enabled" :label="engine.displayName" v-for="engine in engines" v-bind:key="engine.displayName"/>
+          </div>
+          <div style="margin-right: 5px;">
+            Categories:
+          </div>
+          <div class="categories options">
+            <q-checkbox color="orange" v-model="category.enabled" :label="category.displayName" v-for="category in categories" v-bind:key="category.displayName"/>
           </div>
           <dynamsoft-button label="Get comparison statistics" v-on:click="getStatistics()" />
         </div>
@@ -93,6 +99,7 @@ const projectName = ref("");
 const engines = ref([] as {displayName:string,enabled:boolean}[])
 const router = useRouter();
 const tableRows = ref([] as tableRow[]);
+const categories = ref([] as {displayName:string,enabled:boolean}[])
 let project:Project;
 
 interface tableRow {
@@ -122,11 +129,30 @@ onMounted(async () => {
     for (let index = 0; index < projects.length; index++) {
       if (projects[index].info.name === projectName.value) {
         project = projects[index];
+        getCategories();
         return;
       }
     }
   }
 });
+
+const getCategories = () => {
+  const cats:{displayName:string,enabled:boolean}[] = [];
+  const addedCats:string[] = [];
+  for (let index = 0; index < project.info.images.length; index++) {
+    const imageName = project.info.images[index];
+    console.log(imageName);
+    if (imageName.indexOf("/") != -1) {
+      const cat = imageName.split("/")[0];
+      if (addedCats.indexOf(cat) === -1) {
+        addedCats.push(cat);
+        cats.push({displayName:cat,enabled:true});
+      }
+    }
+  }
+  categories.value = cats;
+  return cats;
+}
 
 const getStatistics = async () => {
   const selectedEngines = getSelectedEngines();
@@ -329,13 +355,9 @@ const goBack = () => {
   padding-bottom: 30px;
 }
 
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-}
 
-.engines {
+
+.options {
   background: #f5f5f5;
   padding: 5px 15px;
   margin-right: 5px;
