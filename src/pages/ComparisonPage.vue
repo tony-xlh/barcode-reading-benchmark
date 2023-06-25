@@ -240,6 +240,7 @@ const getStatistics = async () => {
     const statisticsOfCategories = await calculateCategoryStatistics();
     addAverageStatistics(statisticsOfCategories);
     calculateCategoryTableRows("accuracy","Reading Rate",{enable:true,mode:"max"},statisticsOfCategories);
+    calculateCategoryTableRows("precision","Precision",{enable:true,mode:"max"},statisticsOfCategories);
     calculateCategoryTableRows("averageTime","Average Time",{enable:true,mode:"min"},statisticsOfCategories);
   }
   
