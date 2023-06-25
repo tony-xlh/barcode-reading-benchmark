@@ -33,13 +33,31 @@
               <v-chart class="chart" :option="averageTimeOption" />
             </div>
           </div>
+          <div class="categories-data" v-if="categories.length>0 && categoryTableRows.length>0">
+            <q-markup-table>
+              <thead>
+                <tr style="background:#eeeeee;">
+                  <th class="text-left">Category</th>
+                  <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in categoryTableRows" v-bind:key="row.category">
+                  <td>{{ row.category }}</td>
+                  <td class="text-left" v-for="(value,index) in row.statistics" v-bind:key="'value-'+row.category+'-'+index">
+                    {{ value }}
+                  </td>
+                </tr>
+              </tbody>
+            </q-markup-table>
+          </div>
           <div v-if="tableRows.length > 0">
             <q-markup-table>
               <thead>
                 <tr style="background:#eeeeee;">
                   <th class="text-left">No.</th>
                   <th class="text-left">Filename</th>
-                  <th class="text-left" v-for="engine in engines" v-bind:key="engine.displayName">{{ engine.displayName }}</th>
+                  <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,14 +109,19 @@ use([
   LegendComponent
 ]);
 
+
 const readingRateOption = ref({});
 const averageTimeOption = ref({});
 const precisionOption = ref({});
+
+const optionsInCategories = ref([]);
+const tableInCategories = ref();
 
 const projectName = ref("");
 const engines = ref([] as {displayName:string,enabled:boolean}[])
 const router = useRouter();
 const tableRows = ref([] as tableRow[]);
+const categoryTableRows = ref([] as categoryTableRow[]);
 const categories = ref([] as {displayName:string,enabled:boolean}[])
 let project:Project;
 
@@ -107,6 +130,12 @@ interface tableRow {
   filename:string;
   detectedEngines:string[];
   failedEngines:string[];
+}
+
+interface categoryTableRow {
+  category:string;
+  statistics:number[];
+  highlightedIndex:number;
 }
 
 onMounted(async () => {
@@ -165,7 +194,11 @@ const getStatistics = async () => {
   statisticsOfEngines.sort((a, b) => b.metrics.accuracy - a.metrics.accuracy);
 
   calculateTableRows(statisticsOfEngines);
-
+  if (categories.value.length>0) {
+    const statisticsOfCategories = await calculateCategoryStatistics();
+    calculateCategoryTableRows(statisticsOfCategories);
+  }
+  
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
   const readRates = getData(statisticsOfEngines,"accuracy");
   
@@ -297,6 +330,58 @@ const calculateTableRows = (statisticsOfEngines:EngineStatistics[]) => {
     }
   }
   tableRows.value = rows;
+}
+
+const calculateCategoryStatistics = async () => {
+  const selectedEngines = getSelectedEngines();
+  const statisticsOfCategories = [];
+  for (const cat of categories.value) {
+    if (cat.enabled === false) {
+      continue;
+    }
+    const statisticsOfEngines:EngineStatistics[] = [];
+    for (let index = 0; index < selectedEngines.length; index++) {
+      const engine = selectedEngines[index];
+      const statistics = await calculateEngineStatistics(project,engine,cat.displayName);
+      statisticsOfEngines.push(statistics);
+    }
+    statisticsOfCategories.push({category:cat.displayName,statisticsOfEngines});
+  }
+  return statisticsOfCategories;
+}
+
+const calculateCategoryTableRows = (statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
+  const rows:categoryTableRow[] = [];
+  for (const categoryStatistics of statisticsOfCategories) {
+    const statistics = categoryStatistics.statisticsOfEngines;
+    const metrics:{data:number[],highlightedIndex:number} = getSpecificMetrics(statistics,"accuracy",true);
+    const row:categoryTableRow = {
+      category:categoryStatistics.category,
+      statistics:metrics.data,
+      highlightedIndex:metrics.highlightedIndex
+    }
+    rows.push(row);
+  }
+  console.log(rows);
+  categoryTableRows.value = rows;
+}
+
+const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,enableHighlight?:boolean) => {
+  const dataArray = [];
+  let highlightedIndex = -1;
+  let maxValue = 0;
+  for (let index = 0; index < statistics.length; index++) {
+    const metrics = statistics[index].metrics as any;
+    const data = metrics[metricsName];
+    dataArray.push(data);
+    if (enableHighlight) {
+      if (data>maxValue) {
+        maxValue = data;
+        highlightedIndex = index;
+      }
+    }
+  }
+  return {highlightedIndex:highlightedIndex,data:dataArray};
 }
 
 const getSelectedEngines = () => {
