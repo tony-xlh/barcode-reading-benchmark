@@ -73,23 +73,26 @@
             </q-tab-panel>
             <q-tab-panel name="category">
               <div class="statistics-in-categories">
-                <div v-if="categories.length>0 && categoryTableRows.length>0">
-                  <q-markup-table>
-                    <thead>
-                      <tr style="background:#eeeeee;">
+                <div v-if="categories.length>0 && tableInCategories.length>0">
+                  <div v-for="table in tableInCategories" v-bind:key="'table-'+table.metrics">
+                    <h3>{{table.displayName}}</h3>
+                    <q-markup-table>
+                      <thead>
+                        <tr style="background:#eeeeee;">
                         <th class="text-left">Category</th>
-                        <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="row in categoryTableRows" v-bind:key="row.category">
-                        <td>{{ row.category }}</td>
-                        <td :class="'text-left ' + ((row.highlightedIndex === index)?'highlighted':'')" v-for="(value,index) in row.statistics" v-bind:key="'value-'+row.category+'-'+index">
-                          {{ value }}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </q-markup-table>
+                          <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="row in table.rows" v-bind:key="row.category">
+                          <td>{{ row.category }}</td>
+                          <td :class="'text-left ' + ((row.highlightedIndex === index)?'highlighted':'')" v-for="(value,index) in row.statistics" v-bind:key="'value-'+row.category+'-'+index">
+                            {{ value }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </q-markup-table>
+                  </div>
                 </div>
               </div>
             </q-tab-panel>
@@ -147,14 +150,11 @@ const readingRateOption = ref({});
 const averageTimeOption = ref({});
 const precisionOption = ref({});
 
-const optionsInCategories = ref([]);
-const tableInCategories = ref();
-
 const projectName = ref("");
 const engines = ref([] as {displayName:string,enabled:boolean}[])
 const router = useRouter();
 const tableRows = ref([] as tableRow[]);
-const categoryTableRows = ref([] as categoryTableRow[]);
+const tableInCategories = ref([] as {metrics:string,displayName:string,rows:categoryTableRow[]}[]);
 const categories = ref([] as {displayName:string,enabled:boolean}[])
 const showCalculatingDialog = ref(false);
 const selectedTab = ref("general");
@@ -230,9 +230,11 @@ const getStatistics = async () => {
 
   calculateTableRows(statisticsOfEngines);
   if (categories.value.length>0) {
+    tableInCategories.value = [];
     const statisticsOfCategories = await calculateCategoryStatistics();
     addAverageStatistics(statisticsOfCategories);
-    calculateCategoryTableRows(statisticsOfCategories);
+    calculateCategoryTableRows("accuracy","Reading Rate",true,statisticsOfCategories);
+    calculateCategoryTableRows("averageTime","Average Time",false,statisticsOfCategories);
   }
   
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
@@ -426,11 +428,11 @@ const addAverageStatistics = (statisticsOfCategories:{category:string,statistics
   statisticsOfCategories.push(newCategory);
 }
 
-const calculateCategoryTableRows = (statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
+const calculateCategoryTableRows = (metricsName:string,displayName:string,enableHighlight:boolean,statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
   const rows:categoryTableRow[] = [];
   for (const categoryStatistics of statisticsOfCategories) {
     const statistics = categoryStatistics.statisticsOfEngines;
-    const metrics:{data:number[],highlightedIndex:number} = getSpecificMetrics(statistics,"accuracy",true);
+    const metrics:{data:number[],highlightedIndex:number} = getSpecificMetrics(statistics,metricsName,enableHighlight);
     const row:categoryTableRow = {
       category:categoryStatistics.category,
       statistics:metrics.data,
@@ -438,8 +440,7 @@ const calculateCategoryTableRows = (statisticsOfCategories:{category:string,stat
     }
     rows.push(row);
   }
-  console.log(rows);
-  categoryTableRows.value = rows;
+  tableInCategories.value.push({metrics:metricsName,displayName:displayName,rows:rows});
 }
 
 const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,enableHighlight?:boolean) => {
