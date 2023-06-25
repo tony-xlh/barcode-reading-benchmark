@@ -44,7 +44,7 @@
               <tbody>
                 <tr v-for="row in categoryTableRows" v-bind:key="row.category">
                   <td>{{ row.category }}</td>
-                  <td class="text-left" v-for="(value,index) in row.statistics" v-bind:key="'value-'+row.category+'-'+index">
+                  <td :class="'text-left ' + ((row.highlightedIndex === index)?'highlighted':'')" v-for="(value,index) in row.statistics" v-bind:key="'value-'+row.category+'-'+index">
                     {{ value }}
                   </td>
                 </tr>
@@ -460,6 +460,9 @@ const goBack = () => {
 
 .chart {
   height: 400px;
+}
+.highlighted {
+  font-weight: bold;
 }
 
 </style>
