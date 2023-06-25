@@ -158,6 +158,7 @@ const tableInCategories = ref([] as {metrics:string,displayName:string,rows:cate
 const categories = ref([] as {displayName:string,enabled:boolean}[])
 const showCalculatingDialog = ref(false);
 const selectedTab = ref("general");
+
 let project:Project;
 
 interface tableRow {
@@ -171,6 +172,11 @@ interface categoryTableRow {
   category:string;
   statistics:number[];
   highlightedIndex:number;
+}
+
+interface highlightConfig {
+  enable:boolean;
+  mode:"max"|"min";
 }
 
 onMounted(async () => {
@@ -233,8 +239,8 @@ const getStatistics = async () => {
     tableInCategories.value = [];
     const statisticsOfCategories = await calculateCategoryStatistics();
     addAverageStatistics(statisticsOfCategories);
-    calculateCategoryTableRows("accuracy","Reading Rate",true,statisticsOfCategories);
-    calculateCategoryTableRows("averageTime","Average Time",false,statisticsOfCategories);
+    calculateCategoryTableRows("accuracy","Reading Rate",{enable:true,mode:"max"},statisticsOfCategories);
+    calculateCategoryTableRows("averageTime","Average Time",{enable:true,mode:"min"},statisticsOfCategories);
   }
   
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
@@ -428,11 +434,11 @@ const addAverageStatistics = (statisticsOfCategories:{category:string,statistics
   statisticsOfCategories.push(newCategory);
 }
 
-const calculateCategoryTableRows = (metricsName:string,displayName:string,enableHighlight:boolean,statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
+const calculateCategoryTableRows = (metricsName:string,displayName:string,config:highlightConfig,statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
   const rows:categoryTableRow[] = [];
   for (const categoryStatistics of statisticsOfCategories) {
     const statistics = categoryStatistics.statisticsOfEngines;
-    const metrics:{data:number[],highlightedIndex:number} = getSpecificMetrics(statistics,metricsName,enableHighlight);
+    const metrics:{data:number[],highlightedIndex:number} = getSpecificMetrics(statistics,metricsName,config);
     const row:categoryTableRow = {
       category:categoryStatistics.category,
       statistics:metrics.data,
@@ -443,18 +449,30 @@ const calculateCategoryTableRows = (metricsName:string,displayName:string,enable
   tableInCategories.value.push({metrics:metricsName,displayName:displayName,rows:rows});
 }
 
-const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,enableHighlight?:boolean) => {
+const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,config:highlightConfig) => {
   const dataArray = [];
   let highlightedIndex = -1;
-  let maxValue = 0;
+  let minMaxValue:number|undefined = undefined;
   for (let index = 0; index < statistics.length; index++) {
     const metrics = statistics[index].metrics as any;
     const data = metrics[metricsName];
     dataArray.push(data);
-    if (enableHighlight) {
-      if (data>maxValue) {
-        maxValue = data;
-        highlightedIndex = index;
+    if (config.enable) {
+      if (minMaxValue === undefined) {
+        minMaxValue = data;
+        highlightedIndex = 0;
+      }else{
+        if (config.mode === "max") {
+          if (data>minMaxValue) {
+            minMaxValue = data;
+            highlightedIndex = index;
+          }
+        }else{
+          if (data<minMaxValue) {
+            minMaxValue = data;
+            highlightedIndex = index;
+          }
+        }
       }
     }
   }
