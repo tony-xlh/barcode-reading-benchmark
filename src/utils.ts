@@ -116,8 +116,14 @@ export const calculateEngineStatistics = async (project:Project,engine:string,ca
     }
     newRows.push(row);
   }
-  const accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
-  const precision = parseFloat(((totalBarcodesDetected - totalBarcodesMisDetected) / totalBarcodesDetected * 100).toFixed(2));
+  let accuracy = parseFloat((totalBarcodesCorrectlyDetected / totalBarcodes * 100).toFixed(2));
+  let precision = parseFloat(((totalBarcodesDetected - totalBarcodesMisDetected) / totalBarcodesDetected * 100).toFixed(2));
+  if (isNaN(accuracy)) {
+    accuracy = 0;
+  }
+  if (isNaN(precision)) {
+    precision = 100;
+  }
   const detectedFilesRate = parseFloat((detectedFilesWithResults / project.info.images.length * 100).toFixed(2));
   const performanceMetrics:PerformanceMetrics = {
     fileNumber: project.info.images.length,
