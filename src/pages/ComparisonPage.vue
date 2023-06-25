@@ -462,6 +462,7 @@ const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,con
 
 const drawCharts = (table:{metrics:string,displayName:string,rows:categoryTableRow[]}) => {
   selectedTable = table;
+  chartOptionsForCategories.value = [];
   const cats = getEnabledCategories();
   cats.push({displayName:"total average",enabled:false});
   categoriesForCharts.value  = cats;
