@@ -291,7 +291,26 @@ const getStatistics = async () => {
   showCalculatingDialog.value = false;
 }
 
-const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,engineNames:string[]) => {
+const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,engineNames:string[],enableSort?:boolean,ascend?:boolean) => {
+  if (enableSort) {
+    const arrayToSort:{engine:string,data:number}[] = [];
+    for (let index = 0; index < engineNames.length; index++) {
+      const engine = engineNames[index];
+      arrayToSort.push({engine:engine,data:data[index]});
+    }
+    if (ascend) {
+      arrayToSort.sort((a, b) => b.data - a.data);
+    }else{
+      arrayToSort.sort((a, b) => a.data - b.data);
+    }
+    
+    data = [];
+    engineNames = [];
+    for (const item of arrayToSort) {
+      data.push(item.data);
+      engineNames.push(item.engine);
+    }
+  }
   const labelOption = {
     show: true,
     position: 'top',
@@ -480,12 +499,15 @@ const drawChartForSelectedCategory = () => {
         if (row.category === category.displayName) {
           const data = row.statistics;
           let formatter;
+          let ascend = false;
           if (selectedTable.displayName.toLowerCase().indexOf("time") != -1) {
             formatter = "{c}ms";
+            ascend = false;
           }else{
             formatter = "{c}%";
+            ascend = true;
           }
-          const option = getOptionForChart(data,category.displayName,formatter,engines);
+          const option = getOptionForChart(data,category.displayName,formatter,engines,true,ascend);
           newOptions.push(option);
           break;
         }
