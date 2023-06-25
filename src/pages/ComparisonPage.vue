@@ -74,7 +74,7 @@
             <q-tab-panel name="category">
               <div class="statistics-in-categories">
                 <div v-if="categories.length>0 && tableInCategories.length>0">
-                  <div v-for="table in tableInCategories" v-bind:key="'table-'+table.metrics">
+                  <div class="statistics-of-category" v-for="table in tableInCategories" v-bind:key="'table-'+table.metrics">
                     <h3>{{table.displayName}}</h3>
                     <q-markup-table>
                       <thead>
@@ -92,6 +92,7 @@
                         </tr>
                       </tbody>
                     </q-markup-table>
+                    <dynamsoft-button style="margin-top:10px;" label="Draw charts" v-on:click="drawCharts(table);" />
                   </div>
                 </div>
               </div>
@@ -101,15 +102,32 @@
       </div>
     </div>
     <q-dialog v-model="showCalculatingDialog" persistent transition-show="scale" transition-hide="scale">
-        <q-card style="width: 300px">
-          <q-card-section>
-            <div class="text-h6">Calculating...</div>
-          </q-card-section>
-          <q-card-section class="q-pt-none">
-            Please wait for a while.
-          </q-card-section>
-        </q-card>
-      </q-dialog>
+      <q-card style="width: 300px">
+        <q-card-section>
+          <div class="text-h6">Calculating...</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          Please wait for a while.
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+    <q-dialog v-model="showChartsDialog" :maximized="true" transition-show="scale" transition-hide="scale">
+      <q-card>
+        <q-bar>
+          <q-space />
+          <q-btn dense flat icon="close" v-close-popup>
+            <q-tooltip class="bg-white text-primary">Close</q-tooltip>
+          </q-btn>
+        </q-bar>
+        <q-card-section class="q-pt-none">
+          Select a category:
+          <div class="categories options">
+            <q-checkbox color="orange" v-model="category.enabled" :label="category.displayName" v-for="category in categoriesForCharts" v-bind:key="'cat-chars-'+category.displayName"/>
+          </div>
+          <dynamsoft-button label="Draw" v-on:click="drawChartForSelectedCategory()" />
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -156,7 +174,9 @@ const router = useRouter();
 const tableRows = ref([] as tableRow[]);
 const tableInCategories = ref([] as {metrics:string,displayName:string,rows:categoryTableRow[]}[]);
 const categories = ref([] as {displayName:string,enabled:boolean}[])
+const categoriesForCharts = ref([] as {displayName:string,enabled:boolean}[])
 const showCalculatingDialog = ref(false);
+const showChartsDialog = ref(false);
 const selectedTab = ref("general");
 
 let project:Project;
@@ -199,14 +219,14 @@ onMounted(async () => {
     for (let index = 0; index < projects.length; index++) {
       if (projects[index].info.name === projectName.value) {
         project = projects[index];
-        getCategories();
+        getCategories(categories,true);
         return;
       }
     }
   }
 });
 
-const getCategories = () => {
+const getCategories = (targetRef:any,enabled:boolean) => {
   const cats:{displayName:string,enabled:boolean}[] = [];
   const addedCats:string[] = [];
   for (let index = 0; index < project.info.images.length; index++) {
@@ -215,11 +235,11 @@ const getCategories = () => {
       const cat = imageName.split("/")[0];
       if (addedCats.indexOf(cat) === -1) {
         addedCats.push(cat);
-        cats.push({displayName:cat,enabled:true});
+        cats.push({displayName:cat,enabled:enabled});
       }
     }
   }
-  categories.value = cats;
+  targetRef.value = cats;
   return cats;
 }
 
@@ -245,109 +265,51 @@ const getStatistics = async () => {
   }
   
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
-  const readRates = getData(statisticsOfEngines,"accuracy");
-  
-  const percentLabelOption = {
-    show: true,
-    position: 'top',
-    formatter: '{c}%',
-    fontSize: 12,
-    rich: {
-      name: {}
-    }
-  };
-  
-  const optionForReadingRate = {
-    title: {
-      text: 'Reading Rate',
-      x: 'center'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      }
-    },
-    toolbox: {
-      show: true,
-      orient: 'vertical',
-      left: 'right',
-      top: 'center',
-      feature: {
-        saveAsImage: { show: true }
-      }
-    },
-    xAxis: { type: 'category', data: sortedEngineNames },
-    yAxis: { type: 'value' },
-    series: [{ label: percentLabelOption, data: readRates, type: 'bar' }]
-  };
-  readingRateOption.value = optionForReadingRate;
-
-  const averageTimes = getData(statisticsOfEngines,"averageTime");
-  
-  const averageTimeLabelOption = {
-    show: true,
-    position: 'top',
-    formatter: '{c}ms',
-    fontSize: 12,
-    rich: {
-      name: {}
-    }
-  };
-
-  const optionForAverageTime = {
-    title: {
-      text: 'Average Time',
-      x: 'center'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      }
-    },
-    toolbox: {
-      show: true,
-      orient: 'vertical',
-      left: 'right',
-      top: 'center',
-      feature: {
-        saveAsImage: { show: true }
-      }
-    },
-    xAxis: { type: 'category', data: sortedEngineNames },
-    yAxis: { type: 'value' },
-    series: [{ label: averageTimeLabelOption, data: averageTimes, type: 'bar' }]
-  };
-  averageTimeOption.value = optionForAverageTime;
-
-  const precisions = getData(statisticsOfEngines,"precision");
-  const optionForPrecision = {
-    title: {
-      text: 'Precision',
-      x: 'center'
-    },
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      }
-    },
-    toolbox: {
-      show: true,
-      orient: 'vertical',
-      left: 'right',
-      top: 'center',
-      feature: {
-        saveAsImage: { show: true }
-      }
-    },
-    xAxis: { type: 'category', data: sortedEngineNames },
-    yAxis: { type: 'value' },
-    series: [{ label: percentLabelOption, data: precisions, type: 'bar' }]
-  };
-  precisionOption.value = optionForPrecision;
+  readingRateOption.value = getOptionForChart("accuracy","Reading Rate","{c}%",sortedEngineNames,statisticsOfEngines);
+  averageTimeOption.value = getOptionForChart("averageTime","Average Time","{c}ms",sortedEngineNames,statisticsOfEngines);
+  precisionOption.value = getOptionForChart("precision","Precision","{c}%",sortedEngineNames,statisticsOfEngines);
   showCalculatingDialog.value = false;
+}
+
+const getOptionForChart = (metricsName:string,displayName:string,labelFormatter:string,engineNames:string[],statisticsOfEngines:EngineStatistics[]) => {
+  const data = getData(statisticsOfEngines,metricsName);
+  
+  const labelOption = {
+    show: true,
+    position: 'top',
+    //'{c}%', '{c}ms', etc
+    formatter: labelFormatter,
+    fontSize: 12,
+    rich: {
+      name: {}
+    }
+  };
+  
+  const option = {
+    title: {
+      text: displayName,
+      x: 'center'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    toolbox: {
+      show: true,
+      orient: 'vertical',
+      left: 'right',
+      top: 'center',
+      feature: {
+        saveAsImage: { show: true }
+      }
+    },
+    xAxis: { type: 'category', data: engineNames },
+    yAxis: { type: 'value' },
+    series: [{ label: labelOption, data: data, type: 'bar' }]
+  };
+  return option;
 }
 
 const calculateTableRows = (statisticsOfEngines:EngineStatistics[]) => {
@@ -480,6 +442,16 @@ const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,con
   return {highlightedIndex:highlightedIndex,data:dataArray};
 }
 
+const drawCharts = (table:{metrics:string,displayName:string,rows:categoryTableRow[]}) => {
+  getCategories(categoriesForCharts,false);
+  categoriesForCharts.value.push({displayName:"total average",enabled:false});
+  showChartsDialog.value = true;
+}
+
+const drawChartForSelectedCategory = () => {
+  console.log("draw");
+}
+
 const getSelectedEngines = () => {
   const selectedEngines:string[] = [];
   for (let index = 0; index < engines.value.length; index++) {
@@ -536,7 +508,7 @@ const goBack = () => {
   padding-bottom: 30px;
 }
 
-.q-markup-table {
+.statistics-of-category {
   margin-bottom: 2em;
 }
 
