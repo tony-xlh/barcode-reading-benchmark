@@ -440,7 +440,9 @@ const goBack = () => {
   padding-bottom: 30px;
 }
 
-
+.q-markup-table {
+  margin-bottom: 2em;
+}
 
 .options {
   background: #f5f5f5;
