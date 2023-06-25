@@ -22,59 +22,78 @@
           <dynamsoft-button label="Get comparison statistics" v-on:click="getStatistics()" />
         </div>
         <div>
-          <div class="statistics-in-general">
-            <div class="charts" style="padding-top:1em;" v-if="Object.keys(readingRateOption).length > 0">
-              <div class="chart-container">
-                <v-chart class="chart" :option="readingRateOption" />
+          <q-tabs
+            v-model="selectedTab"
+            dense
+            class="text-grey"
+            active-color="orange"
+            indicator-color="orange"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="general" label="General" />
+            <q-tab name="category" label="Category" />
+          </q-tabs>
+          <q-separator />
+          <q-tab-panels v-model="selectedTab" animated>
+            <q-tab-panel name="general">
+              <div class="statistics-in-general">
+                <div class="charts" style="padding-top:1em;" v-if="Object.keys(readingRateOption).length > 0">
+                  <div class="chart-container">
+                    <v-chart class="chart" :option="readingRateOption" />
+                  </div>
+                  <div class="chart-container">
+                    <v-chart class="chart" :option="precisionOption" />
+                  </div>
+                  <div class="chart-container">
+                    <v-chart class="chart" :option="averageTimeOption" />
+                  </div>
+                </div>
+                <div v-if="tableRows.length > 0">
+                  <q-markup-table>
+                    <thead>
+                      <tr style="background:#eeeeee;">
+                        <th class="text-left">No.</th>
+                        <th class="text-left">Filename</th>
+                        <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in tableRows" v-bind:key="row.number">
+                        <td>{{ row.number }}</td>
+                        <td><a href="javascript:void();" @click="goToDetailsPage(row.filename)"> {{ row.filename }} </a></td>
+                        <td class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="'detected-'+engine">
+                          {{ (row.detectedEngines.indexOf(engine) != -1) ? '✓' : '✗' }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </q-markup-table>
+                </div>
               </div>
-              <div class="chart-container">
-                <v-chart class="chart" :option="precisionOption" />
+            </q-tab-panel>
+            <q-tab-panel name="category">
+              <div class="statistics-in-categories">
+                <div v-if="categories.length>0 && categoryTableRows.length>0">
+                  <q-markup-table>
+                    <thead>
+                      <tr style="background:#eeeeee;">
+                        <th class="text-left">Category</th>
+                        <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in categoryTableRows" v-bind:key="row.category">
+                        <td>{{ row.category }}</td>
+                        <td :class="'text-left ' + ((row.highlightedIndex === index)?'highlighted':'')" v-for="(value,index) in row.statistics" v-bind:key="'value-'+row.category+'-'+index">
+                          {{ value }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </q-markup-table>
+                </div>
               </div>
-              <div class="chart-container">
-                <v-chart class="chart" :option="averageTimeOption" />
-              </div>
-            </div>
-            <div v-if="tableRows.length > 0">
-              <q-markup-table>
-                <thead>
-                  <tr style="background:#eeeeee;">
-                    <th class="text-left">No.</th>
-                    <th class="text-left">Filename</th>
-                    <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="row in tableRows" v-bind:key="row.number">
-                    <td>{{ row.number }}</td>
-                    <td><a href="javascript:void();" @click="goToDetailsPage(row.filename)"> {{ row.filename }} </a></td>
-                    <td class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="'detected-'+engine">
-                      {{ (row.detectedEngines.indexOf(engine) != -1) ? '✓' : '✗' }}
-                    </td>
-                  </tr>
-                </tbody>
-              </q-markup-table>
-            </div>
-          </div>
-          <div class="statistics-in-categories">
-            <div v-if="categories.length>0 && categoryTableRows.length>0">
-              <q-markup-table>
-                <thead>
-                  <tr style="background:#eeeeee;">
-                    <th class="text-left">Category</th>
-                    <th class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="engine">{{ engine }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="row in categoryTableRows" v-bind:key="row.category">
-                    <td>{{ row.category }}</td>
-                    <td :class="'text-left ' + ((row.highlightedIndex === index)?'highlighted':'')" v-for="(value,index) in row.statistics" v-bind:key="'value-'+row.category+'-'+index">
-                      {{ value }}
-                    </td>
-                  </tr>
-                </tbody>
-              </q-markup-table>
-            </div>
-          </div>
+            </q-tab-panel>
+          </q-tab-panels>
         </div>        
       </div>
     </div>
@@ -138,6 +157,7 @@ const tableRows = ref([] as tableRow[]);
 const categoryTableRows = ref([] as categoryTableRow[]);
 const categories = ref([] as {displayName:string,enabled:boolean}[])
 const showCalculatingDialog = ref(false);
+const selectedTab = ref("general");
 let project:Project;
 
 interface tableRow {
