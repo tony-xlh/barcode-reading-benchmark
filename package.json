@@ -1,6 +1,6 @@
 {
   "name": "barcode-reading-benchmark",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Barcode reading benchmark tool",
   "productName": "Barcode Reading Benchmark",
   "author": "Lihang Xu",
