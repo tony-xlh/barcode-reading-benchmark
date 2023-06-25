@@ -479,7 +479,13 @@ const drawChartForSelectedCategory = () => {
       for (const row of selectedTable.rows) {
         if (row.category === category.displayName) {
           const data = row.statistics;
-          const option = getOptionForChart(data,category.displayName,"{c}%",engines);
+          let formatter;
+          if (selectedTable.displayName.toLowerCase().indexOf("time") != -1) {
+            formatter = "{c}ms";
+          }else{
+            formatter = "{c}%";
+          }
+          const option = getOptionForChart(data,category.displayName,formatter,engines);
           newOptions.push(option);
           break;
         }
