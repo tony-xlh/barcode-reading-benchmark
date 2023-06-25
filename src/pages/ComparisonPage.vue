@@ -122,9 +122,12 @@
         <q-card-section class="q-pt-none">
           Select a category:
           <div class="categories options">
-            <q-checkbox color="orange" v-model="category.enabled" :label="category.displayName" v-for="category in categoriesForCharts" v-bind:key="'cat-chars-'+category.displayName"/>
+            <q-checkbox color="orange" v-model="category.enabled" :label="category.displayName" v-for="category in categoriesForCharts" v-bind:key="'cat-charts-'+category.displayName"/>
           </div>
           <dynamsoft-button label="Draw" v-on:click="drawChartForSelectedCategory()" />
+          <div v-for="(option,index) in chartOptionsForCategories" v-bind:key="'cat-chart-'+index">
+            <v-chart class="chart" :option="option" />
+          </div>
         </q-card-section>
       </q-card>
     </q-dialog>
@@ -167,6 +170,7 @@ use([
 const readingRateOption = ref({});
 const averageTimeOption = ref({});
 const precisionOption = ref({});
+const chartOptionsForCategories = ref([] as any[]);
 
 const projectName = ref("");
 const engines = ref([] as {displayName:string,enabled:boolean}[])
@@ -180,6 +184,7 @@ const showChartsDialog = ref(false);
 const selectedTab = ref("general");
 
 let project:Project;
+let selectedTable:{metrics:string,displayName:string,rows:categoryTableRow[]};
 
 interface tableRow {
   number:number;
@@ -219,14 +224,14 @@ onMounted(async () => {
     for (let index = 0; index < projects.length; index++) {
       if (projects[index].info.name === projectName.value) {
         project = projects[index];
-        getCategories(categories,true);
+        getCategories(true);
         return;
       }
     }
   }
 });
 
-const getCategories = (targetRef:any,enabled:boolean) => {
+const getCategories = (enabled:boolean) => {
   const cats:{displayName:string,enabled:boolean}[] = [];
   const addedCats:string[] = [];
   for (let index = 0; index < project.info.images.length; index++) {
@@ -239,8 +244,20 @@ const getCategories = (targetRef:any,enabled:boolean) => {
       }
     }
   }
-  targetRef.value = cats;
+  categories.value = cats;
   return cats;
+}
+
+const getEnabledCategories = () => {
+  const enabledCats = [];
+  for (const cat of categories.value) {
+    if (cat.enabled) {
+      const copy = JSON.parse(JSON.stringify(cat));
+      copy.enabled = false;
+      enabledCats.push(copy);
+    }
+  }
+  return enabledCats;
 }
 
 const getStatistics = async () => {
@@ -265,15 +282,16 @@ const getStatistics = async () => {
   }
   
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
-  readingRateOption.value = getOptionForChart("accuracy","Reading Rate","{c}%",sortedEngineNames,statisticsOfEngines);
-  averageTimeOption.value = getOptionForChart("averageTime","Average Time","{c}ms",sortedEngineNames,statisticsOfEngines);
-  precisionOption.value = getOptionForChart("precision","Precision","{c}%",sortedEngineNames,statisticsOfEngines);
+  const accuracyData = getData(statisticsOfEngines,"accuracy");
+  const averageTimeData = getData(statisticsOfEngines,"averageTime");
+  const precisionData = getData(statisticsOfEngines,"precision");
+  readingRateOption.value = getOptionForChart(accuracyData,"Reading Rate","{c}%",sortedEngineNames);
+  averageTimeOption.value = getOptionForChart(averageTimeData,"Average Time","{c}ms",sortedEngineNames);
+  precisionOption.value = getOptionForChart(precisionData,"Precision","{c}%",sortedEngineNames);
   showCalculatingDialog.value = false;
 }
 
-const getOptionForChart = (metricsName:string,displayName:string,labelFormatter:string,engineNames:string[],statisticsOfEngines:EngineStatistics[]) => {
-  const data = getData(statisticsOfEngines,metricsName);
-  
+const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,engineNames:string[]) => {
   const labelOption = {
     show: true,
     position: 'top',
@@ -443,13 +461,31 @@ const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,con
 }
 
 const drawCharts = (table:{metrics:string,displayName:string,rows:categoryTableRow[]}) => {
-  getCategories(categoriesForCharts,false);
-  categoriesForCharts.value.push({displayName:"total average",enabled:false});
+  selectedTable = table;
+  const cats = getEnabledCategories();
+  cats.push({displayName:"total average",enabled:false});
+  categoriesForCharts.value  = cats;
   showChartsDialog.value = true;
 }
 
 const drawChartForSelectedCategory = () => {
   console.log("draw");
+  chartOptionsForCategories.value = [];
+  const engines = getSelectedEngines();
+  const newOptions:any = [];
+  for (const category of categoriesForCharts.value) {
+    if (category.enabled) {
+      for (const row of selectedTable.rows) {
+        if (row.category === category.displayName) {
+          const data = row.statistics;
+          const option = getOptionForChart(data,category.displayName,"{c}%",engines);
+          newOptions.push(option);
+          break;
+        }
+      }
+    }
+  }
+  chartOptionsForCategories.value = newOptions;
 }
 
 const getSelectedEngines = () => {
