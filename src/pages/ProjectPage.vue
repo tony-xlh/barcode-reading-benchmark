@@ -44,7 +44,7 @@
               <div class="col-12 col-md statistics-charts">
                 <div class="row">
                   <div class="col statistics-chart">
-                    Accuracy:
+                    Reading Rate:
                     <q-circular-progress
                       show-value
                       font-size="12px"
