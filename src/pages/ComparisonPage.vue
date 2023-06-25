@@ -74,6 +74,16 @@
         </div>        
       </div>
     </div>
+    <q-dialog v-model="showCalculatingDialog" persistent transition-show="scale" transition-hide="scale">
+        <q-card style="width: 300px">
+          <q-card-section>
+            <div class="text-h6">Calculating...</div>
+          </q-card-section>
+          <q-card-section class="q-pt-none">
+            Please wait for a while.
+          </q-card-section>
+        </q-card>
+      </q-dialog>
   </q-page>
 </template>
 
@@ -123,6 +133,7 @@ const router = useRouter();
 const tableRows = ref([] as tableRow[]);
 const categoryTableRows = ref([] as categoryTableRow[]);
 const categories = ref([] as {displayName:string,enabled:boolean}[])
+const showCalculatingDialog = ref(false);
 let project:Project;
 
 interface tableRow {
@@ -183,6 +194,7 @@ const getCategories = () => {
 }
 
 const getStatistics = async () => {
+  showCalculatingDialog.value = true;
   const selectedEngines = getSelectedEngines();
   const statisticsOfEngines:EngineStatistics[] = [];
   for (let index = 0; index < selectedEngines.length; index++) {
@@ -301,7 +313,8 @@ const getStatistics = async () => {
     yAxis: { type: 'value' },
     series: [{ label: percentLabelOption, data: precisions, type: 'bar' }]
   };
-  precisionOption.value = optionForPrecision
+  precisionOption.value = optionForPrecision;
+  showCalculatingDialog.value = false;
 }
 
 const calculateTableRows = (statisticsOfEngines:EngineStatistics[]) => {
