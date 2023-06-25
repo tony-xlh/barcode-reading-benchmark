@@ -170,7 +170,6 @@ const getCategories = () => {
   const addedCats:string[] = [];
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
-    console.log(imageName);
     if (imageName.indexOf("/") != -1) {
       const cat = imageName.split("/")[0];
       if (addedCats.indexOf(cat) === -1) {
@@ -196,6 +195,7 @@ const getStatistics = async () => {
   calculateTableRows(statisticsOfEngines);
   if (categories.value.length>0) {
     const statisticsOfCategories = await calculateCategoryStatistics();
+    addAverageStatistics(statisticsOfCategories);
     calculateCategoryTableRows(statisticsOfCategories);
   }
   
@@ -348,6 +348,46 @@ const calculateCategoryStatistics = async () => {
     statisticsOfCategories.push({category:cat.displayName,statisticsOfEngines});
   }
   return statisticsOfCategories;
+}
+
+const addAverageStatistics = (statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
+  const statisticsOfEngines:EngineStatistics[] = [];
+  const newCategory = {category:"total average",statisticsOfEngines:statisticsOfEngines};
+  const engines = getSelectedEngines();
+  for (let index = 0; index < engines.length; index++) {
+    const engine = engines[index];
+    let totalMetrics:any = {
+      fileNumber: 0,
+      correctFilesNumber:0,
+      barcodeNumber: 0,
+      detectedFilesRate: 0,
+      accuracy:0,
+      precision:0,
+      averageTime:0,
+    };
+    for (let j = 0; j < statisticsOfCategories.length; j++) {
+      const statisticsOfCategory = statisticsOfCategories[j];
+      for (let k = 0; k < statisticsOfCategory.statisticsOfEngines.length; k++) {
+        const engineStatistics:any = statisticsOfCategory.statisticsOfEngines[k];
+        console.log(engineStatistics);
+        if (engineStatistics.name === engine) {
+          for (const key in totalMetrics) {
+            totalMetrics[key] = totalMetrics[key] + engineStatistics.metrics[key];
+          }
+          break;
+        }
+      }
+    }
+    for (const key in totalMetrics) {
+      totalMetrics[key] =  (totalMetrics[key]/statisticsOfCategories.length).toFixed(2);
+    }
+    const statisticsOfEngine:EngineStatistics = {
+      name:engine,
+      metrics:totalMetrics
+    }
+    statisticsOfEngines.push(statisticsOfEngine);
+  }
+  statisticsOfCategories.push(newCategory);
 }
 
 const calculateCategoryTableRows = (statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
