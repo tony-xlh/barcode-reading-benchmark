@@ -64,8 +64,8 @@
                 <tr v-for="row in tableRows" v-bind:key="row.number">
                   <td>{{ row.number }}</td>
                   <td><a href="javascript:void();" @click="goToDetailsPage(row.filename)"> {{ row.filename }} </a></td>
-                  <td class="text-left" v-for="engine in engines" v-bind:key="'detected-'+engine.displayName">
-                    {{ (row.detectedEngines.indexOf(engine.displayName) != -1) ? '✓' : '✗' }}
+                  <td class="text-left" v-for="engine in getSelectedEngines()" v-bind:key="'detected-'+engine">
+                    {{ (row.detectedEngines.indexOf(engine) != -1) ? '✓' : '✗' }}
                   </td>
                 </tr>
               </tbody>
