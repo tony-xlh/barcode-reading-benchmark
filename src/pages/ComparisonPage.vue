@@ -125,6 +125,7 @@
             <q-checkbox color="orange" v-model="category.enabled" :label="category.displayName" v-for="category in categoriesForCharts" v-bind:key="'cat-charts-'+category.displayName"/>
           </div>
           <dynamsoft-button label="Draw" v-on:click="drawChartForSelectedCategory()" />
+          <q-checkbox style="margin-left:10px;" color="orange" v-model="sorting" label="Sort"/>
           <div v-for="(option,index) in chartOptionsForCategories" v-bind:key="'cat-chart-'+index">
             <v-chart class="chart" :option="option" />
           </div>
@@ -183,6 +184,7 @@ const categoriesForCharts = ref([] as {displayName:string,enabled:boolean}[])
 const showCalculatingDialog = ref(false);
 const showChartsDialog = ref(false);
 const selectedTab = ref("general");
+const sorting = ref(false);
 
 let configs:BarcodeReaderConfig[] = [];
 let project:Project;
@@ -294,7 +296,7 @@ const getStatistics = async () => {
 }
 
 const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,engineNames:string[],enableSort?:boolean,ascend?:boolean) => {
-  if (enableSort) {
+  if (enableSort && sorting.value === true) {
     const arrayToSort:{engine:string,data:number}[] = [];
     for (let index = 0; index < engineNames.length; index++) {
       const engine = engineNames[index];
@@ -337,6 +339,10 @@ const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,e
     }
   };
   const option = {
+    title:{
+      text: displayName,
+      show: false
+    },
     tooltip: {
       trigger: 'axis',
       axisPointer: {
