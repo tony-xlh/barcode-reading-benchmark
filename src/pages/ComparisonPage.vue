@@ -316,14 +316,14 @@ const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,e
 
   const app:any = {};
   app.config = {
-    rotate: 90,
-    align: 'left',
+    rotate: 0,
+    align: 'center',
     verticalAlign: 'middle',
-    position: 'insideBottom',
-    distance: 15
+    position: 'inside',
+    distance: 10
   };
   const labelOption = {
-    show: false,
+    show: true,
     position: app.config.position,
     distance: app.config.distance,
     align: app.config.align,
@@ -331,7 +331,7 @@ const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,e
     rotate: app.config.rotate,
     //'{c}%', '{c}ms', etc
     formatter: labelFormatter,
-    fontSize: 16,
+    fontSize: 12,
     rich: {
       name: {}
     }
@@ -657,7 +657,7 @@ const goBack = () => {
 
 .chart {
   height: 400px;
-  max-width: 400px;
+  max-width: 600px;
 }
 .highlighted {
   font-weight: bold;
