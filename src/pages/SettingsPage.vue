@@ -26,7 +26,7 @@
                   <label>Color: </label>
                   <input type="text" v-model="config.color"/>
                   <span>
-                    <q-btn class="gt-xs" size="12px" flat dense round icon="colorize" v-on:click="pickColor(index)" />
+                    <q-btn class="gt-xs" size="12px" flat dense round icon="colorize"/>
                     <q-popup-edit v-model="config.color" auto-save v-slot="scope">
                       <q-color v-model="scope.value"/>
                     </q-popup-edit>
@@ -205,10 +205,6 @@ const getSettingsOptions = async (keys:string[],selectedEngine:string) => {
 const change = (config:BarcodeReaderConfig,newValue:any) => {
   console.log("change");
   console.log(newValue);
-}
-
-const pickColor = (index:number) => {
-  console.log(index);
 }
 
 </script>
