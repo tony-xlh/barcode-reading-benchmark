@@ -108,6 +108,7 @@ export interface BarcodeResult {
 export interface BarcodeReaderConfig {
   engine:string;
   displayName:string;
+  color?:string;
   settings:Setting[];
 }
 

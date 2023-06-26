@@ -22,6 +22,16 @@
                   <label>Display Name: </label>
                   <input type="text" v-model="config.displayName"/>
                 </q-item-label>
+                <q-item-label lines="1">
+                  <label>Color: </label>
+                  <input type="text" v-model="config.color"/>
+                  <span>
+                    <q-btn class="gt-xs" size="12px" flat dense round icon="colorize" v-on:click="pickColor(index)" />
+                    <q-popup-edit v-model="config.color" auto-save v-slot="scope">
+                      <q-color v-model="scope.value"/>
+                    </q-popup-edit>
+                  </span>
+                </q-item-label>
               </q-item-section>
               <q-item-section top side>
                 <div class="text-grey-8 q-gutter-xs">
@@ -195,6 +205,10 @@ const getSettingsOptions = async (keys:string[],selectedEngine:string) => {
 const change = (config:BarcodeReaderConfig,newValue:any) => {
   console.log("change");
   console.log(newValue);
+}
+
+const pickColor = (index:number) => {
+  console.log(index);
 }
 
 </script>
