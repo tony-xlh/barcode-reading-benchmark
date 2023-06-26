@@ -154,6 +154,7 @@ import { EngineStatistics } from "src/definitions/definitions";
 import { calculateEngineStatistics, loadProjectBarcodeReaderConfigs } from "src/utils";
 import { useMeta } from "quasar";
 import DynamsoftButton from "src/components/DynamsoftButton.vue";
+import { BarcodeReaderConfig } from "src/barcodeReader/BarcodeReader";
 
 use([
   SVGRenderer,
@@ -183,6 +184,7 @@ const showCalculatingDialog = ref(false);
 const showChartsDialog = ref(false);
 const selectedTab = ref("general");
 
+let configs:BarcodeReaderConfig[] = [];
 let project:Project;
 let selectedTable:{metrics:string,displayName:string,rows:categoryTableRow[]};
 
@@ -206,7 +208,7 @@ interface highlightConfig {
 
 onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
-  const configs = await loadProjectBarcodeReaderConfigs(router.currentRoute.value.params.name as string);
+  configs = await loadProjectBarcodeReaderConfigs(router.currentRoute.value.params.name as string);
   const enginesList = [];
   for (let index = 0; index < configs.length; index++) {
     const config = configs[index];
@@ -376,22 +378,34 @@ const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,e
 
 const getSeries = (data:any[],engineNames:string[],labelOption:any) => {
   const series = [];
+  
   for (let index = 0; index < engineNames.length; index++) {
     const engine = engineNames[index];
+    let color = "";
+    for (const config of configs) {
+      if (config.displayName === engine) {
+        if (config.color) {
+          color = config.color;
+        }
+        break;
+      }
+    }
     const seriesItem:any = 
     {
       name: engine,
-        type: 'bar',
-        barGap: 0,
-        label: labelOption,
-        //itemStyle: {
-        //      color: '#a90000'
-        //    },
-        emphasis: {
-          focus: 'series'
-        },
-        data: [data[index]]
+      type: 'bar',
+      barGap: 0,
+      label: labelOption,
+      emphasis: {
+        focus: 'series'
+      },
+      data: [data[index]]
     };
+    if (color) {
+      seriesItem.itemStyle = {
+        color: color
+      }
+    }
     series.push(seriesItem);
   }
   return series;
