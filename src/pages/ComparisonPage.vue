@@ -311,27 +311,38 @@ const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,e
       engineNames.push(item.engine);
     }
   }
+
+  const app:any = {};
+  app.config = {
+    rotate: 90,
+    align: 'left',
+    verticalAlign: 'middle',
+    position: 'insideBottom',
+    distance: 15
+  };
   const labelOption = {
-    show: true,
-    position: 'top',
+    show: false,
+    position: app.config.position,
+    distance: app.config.distance,
+    align: app.config.align,
+    verticalAlign: app.config.verticalAlign,
+    rotate: app.config.rotate,
     //'{c}%', '{c}ms', etc
     formatter: labelFormatter,
-    fontSize: 12,
+    fontSize: 16,
     rich: {
       name: {}
     }
   };
-  
   const option = {
-    title: {
-      text: displayName,
-      x: 'center'
-    },
     tooltip: {
       trigger: 'axis',
       axisPointer: {
         type: 'shadow'
       }
+    },
+    legend: {
+      data: engineNames
     },
     toolbox: {
       show: true,
@@ -339,14 +350,51 @@ const getOptionForChart = (data:any[],displayName:string,labelFormatter:string,e
       left: 'right',
       top: 'center',
       feature: {
+        mark: { show: true },
+        dataView: { show: true, readOnly: false },
+        magicType: { show: true, type: ['line', 'bar', 'stack'] },
+        restore: { show: true },
         saveAsImage: { show: true }
       }
     },
-    xAxis: { type: 'category', data: engineNames },
-    yAxis: { type: 'value' },
-    series: [{ label: labelOption, data: data, type: 'bar' }]
+    xAxis: [
+      {
+        type: 'category',
+        axisTick: { show: false },
+        data: [displayName]
+      }
+    ],
+    yAxis: [
+      {
+        type: 'value'
+      }
+    ],
+    series: getSeries(data,engineNames,labelOption)
   };
   return option;
+}
+
+const getSeries = (data:any[],engineNames:string[],labelOption:any) => {
+  const series = [];
+  for (let index = 0; index < engineNames.length; index++) {
+    const engine = engineNames[index];
+    const seriesItem:any = 
+    {
+      name: engine,
+        type: 'bar',
+        barGap: 0,
+        label: labelOption,
+        //itemStyle: {
+        //      color: '#a90000'
+        //    },
+        emphasis: {
+          focus: 'series'
+        },
+        data: [data[index]]
+    };
+    series.push(seriesItem);
+  }
+  return series;
 }
 
 const calculateTableRows = (statisticsOfEngines:EngineStatistics[]) => {
@@ -595,6 +643,7 @@ const goBack = () => {
 
 .chart {
   height: 400px;
+  max-width: 400px;
 }
 .highlighted {
   font-weight: bold;
