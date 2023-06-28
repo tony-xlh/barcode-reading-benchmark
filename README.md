@@ -17,7 +17,7 @@ Extra SDKs are supported via HTTP using [Barcode-Reader-Aggregator](https://gith
 * Run batch barcode decoding on an image dataset
 * Calculate metrics like reading rate, precision and average time
 * Compare the performance of different barcode reading libraries
-* Compare the performance of in categories
+* Compare the performance in categories
 * Export and import of benchmark projects
 
 ## How the Metrics are Calculated
