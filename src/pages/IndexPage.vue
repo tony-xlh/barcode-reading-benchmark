@@ -21,9 +21,6 @@
           <div>
             <dynamsoft-button outline label="New Project" @click="newProjectButtonClicked"/>
           </div>
-          <div>
-            {{ status }}
-          </div>
         </div>
       </div>
     </div>
@@ -82,6 +79,16 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+    <q-dialog v-model="showDownloadingDialog" v-if="status" persistent transition-show="scale" transition-hide="scale">
+      <q-card style="width: 300px">
+        <q-card-section>
+          <div class="text-h6">Downloading project data...</div>
+        </q-card-section>
+        <q-card-section class="q-pt-none">
+          {{ status }}
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -98,6 +105,7 @@ const newProject = ref(false);
 const projectName = ref("");
 const projects = ref([] as Project[]);
 const manageAction = ref(false);
+const showDownloadingDialog = ref(true);
 const router = useRouter();
 const remoteImageFilesProgress = ref(0.0);
 const remoteImageFilesProgressLabel = ref("");
