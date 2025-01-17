@@ -13,6 +13,7 @@
     "build": "quasar build"
   },
   "dependencies": {
+    "@gtm-support/vue-gtm": "^3.1.0",
     "@quasar/extras": "^1.0.0",
     "@zxing/library": "^0.20.0",
     "dynamsoft-camera-enhancer": "^3.3.4",
