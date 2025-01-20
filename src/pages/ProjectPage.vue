@@ -243,18 +243,18 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader, BarcodeReaderConfig, DetectionResult, Setting } from "src/barcodeReader/BarcodeReader";
-import { Project } from "src/project.js";
-import { onMounted, ref } from "vue";
+import { BarcodeReader, BarcodeReaderConfig, DetectionResult, Setting } from 'src/barcodeReader/BarcodeReader';
+import { Project } from 'src/project.js';
+import { onMounted, ref } from 'vue';
 import { useMeta } from 'quasar'
-import { useRouter } from "vue-router";
-import localForage from "localforage";
-import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadProjectBarcodeReaderConfigs, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from "src/utils";
-import JSZip from "jszip";
-import { GroundTruth, PerformanceMetrics } from "src/definitions/definitions";
-import DynamsoftButton from "src/components/DynamsoftButton.vue";
-import { loadTextResultsFromZip, textResultsImported } from "src/projectUtils";
-import { base64Decode } from "encoding-japanese";
+import { useRouter } from 'vue-router';
+import localForage from 'localforage';
+import { ConvertBarcodeResultsToGroundTruth, calculateEngineStatistics, dataURLtoBlob, getFilenameWithoutExtension, loadProjectBarcodeReaderConfigs, readFileAsDataURL, readFileAsText, removeProjectFiles, sleep } from 'src/utils';
+import JSZip from 'jszip';
+import { GroundTruth, PerformanceMetrics } from 'src/definitions/definitions';
+import DynamsoftButton from 'src/components/DynamsoftButton.vue';
+import { loadTextResultsFromZip, textResultsImported } from 'src/projectUtils';
+import { base64Decode } from 'encoding-japanese';
 
 const columns = [
   {
@@ -321,13 +321,13 @@ let reader: BarcodeReader;
 let project:Project;
 const rows = ref([] as any[]);
 const router = useRouter();
-const projectName = ref("");
-const selectedEngineDisplayName = ref("");
+const projectName = ref('');
+const selectedEngineDisplayName = ref('');
 const barcodeReaderConfigs = ref([] as BarcodeReaderConfig[]);
 const addAction = ref(false);
 const exportAction = ref(false);
 const progress = ref(0.5);
-const progressLabel = ref("");
+const progressLabel = ref('');
 const decoding = ref(false);
 const skipDetected = ref(true);
 const statistics = ref({fileNumber:0,correctFilesNumber:0,barcodeNumber:0,accuracy:0,precision:0,averageTime:0} as PerformanceMetrics);
@@ -342,7 +342,7 @@ let projects:Project[] = [];
 onMounted(async () => {
   projectName.value = router.currentRoute.value.params.name as string;
   await loadConfigs(router.currentRoute.value.params.name as string);
-  const savedProjects = await localForage.getItem("projects");
+  const savedProjects = await localForage.getItem('projects');
   useMeta({
     // sets document title
     title: 'Barcode Reading Benchmark - '+ projectName.value,
@@ -360,7 +360,7 @@ onMounted(async () => {
     await downloadProjectFilesIfNeeded();
   }else{
     if (project.isRemote) {
-      const results:any = await localForage.getItem(project.info.name+":results.zip");
+      const results:any = await localForage.getItem(project.info.name+':results.zip');
       const imported = await textResultsImported(project);
       if (!results || !imported || project.info.images.length === 0) {
         await downloadProjectFilesIfNeeded();
@@ -397,37 +397,37 @@ const decode = async () => {
     await updateBarcodeReaderSettings(selectedBarcodeReaderConfig);
     const length = project.info.images.length;
     progress.value = 0.0;
-    progressLabel.value = "0/"+length;
-    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+    progressLabel.value = '0/'+length;
+    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+':detectionResultFileNamesList');
     if (!detectionResultFileNamesList) {
       detectionResultFileNamesList = [];
     }
     for (let index = 0; index < length; index++) {
       if (hasToStop) {
-        await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+        await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
         return;
       }
       const imageName = project.info.images[index];
       if (skipDetected.value) {
-        let detectedResult = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json");
+        let detectedResult = await localForage.getItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json');
         if (detectedResult) {
           continue;
         }
       }
-      const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
+      const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName);
       if (dataURL) {
         let decodingResult = await reader.detect(dataURL);
         console.log(decodingResult);
-        const fileName = getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json";
+        const fileName = getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json';
         if (detectionResultFileNamesList.indexOf(fileName) === -1) {
           detectionResultFileNamesList.push(fileName);
         }
-        await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json",JSON.stringify(decodingResult));
+        await localForage.setItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json',JSON.stringify(decodingResult));
       }
       progress.value = parseFloat(((index + 1) / length).toFixed(2));
-      progressLabel.value = (index+1)+"/"+length;
+      progressLabel.value = (index+1)+'/'+length;
     }
-    await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+    await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
     decoding.value = false;
   }else{
     hasToStop = true;
@@ -457,9 +457,9 @@ const addFilesToProject = async () => {
     for (let index = 0; index < groundTruthFiles.length; index++) {
       const file = groundTruthFiles[index];
       const content = await readFileAsText(file);
-      await localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
+      await localForage.setItem(projectName.value+':groundTruth:'+file.name,content);
     }
-    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+':detectionResultFileNamesList');
     if (!detectionResultFileNamesList) {
       detectionResultFileNamesList = [];
     }
@@ -469,19 +469,19 @@ const addFilesToProject = async () => {
       if (detectionResultFileNamesList.indexOf(file.name) === -1) {
         detectionResultFileNamesList.push(file.name);
       }
-      await localForage.setItem(projectName.value+":detectionResult:"+file.name,content);
+      await localForage.setItem(projectName.value+':detectionResult:'+file.name,content);
     }
     for (let index = 0; index < imageFiles.length; index++) {
       const file = imageFiles[index];
       const dataURL = await readFileAsDataURL(file);
-      await localForage.setItem(projectName.value+":image:"+file.name,dataURL);
+      await localForage.setItem(projectName.value+':image:'+file.name,dataURL);
       project.info.images.push(file.name);
     }
-    await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+    await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
     await addFilesToProjectFromZip();
     updateRows();
     saveProjects();
-    alert("added");
+    alert('added');
     addAction.value = false;
   }
 }
@@ -502,53 +502,53 @@ const addFilesToProjectFromZip = async () => {
       const lowerCase = filename.toLowerCase();
       const file = files[filename];
       if (file.dir === false) {
-        if (lowerCase.endsWith(".jpg") || lowerCase.endsWith(".jpeg") || lowerCase.endsWith(".png") || lowerCase.endsWith(".bmp")) {
+        if (lowerCase.endsWith('.jpg') || lowerCase.endsWith('.jpeg') || lowerCase.endsWith('.png') || lowerCase.endsWith('.bmp')) {
           imageList.push(file);
-        }else if (lowerCase.endsWith(".txt")) {
+        }else if (lowerCase.endsWith('.txt')) {
           groundTruthList.push(file);
-        }else if (lowerCase.endsWith(".json")) {
+        }else if (lowerCase.endsWith('.json')) {
           detectionResultList.push(file);
         } 
       }
     }
     for (let index = 0; index < groundTruthList.length; index++) {
       const file = groundTruthList[index];
-      const content = await file.async("string");
-      await localForage.setItem(projectName.value+":groundTruth:"+file.name,content);
+      const content = await file.async('string');
+      await localForage.setItem(projectName.value+':groundTruth:'+file.name,content);
     }
-    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+':detectionResultFileNamesList');
     if (!detectionResultFileNamesList) {
       detectionResultFileNamesList = [];
     }
     for (let index = 0; index < detectionResultList.length; index++) {
       const file = detectionResultList[index];
-      const content = await file.async("string");
+      const content = await file.async('string');
       if (detectionResultFileNamesList.indexOf(file.name) === -1) {
         detectionResultFileNamesList.push(file.name);
       }
-      await localForage.setItem(projectName.value+":detectionResult:"+file.name,content);
+      await localForage.setItem(projectName.value+':detectionResult:'+file.name,content);
     }
     for (let index = 0; index < imageList.length; index++) {
       const file = imageList[index];
-      const base64 = await file.async("base64");
+      const base64 = await file.async('base64');
       const dataURL = addDataURLHead(base64,file.name);
-      await localForage.setItem(projectName.value+":image:"+file.name,dataURL);
+      await localForage.setItem(projectName.value+':image:'+file.name,dataURL);
       project.info.images.push(file.name);
     }
-    await localForage.setItem(projectName.value+":detectionResultFileNamesList",detectionResultFileNamesList);
+    await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
   }
 }
 
 const addDataURLHead = (base64:string,filename:string) => {
   const lowCase = filename.toLowerCase();
-  if (lowCase.endsWith(".jpg") || lowCase.endsWith(".jpeg")) {
-    return "data:image/jpeg;base64,"+base64;
-  }else if (lowCase.endsWith(".bmp")) {
-    return "data:image/bmp;base64,"+base64;
-  }else if (lowCase.endsWith(".bmp")) { 
-    return "data:image/png;base64,"+base64;
+  if (lowCase.endsWith('.jpg') || lowCase.endsWith('.jpeg')) {
+    return 'data:image/jpeg;base64,'+base64;
+  }else if (lowCase.endsWith('.bmp')) {
+    return 'data:image/bmp;base64,'+base64;
+  }else if (lowCase.endsWith('.bmp')) { 
+    return 'data:image/png;base64,'+base64;
   }
-  return "data:image/jpeg;base64,"+base64;
+  return 'data:image/jpeg;base64,'+base64;
 }
 
 const saveProjects = async () => {
@@ -556,7 +556,7 @@ const saveProjects = async () => {
   projects.forEach(project => {
     projectsToSave.push(project);
   });
-  await localForage.setItem("projects", JSON.stringify(projectsToSave));
+  await localForage.setItem('projects', JSON.stringify(projectsToSave));
 }
 
 const showLocalFilesDialog = () => {
@@ -584,7 +584,7 @@ const exportProject = async () => {
 const downloadImages = async () => {
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
-    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
+    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName);
     if (dataURL) {
       await sleep(1000);
       const blob = dataURLtoBlob(dataURL);
@@ -602,7 +602,7 @@ const downloadImagesAsZip = async () => {
   const zip = new JSZip();
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
-    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName);
+    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName);
     if (dataURL) {
       console.log(imageName);
       const blob = dataURLtoBlob(dataURL);
@@ -610,10 +610,10 @@ const downloadImagesAsZip = async () => {
     }
   }
   
-  zip.generateAsync({type:"blob"}).then(function(content) {
+  zip.generateAsync({type:'blob'}).then(function(content) {
     const link = document.createElement('a')
     link.href = URL.createObjectURL(content);
-    link.download = projectName.value+"-images.zip";
+    link.download = projectName.value+'-images.zip';
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -624,30 +624,30 @@ const downloadTextResults = async () => {
   const zip = new JSZip();
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
-    const groundTruthFileName = getFilenameWithoutExtension(imageName)+".txt";
-    const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt");
+    const groundTruthFileName = getFilenameWithoutExtension(imageName)+'.txt';
+    const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+':groundTruth:'+getFilenameWithoutExtension(imageName)+'.txt');
     if (groundTruthString) {
       zip.file(groundTruthFileName, groundTruthString);
     }
   }
 
-  const detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+":detectionResultFileNamesList");
+  const detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+':detectionResultFileNamesList');
   if (detectionResultFileNamesList) {
     for (let index = 0; index < detectionResultFileNamesList.length; index++) {
       const detectionResultFileName = detectionResultFileNamesList[index];
-      const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+detectionResultFileName);
+      const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+':detectionResult:'+detectionResultFileName);
       if (detectionResultString) {
         zip.file(detectionResultFileName, detectionResultString);  
       }
     }
-    zip.file("detection_result_filenames.json", JSON.stringify(detectionResultFileNamesList));
+    zip.file('detection_result_filenames.json', JSON.stringify(detectionResultFileNamesList));
   }
-  zip.file("project_manifest.json", JSON.stringify(project));
+  zip.file('project_manifest.json', JSON.stringify(project));
   await addSettingsFileToZip(zip);
-  zip.generateAsync({type:"blob"}).then(function(content) {
+  zip.generateAsync({type:'blob'}).then(function(content) {
     const link = document.createElement('a')
     link.href = URL.createObjectURL(content);
-    link.download = projectName.value+"-results.zip";
+    link.download = projectName.value+'-results.zip';
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -655,11 +655,11 @@ const downloadTextResults = async () => {
 };
 
 const addSettingsFileToZip = async (zip:JSZip) => {
-  zip.file("settings.json", JSON.stringify(barcodeReaderConfigs.value));
+  zip.file('settings.json', JSON.stringify(barcodeReaderConfigs.value));
 }
 
 const nameClicked = (name:string) => {
-  const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name)+"/"+selectedEngineDisplayName.value;
+  const href = '/project/'+encodeURIComponent(projectName.value)+'/'+encodeURIComponent(name)+'/'+selectedEngineDisplayName.value;
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
 }
@@ -669,12 +669,12 @@ const selectedEngineChanged = (displayName:string) => {
 }
 
 const goToComparisonPage = () => {
-  const href = "/project/"+encodeURIComponent(projectName.value)+"/comparison";
+  const href = '/project/'+encodeURIComponent(projectName.value)+'/comparison';
   router.push(href);
 }
 
 const goToLiveScannerPage = () => {
-  const href = "/project/"+encodeURIComponent(projectName.value)+"/livescanner";
+  const href = '/project/'+encodeURIComponent(projectName.value)+'/livescanner';
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
 }
@@ -706,15 +706,15 @@ const reinitializeReaderIfNeeded = async () => {
       }
     }
     if (needInitialization) {
-      progressLabel.value = "Initializing...";
+      progressLabel.value = 'Initializing...';
       reader = await BarcodeReader.createInstance(selectedBarcodeReaderConfig.engine);
-      progressLabel.value = "";
+      progressLabel.value = '';
     }
   }
 }
 
 const updateBarcodeReaderSettings = async (config:BarcodeReaderConfig) => {
-  console.log("updateBarcodeReaderSettings");
+  console.log('updateBarcodeReaderSettings');
   console.log(config);
   await reader.setSupportedSettings(config.settings);
 }
@@ -723,11 +723,11 @@ const convertDetectedResultsToGroundTruth = async () => {
   const length = project.info.images.length;
   for (let index = 0; index < length; index++) {
     const imageName = project.info.images[index];
-    const detectionResultString:undefined|null|string = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName)+"-"+selectedEngineDisplayName.value+".json");
+    const detectionResultString:undefined|null|string = await localForage.getItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json');
     if (detectionResultString) {
       const detectionResult:DetectionResult = JSON.parse(detectionResultString);
       const groundTruthList:GroundTruth[] = ConvertBarcodeResultsToGroundTruth(detectionResult.results);
-      await localForage.setItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName)+".txt",JSON.stringify(groundTruthList));
+      await localForage.setItem(projectName.value+':groundTruth:'+getFilenameWithoutExtension(imageName)+'.txt',JSON.stringify(groundTruthList));
     }
   }
   updateRows();
@@ -737,18 +737,18 @@ const downloadProjectFilesIfNeeded = async () => {
   showDownloadDialog.value = true;
   const name = projectName.value;
   try {
-    const resp = await fetch("./dataset/"+name+"/project_manifest.json");
+    const resp = await fetch('/barcode-dataset/benchmark/dataset/'+name+'/project_manifest.json');
     const text = await resp.text();
     const projectObj = JSON.parse(text);
     projectObj.isRemote = true;
-    const resultsResp = await fetch ("./dataset/"+name+"/results.zip");
+    const resultsResp = await fetch ('/barcode-dataset/benchmark/dataset/'+name+'/results.zip');
     const blob = await resultsResp.blob();
     if (blob.size>0) {
-      await localForage.setItem(name+":results.zip",blob);
+      await localForage.setItem(name+':results.zip',blob);
     }
     await loadTextResultsFromZip(projectObj);
     let savedProjects:Project[];
-    let savedString:undefined|null|string = await localForage.getItem("projects");
+    let savedString:undefined|null|string = await localForage.getItem('projects');
     if (savedString) {
       savedProjects = JSON.parse(savedString);
     }else{
@@ -768,7 +768,7 @@ const downloadProjectFilesIfNeeded = async () => {
     if (added === false) {
       newProjects.push(projectObj);
     }
-    await localForage.setItem("projects", JSON.stringify(newProjects));
+    await localForage.setItem('projects', JSON.stringify(newProjects));
     project = projectObj;
     await loadConfigs(name);
   } catch (error) {

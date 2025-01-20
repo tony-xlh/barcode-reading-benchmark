@@ -93,30 +93,30 @@
 </template>
 
 <script setup lang="ts">
-import { Project } from "src/project";
-import localForage from "localforage";
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import { removeProjectFiles, BlobtoDataURL } from "src/utils";
-import DynamsoftButton from "src/components/DynamsoftButton.vue";
-import { loadTextResultsFromZip, textResultsImported } from "src/projectUtils";
+import { Project } from 'src/project';
+import localForage from 'localforage';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { removeProjectFiles, BlobtoDataURL } from 'src/utils';
+import DynamsoftButton from 'src/components/DynamsoftButton.vue';
+import { loadTextResultsFromZip, textResultsImported } from 'src/projectUtils';
 
 const newProject = ref(false);
-const projectName = ref("");
+const projectName = ref('');
 const projects = ref([] as Project[]);
 const manageAction = ref(false);
 const showDownloadingDialog = ref(true);
 const router = useRouter();
 const remoteImageFilesProgress = ref(0.0);
-const remoteImageFilesProgressLabel = ref("");
+const remoteImageFilesProgressLabel = ref('');
 const textResultsDownloaded = ref(false);
-const downloadingStatus = ref("");
-const status = ref("");
+const downloadingStatus = ref('');
+const status = ref('');
 const selectedProject = ref(null as null|Project);
 let selectedIndex = -1;
 
 onMounted(async () => {
-  const savedProjects = await localForage.getItem("projects");
+  const savedProjects = await localForage.getItem('projects');
   if (savedProjects) {
     projects.value = JSON.parse(savedProjects as string);
   }
@@ -124,7 +124,7 @@ onMounted(async () => {
 });
 
 const loadRemoteProjects = async () => {
-  const resp = await fetch("./dataset/projects.json");
+  const resp = await fetch('/barcode-dataset/benchmark/dataset/projects.json');
   const text = await resp.text();
   if (text) {
     try {
@@ -160,13 +160,13 @@ const getLocalTime = (timestamp:number) => {
 }
 
 const newProjectButtonClicked = () => {
-  projectName.value = "";
+  projectName.value = '';
   newProject.value = true;
 }
 
 const createProject = () => {
   if (hasDuplicateName(projectName.value)) {
-    alert("Project name duplicated. Please use another name.");
+    alert('Project name duplicated. Please use another name.');
   }else{
     const project = new Project({name:projectName.value,creationTimestamp:Date.now(),images:[]});
     projects.value.push(project);
@@ -189,12 +189,12 @@ const saveProjects = async () => {
   projects.value.forEach(project => {
     projectsToSave.push(project);
   });
-  await localForage.setItem("projects", JSON.stringify(projectsToSave));
+  await localForage.setItem('projects', JSON.stringify(projectsToSave));
 }
 
 const openSelected = async (index:number) => {
-  if (status.value != "") {
-    alert("Please wait for the current operation.");
+  if (status.value != '') {
+    alert('Please wait for the current operation.');
     return;
   }
   let projectObj = projects.value[index];
@@ -205,7 +205,7 @@ const openSelected = async (index:number) => {
     }
   }
   await importRemoteProjectIfNeeded(projectObj);
-  router.push("/project/"+encodeURIComponent(projects.value[index].info.name));
+  router.push('/project/'+encodeURIComponent(projects.value[index].info.name));
 }
 
 const deleteSelected = async () => {
@@ -228,7 +228,7 @@ const deleteSelected = async () => {
 
 const goToSettingsPage = () => {
   if (selectedProject.value) {
-    const href = "/project/"+encodeURIComponent(selectedProject.value.info.name)+"/settings";
+    const href = '/project/'+encodeURIComponent(selectedProject.value.info.name)+'/settings';
     const routeUrl = router.resolve(href);
     window.open(routeUrl.href,'_blank');
   }
@@ -238,10 +238,10 @@ const importTextResultsOfSelected = async () => {
   if (textResultsDownloaded.value === true) {
     if (selectedProject.value) {
       await loadTextResultsFromZip(selectedProject.value);
-      alert("Imported");
+      alert('Imported');
     }
   }else{
-    alert("Please download the text results first.");
+    alert('Please download the text results first.');
   }
 }
 
@@ -249,7 +249,7 @@ const showManageDialog = async (index:number) => {
   selectedIndex = index;
   let projectObj = projects.value[index];
   selectedProject.value = projectObj;
-  console.log("selected:");
+  console.log('selected:');
   console.log(selectedProject);
   if (projectObj.isRemote) {
     const newProjectObj = await loadProjectManifestIfNeeded(projectObj);
@@ -257,7 +257,7 @@ const showManageDialog = async (index:number) => {
       projectObj = newProjectObj;
       selectedProject.value = projectObj;
     }
-    const results:any = await localForage.getItem(projectObj.info.name+":results.zip");
+    const results:any = await localForage.getItem(projectObj.info.name+':results.zip');
     if (results) {
       textResultsDownloaded.value = true;
     }else{
@@ -266,7 +266,7 @@ const showManageDialog = async (index:number) => {
     let downloadedFilesCount = 0;
     for (let index = 0; index < projectObj.info.images.length; index++) {
       const image = projectObj.info.images[index];
-      const dataURLInDB = await localForage.getItem(projectObj.info.name+":image:"+image);
+      const dataURLInDB = await localForage.getItem(projectObj.info.name+':image:'+image);
       if (dataURLInDB) {
         downloadedFilesCount = downloadedFilesCount + 1;
       }
@@ -281,7 +281,7 @@ const showManageDialog = async (index:number) => {
 const loadProjectManifestIfNeeded = async (projectObj:Project):Promise<undefined|Project> => {
   if (projectObj.info.images.length === 0) { //empty manifest
     const name = projectObj.info.name;
-    const resp = await fetch("./dataset/"+name+"/project_manifest.json");
+    const resp = await fetch('/barcode-dataset/benchmark/dataset/'+name+'/project_manifest.json');
     const text = await resp.text();
     projectObj = JSON.parse(text);
     projectObj.isRemote = true;
@@ -291,70 +291,70 @@ const loadProjectManifestIfNeeded = async (projectObj:Project):Promise<undefined
 }
 
 const downloadTextResults = async () => {
-  if (downloadingStatus.value === "Downloading...") {
-    alert("Already downloading.");
+  if (downloadingStatus.value === 'Downloading...') {
+    alert('Already downloading.');
     return;
   }
-  downloadingStatus.value = "Downloading...";
-  const resp = await fetch ("./dataset/"+selectedProject.value?.info.name+"/results.zip");
-  downloadingStatus.value = "";
+  downloadingStatus.value = 'Downloading...';
+  const resp = await fetch ('/barcode-dataset/benchmark/dataset/'+selectedProject.value?.info.name+'/results.zip');
+  downloadingStatus.value = '';
   const blob = await resp.blob();
   if (blob.size>0) {
-    await localForage.setItem(selectedProject.value?.info.name+":results.zip",blob);
+    await localForage.setItem(selectedProject.value?.info.name+':results.zip',blob);
     textResultsDownloaded.value = true;
   }
 }
 
 const downloadImages = async () => {
   if (selectedProject.value) {
-    if (downloadingStatus.value === "Downloading...") {
-      alert("Already downloading.");
+    if (downloadingStatus.value === 'Downloading...') {
+      alert('Already downloading.');
       return;
     }
-    downloadingStatus.value = "Downloading...";
+    downloadingStatus.value = 'Downloading...';
     for (let index = 0; index < selectedProject.value.info.images.length; index++) {
       if (manageAction.value === false) { //stop downloading if the dialog is hidden
-        downloadingStatus.value = "";
+        downloadingStatus.value = '';
         return;
       }
       const image = selectedProject.value.info.images[index];
-      const dataURLInDB = await localForage.getItem(selectedProject.value.info.name+":image:"+image);
+      const dataURLInDB = await localForage.getItem(selectedProject.value.info.name+':image:'+image);
       if (!dataURLInDB) {
-        const resp = await fetch ("./dataset/"+selectedProject.value.info.name+"/"+image);
+        const resp = await fetch ('/barcode-dataset/benchmark/dataset/'+selectedProject.value.info.name+'/'+image);
         const blob = await resp.blob();
         if (blob.size>0) {
           const dataURL = await BlobtoDataURL(blob);
-          await localForage.setItem(selectedProject.value.info.name+":image:"+image,dataURL);
+          await localForage.setItem(selectedProject.value.info.name+':image:'+image,dataURL);
         }
       }
       updateRemoteProjectProgress(index);
     }
-    downloadingStatus.value = "";
+    downloadingStatus.value = '';
   }
 }
 
 const updateRemoteProjectProgress = (index:number) => {
   if (selectedProject.value) {
     remoteImageFilesProgress.value = parseFloat(((index + 1) /selectedProject.value.info.images.length).toFixed(2));
-    remoteImageFilesProgressLabel.value = (index + 1) + "/" + selectedProject.value.info.images.length;
+    remoteImageFilesProgressLabel.value = (index + 1) + '/' + selectedProject.value.info.images.length;
   }
 }
 
 const importRemoteProjectIfNeeded = async (projectObj:Project) => {
   console.log(projectObj);
   if (projectObj.isRemote) {
-    const results:any = await localForage.getItem(projectObj.info.name+":results.zip");
+    const results:any = await localForage.getItem(projectObj.info.name+':results.zip');
     if (!results) {
-      status.value = "Downloading remote project text result files...";
-      const resp = await fetch ("./dataset/"+projectObj.info.name+"/results.zip");
+      status.value = 'Downloading remote project text result files...';
+      const resp = await fetch ('/barcode-dataset/benchmark/dataset/'+projectObj.info.name+'/results.zip');
       const blob = await resp.blob();
       if (blob.size>0) {
-        await localForage.setItem(projectObj.info.name+":results.zip",blob);
+        await localForage.setItem(projectObj.info.name+':results.zip',blob);
       }
     }
     const imported = await textResultsImported(projectObj);
     if (!imported) {
-      status.value = "Importing remote project...";
+      status.value = 'Importing remote project...';
       await loadTextResultsFromZip(projectObj);
       let newProjects:Project[] = [];
       projects.value.forEach(project => {
@@ -364,9 +364,9 @@ const importRemoteProjectIfNeeded = async (projectObj:Project) => {
           newProjects.push(project);
         }
       });
-      await localForage.setItem("projects", JSON.stringify(newProjects));
+      await localForage.setItem('projects', JSON.stringify(newProjects));
     }
-    status.value = "";
+    status.value = '';
   }
 }
 
