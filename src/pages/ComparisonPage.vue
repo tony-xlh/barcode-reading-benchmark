@@ -136,26 +136,26 @@
 </template>
 
 <script setup lang="ts">
-import { Project } from "src/project";
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import localForage from "localforage";
-import { use } from "echarts/core";
-import { SVGRenderer } from "echarts/renderers";
-import { PieChart,BarChart } from "echarts/charts";
+import { Project } from 'src/project';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import localForage from 'localforage';
+import { use } from 'echarts/core';
+import { SVGRenderer } from 'echarts/renderers';
+import { PieChart,BarChart } from 'echarts/charts';
 import {
   GridComponent,
   TitleComponent,
   ToolboxComponent,
   TooltipComponent,
   LegendComponent
-} from "echarts/components";
-import VChart from "vue-echarts";
-import { EngineStatistics } from "src/definitions/definitions";
-import { calculateEngineStatistics, loadProjectBarcodeReaderConfigs } from "src/utils";
-import { useMeta } from "quasar";
-import DynamsoftButton from "src/components/DynamsoftButton.vue";
-import { BarcodeReaderConfig } from "src/barcodeReader/BarcodeReader";
+} from 'echarts/components';
+import VChart from 'vue-echarts';
+import { EngineStatistics } from 'src/definitions/definitions';
+import { calculateEngineStatistics, loadProjectBarcodeReaderConfigs } from 'src/utils';
+import { useMeta } from 'quasar';
+import DynamsoftButton from 'src/components/DynamsoftButton.vue';
+import { BarcodeReaderConfig } from 'src/barcodeReader/BarcodeReader';
 
 use([
   SVGRenderer,
@@ -174,7 +174,7 @@ const averageTimeOption = ref({});
 const precisionOption = ref({});
 const chartOptionsForCategories = ref([] as any[]);
 
-const projectName = ref("");
+const projectName = ref('');
 const engines = ref([] as {displayName:string,enabled:boolean}[])
 const router = useRouter();
 const tableRows = ref([] as tableRow[]);
@@ -183,7 +183,7 @@ const categories = ref([] as {displayName:string,enabled:boolean}[])
 const categoriesForCharts = ref([] as {displayName:string,enabled:boolean}[])
 const showCalculatingDialog = ref(false);
 const showChartsDialog = ref(false);
-const selectedTab = ref("general");
+const selectedTab = ref('general');
 const sorting = ref(false);
 
 let configs:BarcodeReaderConfig[] = [];
@@ -205,7 +205,7 @@ interface categoryTableRow {
 
 interface highlightConfig {
   enable:boolean;
-  mode:"max"|"min";
+  mode:'max'|'min';
 }
 
 onMounted(async () => {
@@ -222,7 +222,7 @@ onMounted(async () => {
     // sets document title
     title: 'Barcode Reading Benchmark - '+ projectName.value + ' - Comparison',
   })
-  const savedProjects = await localForage.getItem("projects");
+  const savedProjects = await localForage.getItem('projects');
   if (savedProjects) {
     const projects = JSON.parse(savedProjects as string);
     for (let index = 0; index < projects.length; index++) {
@@ -240,8 +240,8 @@ const getCategories = (enabled:boolean) => {
   const addedCats:string[] = [];
   for (let index = 0; index < project.info.images.length; index++) {
     const imageName = project.info.images[index];
-    if (imageName.indexOf("/") != -1) {
-      const cat = imageName.split("/")[0];
+    if (imageName.indexOf('/') != -1) {
+      const cat = imageName.split('/')[0];
       if (addedCats.indexOf(cat) === -1) {
         addedCats.push(cat);
         cats.push({displayName:cat,enabled:enabled});
@@ -280,18 +280,18 @@ const getStatistics = async () => {
     tableInCategories.value = [];
     const statisticsOfCategories = await calculateCategoryStatistics();
     addAverageStatistics(statisticsOfCategories);
-    calculateCategoryTableRows("accuracy","Reading Rate",{enable:true,mode:"max"},statisticsOfCategories);
-    calculateCategoryTableRows("precision","Precision",{enable:true,mode:"max"},statisticsOfCategories);
-    calculateCategoryTableRows("averageTime","Average Time",{enable:true,mode:"min"},statisticsOfCategories);
+    calculateCategoryTableRows('accuracy','Reading Rate',{enable:true,mode:'max'},statisticsOfCategories);
+    calculateCategoryTableRows('precision','Precision',{enable:true,mode:'max'},statisticsOfCategories);
+    calculateCategoryTableRows('averageTime','Average Time',{enable:true,mode:'min'},statisticsOfCategories);
   }
   
   const sortedEngineNames = getEngineNames(statisticsOfEngines);
-  const accuracyData = getData(statisticsOfEngines,"accuracy");
-  const averageTimeData = getData(statisticsOfEngines,"averageTime");
-  const precisionData = getData(statisticsOfEngines,"precision");
-  readingRateOption.value = getOptionForChart(accuracyData,"Reading Rate","{c}%",sortedEngineNames);
-  averageTimeOption.value = getOptionForChart(averageTimeData,"Average Time","{c}ms",sortedEngineNames);
-  precisionOption.value = getOptionForChart(precisionData,"Precision","{c}%",sortedEngineNames);
+  const accuracyData = getData(statisticsOfEngines,'accuracy');
+  const averageTimeData = getData(statisticsOfEngines,'averageTime');
+  const precisionData = getData(statisticsOfEngines,'precision');
+  readingRateOption.value = getOptionForChart(accuracyData,'Reading Rate','{c}%',sortedEngineNames);
+  averageTimeOption.value = getOptionForChart(averageTimeData,'Average Time','{c}ms',sortedEngineNames);
+  precisionOption.value = getOptionForChart(precisionData,'Precision','{c}%',sortedEngineNames);
   showCalculatingDialog.value = false;
 }
 
@@ -387,7 +387,7 @@ const getSeries = (data:any[],engineNames:string[],labelOption:any) => {
   
   for (let index = 0; index < engineNames.length; index++) {
     const engine = engineNames[index];
-    let color = "";
+    let color = '';
     for (const config of configs) {
       if (config.displayName === engine) {
         if (config.color) {
@@ -426,7 +426,7 @@ const calculateTableRows = (statisticsOfEngines:EngineStatistics[]) => {
       for (let j = 0; j < statisticsOfEngines.length; j++) {
         const statistics = statisticsOfEngines[j];
         if (statistics.rows) {
-          if (statistics.rows[i].correct === "true") {
+          if (statistics.rows[i].correct === 'true') {
             detectedEngines.push(statistics.name);
           }else{
             failedEngines.push(statistics.name);
@@ -465,7 +465,7 @@ const calculateCategoryStatistics = async () => {
 
 const addAverageStatistics = (statisticsOfCategories:{category:string,statisticsOfEngines:EngineStatistics[]}[]) => {
   const statisticsOfEngines:EngineStatistics[] = [];
-  const newCategory = {category:"total average",statisticsOfEngines:statisticsOfEngines};
+  const newCategory = {category:'total average',statisticsOfEngines:statisticsOfEngines};
   const engines = getSelectedEngines();
   for (let index = 0; index < engines.length; index++) {
     const engine = engines[index];
@@ -530,7 +530,7 @@ const getSpecificMetrics = (statistics:EngineStatistics[],metricsName:string,con
         minMaxValue = data;
         highlightedIndex = 0;
       }else{
-        if (config.mode === "max") {
+        if (config.mode === 'max') {
           if (data>minMaxValue) {
             minMaxValue = data;
             highlightedIndex = index;
@@ -551,13 +551,13 @@ const drawCharts = (table:{metrics:string,displayName:string,rows:categoryTableR
   selectedTable = table;
   chartOptionsForCategories.value = [];
   const cats = getEnabledCategories();
-  cats.push({displayName:"total average",enabled:false});
+  cats.push({displayName:'total average',enabled:false});
   categoriesForCharts.value  = cats;
   showChartsDialog.value = true;
 }
 
 const drawChartForSelectedCategory = () => {
-  console.log("draw");
+  console.log('draw');
   chartOptionsForCategories.value = [];
   const engines = getSelectedEngines();
   const newOptions:any = [];
@@ -568,11 +568,11 @@ const drawChartForSelectedCategory = () => {
           const data = row.statistics;
           let formatter;
           let ascend = false;
-          if (selectedTable.displayName.toLowerCase().indexOf("time") != -1) {
-            formatter = "{c}ms";
+          if (selectedTable.displayName.toLowerCase().indexOf('time') != -1) {
+            formatter = '{c}ms';
             ascend = false;
           }else{
-            formatter = "{c}%";
+            formatter = '{c}%';
             ascend = true;
           }
           const option = getOptionForChart(data,category.displayName,formatter,engines,true,ascend);
@@ -615,13 +615,13 @@ const getData = (statisticsOfEngines:EngineStatistics[],key:string) => {
 }
 
 const goToDetailsPage = (name:string) => {
-  const href = "/project/"+encodeURIComponent(projectName.value)+"/"+encodeURIComponent(name);
+  const href = '/project/'+encodeURIComponent(projectName.value)+'/'+encodeURIComponent(name);
   const routeUrl = router.resolve(href);
   window.open(routeUrl.href,'_blank');
 }
 
 const goBack = () => {
-  router.push("/project/"+encodeURIComponent(projectName.value));
+  router.push('/project/'+encodeURIComponent(projectName.value));
 }
 
 
@@ -667,6 +667,16 @@ const goBack = () => {
 }
 .highlighted {
   font-weight: bold;
+}
+
+.q-markup-table {
+  max-height: 350px;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  z-index: 999;
 }
 
 </style>
