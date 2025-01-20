@@ -155,29 +155,29 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader, BarcodeReaderConfig, BarcodeResult, DetectionResult } from "src/barcodeReader/BarcodeReader";
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
-import localForage from "localforage";
-import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, getRectFromPoints, intersectionOverUnion, loadProjectBarcodeReaderConfigs, overlappingPercent, textCorrect } from "src/utils";
-import { GroundTruth, Point } from "src/definitions/definitions";
-import { Project } from "src/project";
-import { useMeta } from "quasar";
-import DynamsoftButton from "src/components/DynamsoftButton.vue";
+import { BarcodeReader, BarcodeReaderConfig, BarcodeResult, DetectionResult } from 'src/barcodeReader/BarcodeReader';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import localForage from 'localforage';
+import { BlobtoDataURL, ConvertBarcodeResultsToGroundTruth, dataURLtoBlob, getFilenameWithoutExtension, getPointsFromBarcodeResultResult, getPointsFromGroundTruth, getRectFromPoints, intersectionOverUnion, loadProjectBarcodeReaderConfigs, overlappingPercent, textCorrect } from 'src/utils';
+import { GroundTruth, Point } from 'src/definitions/definitions';
+import { Project } from 'src/project';
+import { useMeta } from 'quasar';
+import DynamsoftButton from 'src/components/DynamsoftButton.vue';
 const router = useRouter();
-const projectName = ref("");
-const imageName = ref("");
-const selectedEngineDisplayName = ref("");
+const projectName = ref('');
+const imageName = ref('');
+const selectedEngineDisplayName = ref('');
 const barcodeReaderConfigs = ref([] as BarcodeReaderConfig[])
 const imgWidth = ref(0);
 const imgHeight = ref(0);
-const dataURL = ref("");
+const dataURL = ref('');
 const barcodeResults = ref([] as BarcodeResult[]);
 const groundTruthList = ref([] as GroundTruth[]);
 const showDetectionResults = ref(true);
 const showGroundTruth = ref(true);
 const saveDetectionResults = ref(false);
-const status = ref("");
+const status = ref('');
 const incorrectDetectionResultIndex = ref([] as number[]);
 const annotationMode = ref(false);
 const svgRef = ref();
@@ -216,7 +216,7 @@ const getSelectedBarcodeReaderConfig = (displayName?:string) => {
 }
 
 const loadImage = async () => {
-  const imageDataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName.value);
+  const imageDataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName.value);
   if (imageDataURL) {
     let img = new Image();
     img.src = imageDataURL;
@@ -226,11 +226,11 @@ const loadImage = async () => {
       dataURL.value = imageDataURL;
     }
   }else{
-    const resp = await fetch ("./dataset/"+projectName.value+"/"+imageName.value);
+    const resp = await fetch ('/barcode-dataset/benchmark/dataset/'+projectName.value+'/'+imageName.value);
     const blob = await resp.blob();
     if (blob.size>0) {
       const convertedDataURL = await BlobtoDataURL(blob);
-      await localForage.setItem(projectName.value+":image:"+imageName.value,convertedDataURL);
+      await localForage.setItem(projectName.value+':image:'+imageName.value,convertedDataURL);
       loadImage();
     }
   }
@@ -246,7 +246,7 @@ const loadBarcodeResultsAndGroundTruth = async (displayName?:string,detectionRes
   if (detectionResult) {
     barcodeResults.value = detectionResult.results;
   }else{
-    const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+name+".json");
+    const detectionResultString:string|null|undefined = await localForage.getItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName.value)+'-'+name+'.json');
     if (detectionResultString) {
       detectionResult = JSON.parse(detectionResultString);
       if (detectionResult) {
@@ -256,7 +256,7 @@ const loadBarcodeResultsAndGroundTruth = async (displayName?:string,detectionRes
       barcodeResults.value = [];
     }
   }
-  const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
+  const groundTruthString:string|null|undefined = await localForage.getItem(projectName.value+':groundTruth:'+getFilenameWithoutExtension(imageName.value)+'.txt');
   let parsedGroundTruth;
   if (groundTruthString) {
     parsedGroundTruth = JSON.parse(groundTruthString);
@@ -268,10 +268,10 @@ const loadBarcodeResultsAndGroundTruth = async (displayName?:string,detectionRes
 }
 
 const getPointsData = (result:BarcodeResult|GroundTruth) => {
-  let pointsData = result.x1 + "," + result.y1 + " ";
-  pointsData = pointsData + result.x2+ "," + result.y2 + " ";
-  pointsData = pointsData + result.x3+ "," + result.y3 + " ";
-  pointsData = pointsData + result.x4+ "," + result.y4;
+  let pointsData = result.x1 + ',' + result.y1 + ' ';
+  pointsData = pointsData + result.x2+ ',' + result.y2 + ' ';
+  pointsData = pointsData + result.x3+ ',' + result.y3 + ' ';
+  pointsData = pointsData + result.x4+ ',' + result.y4;
   return pointsData;
 }
 
@@ -289,20 +289,20 @@ const decode = async () => {
       }
     }
     if (needInitialization) {
-      status.value = "Initializing...";
+      status.value = 'Initializing...';
       reader = await BarcodeReader.createInstance(selectedEngineName);
-      status.value = "";
+      status.value = '';
     }
     await updateBarcodeReaderSettings();
-    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+":image:"+imageName.value);
+    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName.value);
     if (dataURL) {
-      status.value = "Decoding...";
+      status.value = 'Decoding...';
       let decodingResult = await reader.detect(dataURL);
-      status.value = "";
+      status.value = '';
       console.log(decodingResult);
       barcodeResults.value = decodingResult.results;
       if (saveDetectionResults.value === true) {
-        await localForage.setItem(projectName.value+":detectionResult:"+getFilenameWithoutExtension(imageName.value)+"-"+selectedEngineDisplayName+".json",JSON.stringify(decodingResult));
+        await localForage.setItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName.value)+'-'+selectedEngineDisplayName+'.json',JSON.stringify(decodingResult));
       }
       loadBarcodeResultsAndGroundTruth(selectedEngineDisplayName,decodingResult);
     }
@@ -359,9 +359,9 @@ const selectedEngineChanged = (displayName:string) => {
 }
 
 const deleteThisImage = async () => {
-  localForage.removeItem(projectName.value+":image:"+imageName.value);
-  localForage.removeItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt");
-  const savedProjects = await localForage.getItem("projects");
+  localForage.removeItem(projectName.value+':image:'+imageName.value);
+  localForage.removeItem(projectName.value+':groundTruth:'+getFilenameWithoutExtension(imageName.value)+'.txt');
+  const savedProjects = await localForage.getItem('projects');
   if (savedProjects) {
     const projects:Project[] = JSON.parse(savedProjects as string);
     for (let i = 0; i < projects.length; i++) {
@@ -377,8 +377,8 @@ const deleteThisImage = async () => {
         project.info.images = newImages;
       }
     }
-    await localForage.setItem("projects", JSON.stringify(projects));
-    alert("deleted");
+    await localForage.setItem('projects', JSON.stringify(projects));
+    alert('deleted');
   }
 }
 
@@ -392,7 +392,7 @@ const downloadImage = () => {
     link.click()
     document.body.removeChild(link)
   }else{
-    alert("The image has not been downloaded.");
+    alert('The image has not been downloaded.');
   }
 }
 
@@ -405,8 +405,8 @@ const convertDetectedResultsToGroundTruth = () => {
 }
 
 const saveModifiedGroundTruth = async () => {
-  await localForage.setItem(projectName.value+":groundTruth:"+getFilenameWithoutExtension(imageName.value)+".txt",JSON.stringify(groundTruthList.value));
-  alert("Saved");
+  await localForage.setItem(projectName.value+':groundTruth:'+getFilenameWithoutExtension(imageName.value)+'.txt',JSON.stringify(groundTruthList.value));
+  alert('Saved');
 }
 
 const onContextMenu = (event:any) => {
@@ -463,8 +463,8 @@ const createNewGroundTruthFromPoints = (points:Point[]) => {
     y2:points[1].y,
     y3:points[2].y,
     y4:points[3].y,
-    text:"",
-    attrib:{Type:""},
+    text:'',
+    attrib:{Type:''},
     value_attrib:{}
   }
   groundTruthList.value.forEach(item => {
