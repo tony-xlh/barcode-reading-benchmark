@@ -276,36 +276,40 @@ const getPointsData = (result:BarcodeResult|GroundTruth) => {
 }
 
 const decode = async () => {
-  const selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
-  if (selectedBarcodeReaderConfig) {
-    let selectedEngineName = selectedBarcodeReaderConfig.engine;
-    let selectedEngineDisplayName = selectedBarcodeReaderConfig.displayName;
-    let needInitialization = false;
-    if (!reader) {
-      needInitialization = true;
-    }else{
-      if (reader.getEngine() != selectedEngineName) {
+  try {
+    const selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
+    if (selectedBarcodeReaderConfig) {
+      let selectedEngineName = selectedBarcodeReaderConfig.engine;
+      let selectedEngineDisplayName = selectedBarcodeReaderConfig.displayName;
+      let needInitialization = false;
+      if (!reader) {
         needInitialization = true;
+      }else{
+        if (reader.getEngine() != selectedEngineName) {
+          needInitialization = true;
+        }
+      }
+      if (needInitialization) {
+        status.value = 'Initializing...';
+        reader = await BarcodeReader.createInstance(selectedEngineName);
+        status.value = '';
+      }
+      await updateBarcodeReaderSettings();
+      const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName.value);
+      if (dataURL) {
+        status.value = 'Decoding...';
+        let decodingResult = await reader.detect(dataURL);
+        status.value = '';
+        console.log(decodingResult);
+        barcodeResults.value = decodingResult.results;
+        if (saveDetectionResults.value === true) {
+          await localForage.setItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName.value)+'-'+selectedEngineDisplayName+'.json',JSON.stringify(decodingResult));
+        }
+        loadBarcodeResultsAndGroundTruth(selectedEngineDisplayName,decodingResult);
       }
     }
-    if (needInitialization) {
-      status.value = 'Initializing...';
-      reader = await BarcodeReader.createInstance(selectedEngineName);
-      status.value = '';
-    }
-    await updateBarcodeReaderSettings();
-    const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName.value);
-    if (dataURL) {
-      status.value = 'Decoding...';
-      let decodingResult = await reader.detect(dataURL);
-      status.value = '';
-      console.log(decodingResult);
-      barcodeResults.value = decodingResult.results;
-      if (saveDetectionResults.value === true) {
-        await localForage.setItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName.value)+'-'+selectedEngineDisplayName+'.json',JSON.stringify(decodingResult));
-      }
-      loadBarcodeResultsAndGroundTruth(selectedEngineDisplayName,decodingResult);
-    }
+  } catch (error) {
+    alert(error+'\nPlease check if the local barcode reading server is running.');
   }
 }
 

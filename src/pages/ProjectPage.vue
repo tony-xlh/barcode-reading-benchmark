@@ -389,51 +389,55 @@ const updateRows = async (displayName?:string) => {
 }
 
 const decode = async () => {
-  let selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
-  if (decoding.value === false && selectedBarcodeReaderConfig) {
-    decoding.value = true;
-    hasToStop = false;
-    await reinitializeReaderIfNeeded();
-    await updateBarcodeReaderSettings(selectedBarcodeReaderConfig);
-    const length = project.info.images.length;
-    progress.value = 0.0;
-    progressLabel.value = '0/'+length;
-    let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+':detectionResultFileNamesList');
-    if (!detectionResultFileNamesList) {
-      detectionResultFileNamesList = [];
-    }
-    for (let index = 0; index < length; index++) {
-      if (hasToStop) {
-        await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
-        return;
+  try {
+    let selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
+    if (decoding.value === false && selectedBarcodeReaderConfig) {
+      decoding.value = true;
+      hasToStop = false;
+      await reinitializeReaderIfNeeded();
+      await updateBarcodeReaderSettings(selectedBarcodeReaderConfig);
+      const length = project.info.images.length;
+      progress.value = 0.0;
+      progressLabel.value = '0/'+length;
+      let detectionResultFileNamesList:string[]|null|undefined = await localForage.getItem(projectName.value+':detectionResultFileNamesList');
+      if (!detectionResultFileNamesList) {
+        detectionResultFileNamesList = [];
       }
-      const imageName = project.info.images[index];
-      if (skipDetected.value) {
-        let detectedResult = await localForage.getItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json');
-        if (detectedResult) {
-          continue;
+      for (let index = 0; index < length; index++) {
+        if (hasToStop) {
+          await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
+          return;
         }
-      }
-      const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName);
-      if (dataURL) {
-        let decodingResult = await reader.detect(dataURL);
-        console.log(decodingResult);
-        const fileName = getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json';
-        if (detectionResultFileNamesList.indexOf(fileName) === -1) {
-          detectionResultFileNamesList.push(fileName);
+        const imageName = project.info.images[index];
+        if (skipDetected.value) {
+          let detectedResult = await localForage.getItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json');
+          if (detectedResult) {
+            continue;
+          }
         }
-        await localForage.setItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json',JSON.stringify(decodingResult));
+        const dataURL:string|null|undefined = await localForage.getItem(projectName.value+':image:'+imageName);
+        if (dataURL) {
+          let decodingResult = await reader.detect(dataURL);
+          console.log(decodingResult);
+          const fileName = getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json';
+          if (detectionResultFileNamesList.indexOf(fileName) === -1) {
+            detectionResultFileNamesList.push(fileName);
+          }
+          await localForage.setItem(projectName.value+':detectionResult:'+getFilenameWithoutExtension(imageName)+'-'+selectedEngineDisplayName.value+'.json',JSON.stringify(decodingResult));
+        }
+        progress.value = parseFloat(((index + 1) / length).toFixed(2));
+        progressLabel.value = (index+1)+'/'+length;
       }
-      progress.value = parseFloat(((index + 1) / length).toFixed(2));
-      progressLabel.value = (index+1)+'/'+length;
+      await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
+      decoding.value = false;
+    }else{
+      hasToStop = true;
+      decoding.value = false;
     }
-    await localForage.setItem(projectName.value+':detectionResultFileNamesList',detectionResultFileNamesList);
-    decoding.value = false;
-  }else{
-    hasToStop = true;
-    decoding.value = false;
+    updateRows();
+  } catch (error) {
+    alert(error+'\nPlease check if the local barcode reading server is running.');
   }
-  updateRows();
 }
 
 const loadDetectionResultFiles = (e:any) => {

@@ -1,19 +1,19 @@
-import { CameraEnhancer, DCEFrame } from "dynamsoft-camera-enhancer";
-import { DetectionResult, Setting, SettingDef } from "./BarcodeReader";
-import { DecimalToHex, getSetting } from "./Shared";
+import { CameraEnhancer, DCEFrame } from 'dynamsoft-camera-enhancer';
+import { DetectionResult, Setting, SettingDef } from './BarcodeReader';
+import { DecimalToHex, getSetting } from './Shared';
 
 export default class HTTPBarcodeReader {
   private settings:Setting[] = [];
   private canvas!:HTMLCanvasElement;
   async init() : Promise<void> {
     if (!this.canvas) {
-      this.canvas = document.createElement("canvas");
+      this.canvas = document.createElement('canvas');
     }
   }
 
   async detect(image: ImageBitmapSource|string|HTMLImageElement|HTMLVideoElement|DCEFrame) : Promise<DetectionResult> {
-    let base64 = "";
-    if (typeof(image) === "string") {
+    let base64 = '';
+    if (typeof(image) === 'string') {
       base64 = this.removeDataURLHead(image);
     }
     if (image instanceof HTMLCanvasElement) {
@@ -32,27 +32,33 @@ export default class HTTPBarcodeReader {
   fetchDetectionResults(base64:string):Promise<DetectionResult>{
     const pThis = this;
     return new Promise(function(resolve,reject){
-      const engine = getSetting("Engine",pThis.settings) ?? ""
+      const engine = getSetting('Engine',pThis.settings) ?? '';
+      console.log('detect with');
+      console.log(engine);
       const payload = {engine:engine,base64:base64};
       const xhr = new XMLHttpRequest();
-      const URL = getSetting("URL",pThis.settings) ?? "http://localhost:8888";
+      const URL = getSetting('URL',pThis.settings) ?? 'http://localhost:8888';
       xhr.open('POST', URL+'/readBarcodes');
       xhr.setRequestHeader('content-type', 'application/json'); 
       xhr.onreadystatechange = function(){
         if(xhr.readyState === 4){
-          console.log(xhr.responseText);
-          const response:DetectionResult = JSON.parse(xhr.responseText);
-          for (const result of response.results) {
-            if (result.barcodeBytes) {
-              result.barcodeBytes = pThis.convertBase64BytesToNumbers(result.barcodeBytes);
+          try {
+            console.log(xhr.responseText);
+            const response:DetectionResult = JSON.parse(xhr.responseText);
+            for (const result of response.results) {
+              if (result.barcodeBytes) {
+                result.barcodeBytes = pThis.convertBase64BytesToNumbers(result.barcodeBytes);
+              }
             }
+            resolve(response);  
+          } catch (error) {
+            reject(error);    
           }
-          resolve(response);
         }
       }
       xhr.onerror = function(){
-        console.log("error");
-        reject("error");
+        console.log('error');
+        reject('error');
       }
       console.log(payload);
       xhr.send(JSON.stringify(payload));
@@ -67,7 +73,7 @@ export default class HTTPBarcodeReader {
   }
 
   getBinary(bytes:Uint8Array){
-    let joined = "";
+    let joined = '';
     for (let index = 0; index < bytes.length; index++) {
       const byte = bytes[index];
       joined = joined + DecimalToHex(byte.toString());
@@ -78,7 +84,7 @@ export default class HTTPBarcodeReader {
   static getEngines(settings:Setting[]):Promise<string[]>{
     return new Promise(function(resolve,reject){
       const xhr = new XMLHttpRequest();
-      const URL = getSetting("URL",settings) ?? "http://localhost:8888";
+      const URL = getSetting('URL',settings) ?? 'http://localhost:8888';
       xhr.open('GET', URL+'/getEngines');
       xhr.onreadystatechange = function(){
         if(xhr.readyState === 4){
@@ -88,15 +94,15 @@ export default class HTTPBarcodeReader {
         }
       }
       xhr.onerror = function(){
-        console.log("error");
-        reject("error");
+        console.log('error');
+        reject('error');
       }
       xhr.send();
     });
   }
 
   drawImageOrVideo(source:HTMLImageElement|HTMLVideoElement){
-    const ctx = this.canvas.getContext("2d");
+    const ctx = this.canvas.getContext('2d');
     if (source instanceof HTMLImageElement) { 
       this.canvas.width = source.naturalWidth;
       this.canvas.height = source.naturalHeight;
@@ -118,27 +124,27 @@ export default class HTTPBarcodeReader {
   }
 
   getBase64FromCanvas(canvas:HTMLCanvasElement){
-    return this.removeDataURLHead(canvas.toDataURL("image/jpeg")); //use jpeg for better compression
+    return this.removeDataURLHead(canvas.toDataURL('image/jpeg')); //use jpeg for better compression
   }
 
   removeDataURLHead(dataURL:string){
-    return dataURL.substring(dataURL.indexOf(",")+1,dataURL.length);
+    return dataURL.substring(dataURL.indexOf(',')+1,dataURL.length);
   }
 
 
   static getSupportedSettings():SettingDef[] {
-    return [{name:"URL",type:"string"},{name:"Engine",type:"select"}];
+    return [{name:'URL',type:'string'},{name:'Engine',type:'select'}];
   }
 
   static getDefaultSettings():any {
-    return {"URL":"http://localhost:8888","Engine":""};
+    return {'URL':'http://localhost:8888','Engine':''};
   }
 
   static async getSettingOptions(key:string,settings:Setting[]):Promise<string[]> {
-    console.log("getSettingOptions");
+    console.log('getSettingOptions');
     console.log(key);
     console.log(settings);
-    if (key === "Engine") {
+    if (key === 'Engine') {
       const engines = await this.getEngines(settings);
       return engines;
     }
