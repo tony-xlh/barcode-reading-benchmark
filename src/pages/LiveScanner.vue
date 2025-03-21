@@ -26,19 +26,19 @@
 </template>
 
 <script setup lang="ts">
-import { BarcodeReader, BarcodeReaderConfig, DetectionResult } from "src/barcodeReader/BarcodeReader";
-import { onMounted, ref } from "vue";
-import { useRouter } from "vue-router";
+import { BarcodeReader, BarcodeReaderConfig, DetectionResult } from 'src/barcodeReader/BarcodeReader';
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { CameraEnhancer } from 'dynamsoft-camera-enhancer';
 import { loadProjectBarcodeReaderConfigs } from 'src/utils';
-import DynamsoftButton from "src/components/DynamsoftButton.vue";
-const selectedEngineDisplayName = ref("");
+import DynamsoftButton from 'src/components/DynamsoftButton.vue';
+const selectedEngineDisplayName = ref('');
 const barcodeReaderConfigs = ref([] as BarcodeReaderConfig[]);
 const router = useRouter();
-const status = ref("");
+const status = ref('');
 const scanning = ref(false);
 const scannedResults = ref();
-const projectName = ref("");
+const projectName = ref('');
 let processing = false;
 let reader: BarcodeReader;
 let camera: CameraEnhancer;
@@ -55,18 +55,18 @@ onMounted(async () => {
 const updateBarcodeReaderSettings = async (displayName:string) => {
   let settings = getSelectedBarcodeReaderConfig(displayName)?.settings;
   if (settings) {
-    if (selectedEngineDisplayName.value === "Dynamsoft") {
+    if (selectedEngineDisplayName.value === 'Dynamsoft') {
       let hasDBRTemplate = false;
       for (let index = 0; index < settings.length; index++) {
         const setting = settings[index];
-        if (setting.name === "template") {
+        if (setting.name === 'template') {
           if (setting.value) {
             hasDBRTemplate = true;
           }
         }
       }
       if (hasDBRTemplate === false) {
-        settings.push({name:"template",value:"speed"});
+        settings.push({name:'template',value:'speed'});
       }
     }
     console.log(settings);
@@ -93,10 +93,10 @@ const toggleScanning = async () => {
   stopProcessingLoop();
   if (camera) {
     if (camera.isOpen() === false) {
-      status.value = "Starting...";
+      status.value = 'Starting...';
       await camera.open(true);
       scanning.value = true;
-      status.value = "";
+      status.value = '';
     }else{
       camera.close(true);
       scanning.value = false;
@@ -112,14 +112,14 @@ const onPlayed = async () => {
 }
 
 const initDCE = async () => {
-  status.value = "Initializing Camera...";
-  CameraEnhancer.defaultUIElementURL = "https://cdn.jsdelivr.net/npm/dynamsoft-camera-enhancer@3.3.4/dist/dce.ui.html";
+  status.value = 'Initializing Camera...';
+  CameraEnhancer.defaultUIElementURL = 'https://cdn.jsdelivr.net/npm/dynamsoft-camera-enhancer@3.3.4/dist/dce.ui.html';
   camera = await CameraEnhancer.createInstance();
-  camera.on("played",onPlayed);
+  camera.on('played',onPlayed);
   await camera.setUIElement(CameraEnhancer.defaultUIElementURL);
-  document.getElementById("enhancerUIContainer")?.appendChild(camera.getUIElement());
-  document.getElementsByClassName("dce-btn-close")[0].remove();
-  status.value = "";
+  document.getElementById('enhancerUIContainer')?.appendChild(camera.getUIElement());
+  document.getElementsByClassName('dce-btn-close')[0].remove();
+  status.value = '';
 }
 
 const startProcessingLoop = async () => {
@@ -144,9 +144,9 @@ const reinitializeReaderIfNeeded = async (displayName:string) => {
       }
     }
     if (needInitialization) {
-      status.value = "Initializing Barcode Reader...";
+      status.value = 'Initializing Barcode Reader...';
       reader = await BarcodeReader.createInstance(selectedBarcodeReaderConfig.engine);
-      status.value = "";
+      status.value = '';
     }
     await updateBarcodeReaderSettings(displayName);
   }
@@ -156,26 +156,30 @@ const decode = async () => {
   const selectedBarcodeReaderConfig = getSelectedBarcodeReaderConfig();
   if (camera && processing === false && selectedBarcodeReaderConfig) {
     processing = true;
-    const frame = camera.getFrame();
-    const detectionResult = await reader.detect(frame);
-    status.value = detectionResult.elapsedTime + "ms";
-    if (reader.getEngine() === selectedBarcodeReaderConfig.engine) {
-      updateScannedResults(detectionResult);
+    try {
+      const frame = camera.getFrame();
+      const detectionResult = await reader.detect(frame);
+      status.value = detectionResult.elapsedTime + 'ms';
+      if (reader.getEngine() === selectedBarcodeReaderConfig.engine) {
+        updateScannedResults(detectionResult);
+      }
+      processing = false;
+    } catch (error) {
+      alert(error);
     }
-    processing = false;
   }
 }
 
 const updateScannedResults = (detectionResult:DetectionResult) => {
   if (detectionResult.results.length>0) {
-    let text = "";
+    let text = '';
     for (let index = 0; index < detectionResult.results.length; index++) {
       const result = detectionResult.results[index];
-      text = text + (index+1) + ". " + result.barcodeFormat + ": " + result.barcodeText;
+      text = text + (index+1) + '. ' + result.barcodeFormat + ': ' + result.barcodeText;
       if (result.confidence) {
-        text = text + ", confidence: "+result.confidence;
+        text = text + ', confidence: '+result.confidence;
       }
-      text = text + "\n";
+      text = text + '\n';
     }
     scannedResults.value = text;
   }
@@ -188,7 +192,7 @@ const selectedEngineChanged = async (engine:string) => {
     stopProcessingLoop();
     startProcessingLoop();
   }
-  scannedResults.value = "";
+  scannedResults.value = '';
 }
 
 </script>
