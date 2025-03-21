@@ -10,7 +10,7 @@ The following SDKs are included for testing:
 
 Extra SDKs are supported via HTTP using [Barcode-Reader-Aggregator](https://github.com/tony-xlh/Barcode-Reader-Aggregator).
 
-[Online demo](https://tony-xlh.github.io/barcode-dataset/benchmark/)
+[Online demo](https://www.dynamsoft.com/barcode-dataset/benchmark/)
 
 ## Features
 
