@@ -3,8 +3,11 @@
     <q-header elevated>
       <q-toolbar class="bg-black text-white">
         <a class="ds-logo" href="https://www.dynamsoft.com"></a>
-        <div class="toolbar-container"></div>
-        <q-btn flat round color="white" icon="home" @click="goHome()" />
+        <div class="toolbar-span"></div>
+        <div class="right">
+          <a href="javascript:void(0);" @click="goHome">Home</a>
+          <a href="https://github.com/tony-xlh/barcode-reading-benchmark" target="_blank" >GitHub</a>
+        </div>
       </q-toolbar>
     </q-header>
     <q-page-container>
@@ -14,10 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from "vue-router";
+import { useRouter } from 'vue-router';
 const router = useRouter();
 const goHome = () => {
-  router.push("/");
+  console.log('goHome');
+  router.push('/');
 }
 </script>
 
@@ -27,9 +31,17 @@ const goHome = () => {
   padding-left: 15px;
   padding-right: 15px;
 }
-.toolbar-container {
+
+.toolbar-span {
   flex:1;
 }
+
+.right a {
+  color: white;
+  margin-left: 10px;
+  text-decoration: none;
+}
+
 .ds-logo {
   width: 145px;
   height: 35px;
